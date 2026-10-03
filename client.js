@@ -109,6 +109,7 @@ function importAudio(folder=false){
       if(!files.length)throw Error('请选择音频文件。');if(files.length>1000)throw Error('一次最多选择 1000 个音频。');
       const collection=await all('episodes'),mode=$('#audio-storage').value,language=$('#language').value,title=$('#audio-title').value.trim();
       for(const file of files){
+        if(!file.size||file.size>350*1048576)throw Error(!file.size?'请选择一个非空音频文件。':'每段音频不能超过 350 MB。');
         b.textContent=`正在${mode==='copy'?'保存':'添加'} ${added+linked+copied+reused+1} / ${files.length}`;
         const hash=await fingerprint(file),contentHash=mode==='copy'?await audioContentHash(file):null;
         const match=await findAudioMatch(collection,file,hash,audioSize,e=>e.audio?fingerprint(e.audio):null,async e=>!contentHash||!e.audio||contentHash===(e.audioCopyHash||await audioContentHash(e.audio))),existing=match?.episode;if(match?.writeFingerprint){existing.fingerprint=match.hash;await write('episodes',existing);}
