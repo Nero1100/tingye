@@ -1,3 +1,4 @@
+import {validateFolders} from './folders.js';
 const languages = ['en', 'fr', 'ja'];
 const validTime = n => Number.isFinite(n) && n >= 0 && n <= 86400;
 const text = (s, max) => typeof s === 'string' && s.length <= max;
@@ -52,13 +53,14 @@ export function validateBackup(meta, payloadBytes) {
   if (!['tingye-backup-v1','tingye-backup-v2'].includes(meta?.format) || !Array.isArray(meta.episodes) ||
       !Array.isArray(meta.cards) || meta.episodes.length > 1000 || meta.cards.length > 100000)
     throw Error('备份格式不正确。');
+  const folders=validateFolders(meta.folders||[]),folderIds=new Set(folders.map(f=>f.id));
   let offset = 0;
   const ids = new Map();
   for (const e of meta.episodes) {
     if (meta.format==='tingye-backup-v1'&&e.storageMode==='external')
       throw Error('旧版备份不支持原文件记录。');
     if (!text(e.id,100) || ids.has(e.id) || !text(e.title,500) || !text(e.filename,500) ||
-        (e.order!==undefined&&(!Number.isSafeInteger(e.order)||e.order<0)) || (e.folder!==undefined&&!text(e.folder,500)) || !Number.isFinite(e.created) || !validTime(e.duration) || !validTime(e.progress) ||
+        (e.collectionId!==undefined&&(typeof e.collectionId!=='string'||e.collectionId.length>100||e.collectionId&&!folderIds.has(e.collectionId))) || (e.order!==undefined&&(!Number.isSafeInteger(e.order)||e.order<0)) || (e.folder!==undefined&&!text(e.folder,500)) || !Number.isFinite(e.created) || !validTime(e.duration) || !validTime(e.progress) ||
         e.progress > e.duration + 2 || !Number.isSafeInteger(e.offset) || e.offset !== offset ||
         !Number.isSafeInteger(e.bytes) || e.bytes < (meta.format==='tingye-backup-v2'&&e.storageMode==='external'?0:1) || e.bytes > 350*1048576 ||
         e.offset + e.bytes > payloadBytes || !text(e.mime,100) ||
