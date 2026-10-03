@@ -10,7 +10,7 @@ export function validateTranscript(data) {
   for (const s of data.segments) {
     if (!validTime(s.start) || !validTime(s.end) || s.end < s.start ||
         s.start < end - .15 || s.end > data.duration + 2 || !text(s.text, 10000) ||
-        !Array.isArray(s.words) || (s.translation !== undefined && !text(s.translation, 10000)))
+        !Array.isArray(s.words) || (s.translationEdited!==undefined&&typeof s.translationEdited!=='boolean') || (s.translation !== undefined && !text(s.translation, 10000)))
       throw Error('逐字稿的句段格式不正确。');
     end = s.end;
     let wordEnd = s.start;
@@ -36,12 +36,17 @@ export function validatePreferences(value) {
   const p = value || {};
   return {font:p.font==='mincho'?'mincho':'gothic',immFont:p.immFont==='gothic'?'gothic':'mincho',
     reading:p.reading!==false,translation:p.translation!==false,
-    rate:[.6,.75,1,1.25,1.5].includes(p.rate)?p.rate:1,loop:p.loop===true,pause:p.pause===true,
+    rate:[.6,.75,1,1.25,1.5,2].includes(p.rate)?p.rate:1,loop:p.loop===true,pause:p.pause===true,
     repeats:[0,1,2,3,5,10].includes(p.repeats)?p.repeats:3,
     gap:[0,.5,1,2,3,5,10].includes(p.gap)?p.gap:2,
     mask:['none','source','translation','both'].includes(p.mask)?p.mask:'none',
     appearance:['system','light','dark'].includes(p.appearance)?p.appearance:'system',
-    palette:['ocean','sage','sand','lilac','rose','graphite'].includes(p.palette)?p.palette:'ocean'};
+    palette:!p.designVersion&&(!p.palette||p.palette==='ocean')?'paper':['paper','ocean','sage','sand','lilac','rose','graphite'].includes(p.palette)?p.palette:'paper',designVersion:2,
+    playlistSort:['manual','name','newest'].includes(p.playlistSort)?p.playlistSort:'manual',continuous:p.continuous!==false,
+    sourceSize:[1,1.15,1.3].includes(p.sourceSize)?p.sourceSize:1,translationSize:[1,1.15,1.3].includes(p.translationSize)?p.translationSize:1.15,
+    immSize:Number.isFinite(p.immSize)?Math.min(1.6,Math.max(.8,p.immSize)):1,
+    sourceColor:['ink','vermilion','pine','blue','ochre'].includes(p.sourceColor)?p.sourceColor:'ink',
+    translationColor:['ink','vermilion','pine','blue','ochre'].includes(p.translationColor)?p.translationColor:'ink',revealAfter:p.revealAfter!==false};
 }
 export function validateBackup(meta, payloadBytes) {
   if (!['tingye-backup-v1','tingye-backup-v2'].includes(meta?.format) || !Array.isArray(meta.episodes) ||
@@ -53,7 +58,7 @@ export function validateBackup(meta, payloadBytes) {
     if (meta.format==='tingye-backup-v1'&&e.storageMode==='external')
       throw Error('旧版备份不支持原文件记录。');
     if (!text(e.id,100) || ids.has(e.id) || !text(e.title,500) || !text(e.filename,500) ||
-        !Number.isFinite(e.created) || !validTime(e.duration) || !validTime(e.progress) ||
+        (e.order!==undefined&&(!Number.isSafeInteger(e.order)||e.order<0)) || (e.folder!==undefined&&!text(e.folder,500)) || !Number.isFinite(e.created) || !validTime(e.duration) || !validTime(e.progress) ||
         e.progress > e.duration + 2 || !Number.isSafeInteger(e.offset) || e.offset !== offset ||
         !Number.isSafeInteger(e.bytes) || e.bytes < (meta.format==='tingye-backup-v2'&&e.storageMode==='external'?0:1) || e.bytes > 350*1048576 ||
         e.offset + e.bytes > payloadBytes || !text(e.mime,100) ||

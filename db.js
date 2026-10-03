@@ -10,3 +10,8 @@ export async function all(store){const values=await rawAll(store);if(store==='ep
 export function write(store,value){return new Promise((resolve,reject)=>{const t=db.transaction(store,'readwrite');t.objectStore(store).put(value);t.oncomplete=resolve;t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error);});}
 export function remove(store,id){return new Promise((resolve,reject)=>{const t=db.transaction(store==='episodes'?['episodes','progress']:store,'readwrite');t.objectStore(store).delete(id);if(store==='episodes')t.objectStore('progress').delete(id);t.oncomplete=resolve;t.onerror=()=>reject(t.error);});}
 export function saveBatch(episodes,cards,settings=[]){return new Promise((resolve,reject)=>{const t=db.transaction(['episodes','cards','settings'],'readwrite');for(const e of episodes)t.objectStore('episodes').put(e);for(const c of cards)t.objectStore('cards').put(c);for(const s of settings)t.objectStore('settings').put(s);t.oncomplete=resolve;t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error);});}
+export function setEpisodeOrder(ids){return new Promise((resolve,reject)=>{
+ const t=db.transaction('episodes','readwrite'),store=t.objectStore('episodes');
+ ids.forEach((id,order)=>{const request=store.get(id);request.onsuccess=()=>{if(request.result)store.put({...request.result,order});};});
+ t.oncomplete=resolve;t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error);
+});}
