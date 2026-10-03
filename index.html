@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#17395c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="description" content="保存在自己手机里的声音与阅读。">
+  <title>听页</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <a class="brand" href="#library" aria-label="听页首页"><img src="./icon.svg" alt="" width="34" height="34"><span>听页</span></a>
+    <span class="connection" id="connection">本机保存</span>
+  </header>
+  <main id="main" tabindex="-1"></main>
+  <nav class="bottom-nav" aria-label="主要功能">
+    <button data-nav="library" class="active"><span aria-hidden="true">♫</span>音频</button>
+    <button data-nav="cards"><span aria-hidden="true">▤</span>词卡</button>
+    <button data-nav="settings"><span aria-hidden="true">⚙</span>设置</button>
+  </nav>
+  <audio id="audio" preload="metadata"></audio>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <dialog id="modal"></dialog>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
