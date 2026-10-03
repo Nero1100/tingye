@@ -16,7 +16,9 @@ export function lexicalWords(segment, language) {
       reading:matches.map(w=>w.reading||'').join(''),lemma:part.segment.trim(),selectable:part.isWordLike===true};
   });
 }
-export function dictionaryText(cards) {
-  return [...new Set(cards.filter(c=>c.language==='ja').map(c=>(c.lemma||c.text||'').trim())
-    .filter(s=>s && /[\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}]/u.test(s) && !/[\r\n]/.test(s)))].join('\n');
+export function dictionaryText(cards,language='ja') {
+  return [...new Set(cards.filter(c=>language==='all'?['en','fr','ja'].includes(c.language):c.language===language)
+    .filter(c=>c.language!=='ja'||/[\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}]/u.test(c.lemma||c.text||''))
+    .map(c=>(c.lemma||c.text||'').trim().normalize('NFC'))
+    .filter(s=>s && /[\p{L}\p{N}]/u.test(s) && !/[\r\n]/.test(s)))].join('\n');
 }
