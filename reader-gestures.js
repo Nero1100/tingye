@@ -4,8 +4,8 @@ export function bindReaderGestures(root,{onWord,onWordHold,onJump,onSwipe,onBrow
  const clear=()=>{clearTimeout(timer);timer=null;};
  root.addEventListener('pointerdown',event=>{
   if(event.isPrimary===false||event.button!==0){clear();gesture=null;suppress=true;return;}
+  clear();gesture=null;suppress=false;
   if(event.target.closest('button,input,select,textarea')&&!event.target.closest('[data-reader-jump]'))return;
-  clear();suppress=false;
   gesture={id:event.pointerId,x:event.clientX,y:event.clientY,moved:false,held:false,word:event.target.closest('[data-word]')};
   if(gesture.word)timer=setTimeout(()=>{if(!gesture||gesture.moved)return;gesture.held=true;suppress=true;onWordHold(gesture.word);},delay);
  });
@@ -33,6 +33,7 @@ export function bindReaderGestures(root,{onWord,onWordHold,onJump,onSwipe,onBrow
   event.preventDefault();clear();if(!gesture?.held){if(gesture)gesture.held=true;suppress=true;onWordHold(word);}
  });
  root.addEventListener('keydown',event=>{
+  if(event.key==='Enter'||event.key===' '){clear();suppress=false;}
   const word=event.target.closest('[data-word]');if(!word)return;
   if(event.key==='Enter'||event.key===' '){event.preventDefault();onWord(word);}
   if(event.key==='F10'&&event.shiftKey){event.preventDefault();onWordHold(word);}
