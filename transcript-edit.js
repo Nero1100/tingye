@@ -6,7 +6,7 @@ function tokens(text,language){
 export function editedSentence(segment,text,translation,language){
   if(!text.trim())throw Error('原文不能为空。');if(text.length>10000||translation.length>10000)throw Error('单句文字过长，请缩短后再保存。');
   const draft=structuredClone(segment);draft.translation=translation;
-  if(text===segment.text)return draft;
+  if(text===segment.text&&(segment.words||[]).map(w=>w.text).join('').trim()===text.trim())return draft;
   const old=segment.words||[],next=tokens(text,language);let left=0,right=0;
   while(left<old.length&&left<next.length&&old[left].text===next[left].text)left++;
   while(right<old.length-left&&right<next.length-left&&old[old.length-1-right].text===next[next.length-1-right].text)right++;
