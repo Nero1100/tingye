@@ -10,6 +10,7 @@ import {orderedEpisodes,nextEpisodeId,sortAudioFiles,bindPress,appendedOrder,fin
 import {bindReaderGestures} from './reader-gestures.js';
 import {bindDragOrder,replaceSubsetOrder} from './drag-order.js';
 import {cardCategory,cardCategories,selectedCards,cardSentence} from './cards.js';
+import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js';
 import {validateFolders,folderEpisodes,folderMembership,restoreFolders,makeFolderCover} from './folders.js';
 const main=document.querySelector('#main'),modal=document.querySelector('#modal'),audio=document.querySelector('#audio');
 const LANG={en:'英语',fr:'法语',ja:'日语'},GOTHIC='"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif',MINCHO='"Hiragino Mincho ProN","Yu Mincho",serif',BASE=new URL('./',import.meta.url);
@@ -48,12 +49,13 @@ async function probe(blob){return new Promise(resolve=>{const a=document.createE
 async function episodeCollection(){
  const entries=await all('episodes');if(entries.some(e=>!Number.isFinite(e.order))){const ordered=orderedEpisodes(entries);await setEpisodeOrder(ordered.map(e=>e.id));ordered.forEach((e,i)=>e.order=i);return ordered;}return entries;
 }
-async function storeAudio(file,language,title,storageMode='external',quick=false){
+async function storeAudio(file,language,title,storageMode='copy',quick=false){
   if(!file?.size)throw Error('请选择一个非空音频文件。');
   if(file.size>350*1048576)throw Error('每段音频不能超过 350 MB。');
   const e={id:crypto.randomUUID(),title:title||file.name.replace(/\.[^.]+$/,''),filename:file.name,language,
     order:appendedOrder(await episodeCollection()),folder:file.webkitRelativePath?.split('/')[0]||'',storageMode,audio:storageMode==='copy'?file:null,audioBytes:file.size,mime:file.type,fingerprint:await fingerprint(file),
     duration:quick?0:await probe(file),created:Date.now(),segments:[],progress:0,bookmarks:[],collectionId:folders.some(f=>f.id===libraryFolder)?libraryFolder:''};
+  if(storageMode==='copy')return saveAudioCopy(e,file,e.fingerprint,{write,read,fingerprint});
   await write('episodes',e);if(storageMode==='external')originalFiles.set(e.id,file);return e;
 }
 async function attachTranscript(e,data){validateTranscript(data);if(e.duration&&data.segments.some(s=>s.end>e.duration+2))throw Error('时间轴超过音频长度，请选择对应的音频。');e.language=data.language;e.segments=data.segments.map(s=>prepareReadings({...s,words:lexicalWords(s,data.language)},data.language));e.duration=e.duration||data.duration||0;await write('episodes',e);if(episode?.id===e.id){episode=e;current=-1;wordCurrent=-1;}return e;}
@@ -90,8 +92,8 @@ function importAudio(folder=false){
     <label for="local-audio">从手机「文件」选择，可多选</label><input id="local-audio" type="file" multiple ${folder?'webkitdirectory':''} accept="audio/*,.mp3,.m4a,.wav,.ogg,.flac,.opus,.aac,.mp4,.webm">
     <label for="audio-title">名称（单个文件时可修改）</label><input id="audio-title" placeholder="使用原文件名">
     <label for="language">音频语言</label><select id="language">${Object.entries(LANG).map(([c,n])=>`<option value="${c}">${n}</option>`).join('')}</select>
-    <label for="audio-storage">保存方式</label><select id="audio-storage"><option value="external">直接读取原文件 · 不保存副本</option><option value="copy">保存到应用 · 离线随时播放</option></select>
-    <p class="note" id="storage-note">只保存逐字稿、词卡和进度。完全关闭后需再次选择原文件或文件夹。新增音频后再选择同一文件夹，只添加新文件，保留已有记录和顺序。文件夹选择需要 iOS 18.4 或更新版本。</p>
+    <label for="audio-storage">保存方式</label><select id="audio-storage"><option value="copy">保存音频副本 · 重开可直接播放</option><option value="external">直接读取原文件 · 不保存副本</option></select>
+    <p class="note" id="storage-note">音频副本保存在听页的私有本机存储，不在手机“文件”里显示，重开可直接播放。更新时复用未变的已有副本，只保存新音频或尚未保存的旧音频；逐字稿、词卡和顺序保留。</p>
     <p class="note" id="file-selection"></p><button class="primary full" id="save-audio">添加到播放器</button>`);
   $('#choose-files').classList.toggle('active',!folder);$('#choose-folder').classList.toggle('active',folder);
   for(const [id,folder] of [['#choose-files',false],['#choose-folder',true]])on(id,'click',()=>{
@@ -99,28 +101,47 @@ function importAudio(folder=false){
     $('#choose-files').classList.toggle('active',!folder);$('#choose-folder').classList.toggle('active',folder);$('#file-selection').textContent='';
   });
   on('#local-audio','change',()=>{const files=sortAudioFiles([...$('#local-audio').files]).filter(f=>/\.(mp3|m4a|wav|ogg|flac|opus|aac|mp4|webm)$/i.test(f.name));$('#file-selection').textContent=`已选择 ${files.length} 个音频`;$('#audio-title').value=files.length===1?files[0].name.replace(/\.[^.]+$/,''):'';});
-  on('#audio-storage','change',()=>$('#storage-note').textContent=$('#audio-storage').value==='copy'?'会在应用中保存一份音频，占用额外空间。':'不保存音频副本。完全关闭后需再次选择原文件或文件夹；旧词卡、逐字稿和进度保留。');
+  on('#audio-storage','change',()=>$('#storage-note').textContent=$('#audio-storage').value==='copy'?'会在听页中保存一份音频副本，占用额外空间，重开后不用再选原文件。列表里已有的音频也会保存，逐字稿、词卡、顺序和分组保留。':'不保存音频副本。完全关闭后需再次选择原文件或文件夹；旧词卡、逐字稿和进度保留。');
   on('#save-audio','click',async()=>{
-    const b=$('#save-audio');b.disabled=true;let added=0,linked=0,last=null;
+    const b=$('#save-audio');b.disabled=true;let added=0,linked=0,copied=0,reused=0,last=null;
     try{
       const files=sortAudioFiles([...$('#local-audio').files]).filter(f=>/\.(mp3|m4a|wav|ogg|flac|opus|aac|mp4|webm)$/i.test(f.name));
       if(!files.length)throw Error('请选择音频文件。');if(files.length>1000)throw Error('一次最多选择 1000 个音频。');
       const collection=await all('episodes'),mode=$('#audio-storage').value,language=$('#language').value,title=$('#audio-title').value.trim();
       for(const file of files){
-        b.textContent=`正在添加 ${added+linked+1} / ${files.length}`;
-        const hash=await fingerprint(file),match=await findAudioMatch(collection,file,hash,audioSize,e=>e.audio?fingerprint(e.audio):null),existing=match?.episode;if(match?.writeFingerprint){existing.fingerprint=match.hash;await write('episodes',existing);}
-        if(existing){if(!existing.folder&&file.webkitRelativePath){existing.folder=file.webkitRelativePath.split('/')[0];await write('episodes',existing);}if(existing.storageMode==='external')originalFiles.set(existing.id,file);last=existing;linked++;continue;}
+        b.textContent=`正在${mode==='copy'?'保存':'添加'} ${added+linked+copied+reused+1} / ${files.length}`;
+        const hash=await fingerprint(file),contentHash=mode==='copy'?await audioContentHash(file):null;
+        const match=await findAudioMatch(collection,file,hash,audioSize,e=>e.audio?fingerprint(e.audio):null,async e=>!contentHash||!e.audio||contentHash===(e.audioCopyHash||await audioContentHash(e.audio))),existing=match?.episode;if(match?.writeFingerprint){existing.fingerprint=match.hash;await write('episodes',existing);}
+        if(existing){
+          let updated=existing;if(!updated.folder&&file.webkitRelativePath)updated={...updated,folder:file.webkitRelativePath.split('/')[0]};
+          if(mode==='copy'){
+            if(canReuseAudioCopy(updated,file,contentHash)){if(updated!==existing)await write('episodes',updated);reused++;}
+            else {updated=await saveAudioCopy(updated,file,hash,{write,read,fingerprint});copied++;}
+            originalFiles.delete(updated.id);
+          }
+          else {if(updated!==existing)await write('episodes',updated);if(!updated.audio)originalFiles.set(updated.id,file);linked++;}
+          if(episode?.id===updated.id)episode=updated;
+          collection[collection.findIndex(e=>e.id===updated.id)]=updated;last=updated;continue;
+        }
         last=await storeAudio(file,language,files.length===1?title:null,mode,files.length>1);collection.push(last);added++;
       }
-      closeModal();await renderLibrary();toast(`添加 ${added} 段 · 重新连接 ${linked} 段`);
-      if(mode==='copy')await navigator.storage?.persist?.();if(files.length===1&&last)await openEpisode(last.id);
+      closeModal();await renderLibrary();toast(mode==='copy'?`${added+copied?`已保存 ${added+copied} 段音频副本`:'没有需要新增保存的音频'}${reused?` · 复用 ${reused} 段`:''}${copied?' · 原有学习记录保留':''}`:`添加 ${added} 段 · 重新连接 ${linked} 段`);
+      if(mode==='copy')try{await navigator.storage?.persist?.();}catch{}if(files.length===1&&last)await openEpisode(last.id);
     }catch(error){report(error);b.disabled=false;b.textContent='添加到播放器';}
   });
 }
 async function reconnectAudio(e=episode,resume){
   if(!e)return;
-  openModal('选择原音频',`<p class="note">${esc(e.filename)} · ${size(audioSize(e))}</p><input id="reconnect-file" type="file" accept="audio/*,.mp3,.m4a,.wav,.flac,.ogg,.opus,.aac,.mp4,.webm"><p class="note">原文件不会再次保存。也可在音频库重新选择整个文件夹，连接其中所有音频。</p><button class="primary full" id="reconnect-confirm">连接原文件</button>`);
-  on('#reconnect-confirm','click',async()=>{try{const file=$('#reconnect-file').files[0];if(!file)throw Error('请选择原音频。');if(file.size!==audioSize(e)||e.fingerprint&&await fingerprint(file)!==e.fingerprint)throw Error('这不是原来的音频，请重新选择。');originalFiles.set(e.id,file);closeModal();await openEpisode(e.id,resume?.start??e.progress);if(resume?.end!==undefined)playSentenceClip(resume);else if(resume)playFromSentence(resume.sentence);toast('原音频已连接');}catch(err){report(err);}});
+  openModal('选择原音频',`<p class="note">${esc(e.filename)} · ${size(audioSize(e))}</p><input id="reconnect-file" type="file" accept="audio/*,.mp3,.m4a,.wav,.flac,.ogg,.opus,.aac,.mp4,.webm"><p class="note">保存一份本机音频副本，重开后可直接播放；已有逐字稿、词卡和进度保留。也可在音频库更新整个文件夹。</p><button class="primary full" id="reconnect-confirm">保存并播放</button>`);
+  on('#reconnect-confirm','click',async()=>{const button=$('#reconnect-confirm');button.disabled=true;try{
+    const file=$('#reconnect-file').files[0];if(!file)throw Error('请选择原音频。');
+    const hash=await fingerprint(file);if(file.size!==audioSize(e)||e.fingerprint&&hash!==e.fingerprint)throw Error('这不是原来的音频，请重新选择。');
+    const latest=await read('episodes',e.id);if(!latest)throw Error('这段音频已被移除。');
+    const contentHash=await audioContentHash(file);if(latest.audio&&contentHash!==(latest.audioCopyHash||await audioContentHash(latest.audio)))throw Error('这不是原来的音频，请重新选择。');
+    if(!canReuseAudioCopy(latest,file,contentHash))await saveAudioCopy(latest,file,hash,{write,read,fingerprint});originalFiles.delete(e.id);
+    closeModal();await openEpisode(e.id,resume?.start??e.progress);if(resume?.end!==undefined)playSentenceClip(resume);else if(resume)playFromSentence(resume.sentence);toast('音频副本已保存，重开可直接播放');
+    try{await navigator.storage?.persist?.();}catch{}
+  }catch(err){report(err);button.disabled=false;}});
 }
 async function importScript(preselected){const episodes=await all('episodes');openModal('导入逐字稿',`<label for="script-file">电脑导出的逐字稿</label><input id="script-file" type="file" accept=".json,application/json"><label for="script-episode">对应的音频</label><select id="script-episode"><option value="new">同时选择一个新音频</option>${episodes.map(e=>`<option value="${e.id}" ${e.id===preselected?'selected':''}>${esc(e.title)}</option>`).join('')}</select><div id="script-new-audio" ${preselected?'hidden':''}><label for="script-audio">音频文件</label><input id="script-audio" type="file" accept="audio/*,.mp3,.m4a,.wav,.flac,.ogg"></div><p class="note">请选择同一段音频，确保文字与声音的位置对应。</p><button class="primary full" id="attach-script">导入到本机</button>`);on('#script-episode','change',()=>$('#script-new-audio').hidden=$('#script-episode').value!=='new');on('#attach-script','click',async()=>{const b=$('#attach-script');b.disabled=true;let created=null;try{const file=$('#script-file').files[0];if(!file)throw Error('请选择逐字稿文件。');if(file.size>30*1048576)throw Error('逐字稿文件过大。');const data=validateTranscript(JSON.parse(await file.text()));let e;if($('#script-episode').value==='new'){const f=$('#script-audio').files[0];if(!f)throw Error('请选择对应的音频。');if(data.audio?.bytes&&data.audio.bytes!==f.size)throw Error('音频大小与逐字稿记录不同，请重新选择。');e=await storeAudio(f,data.language,data.title);created=e.id;}else{e=await read('episodes',$('#script-episode').value);if(data.audio?.bytes&&data.audio.bytes!==audioSize(e))throw Error('音频大小与逐字稿记录不同，请重新选择。');}await attachTranscript(e,data);closeModal();await openEpisode(e.id);toast('逐字稿和时间轴已保存');}catch(error){if(created)await remove('episodes',created);report(error);b.disabled=false;}});}
 

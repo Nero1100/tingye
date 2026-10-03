@@ -17,10 +17,10 @@ export function nextEpisodeId(episodes,currentId,direction){
  const index=episodes.findIndex(e=>e.id===currentId);return index<0?null:episodes[index+direction]?.id||null;
 }
 export function sortAudioFiles(files){return [...files].sort((a,b)=>collator.compare(a.webkitRelativePath||a.name,b.webkitRelativePath||b.name));}
-export async function findAudioMatch(episodes,file,hash,sizeOf,hashOf){
+export async function findAudioMatch(episodes,file,hash,sizeOf,hashOf,sameContent=()=>true){
  for(const candidate of episodes.filter(e=>e.filename===file.name&&sizeOf(e)===file.size)){
   const oldHash=candidate.fingerprint||await hashOf(candidate);
-  if(oldHash===hash)return {episode:candidate,hash:oldHash,writeFingerprint:!candidate.fingerprint};
+  if(oldHash===hash&&await sameContent(candidate))return {episode:candidate,hash:oldHash,writeFingerprint:!candidate.fingerprint};
  }return null;
 }
 export function appendedOrder(episodes){return Math.max(episodes.length,...episodes.filter(e=>Number.isFinite(e.order)).map(e=>e.order+1));}
