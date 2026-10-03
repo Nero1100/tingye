@@ -1,7 +1,7 @@
 // Group old character-level timestamps into readable words without a network request.
 export function lexicalWords(segment, language) {
   const original = segment.words || [];
-  if (language !== 'ja' || original.some(w => w.lemma)) return original;
+  if (language !== 'ja' || original.some(w => w.lemma || w.readingEdited || w.rubyParts)) return original;
   if (!globalThis.Intl?.Segmenter) return original;
   const source = original.map(w => w.text).join('');
   const spans = []; let position = 0;

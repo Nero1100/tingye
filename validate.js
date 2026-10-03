@@ -21,7 +21,11 @@ export function validateTranscript(data) {
           (w.reading !== undefined && !text(w.reading, 512)) ||
           (w.lemma !== undefined && !text(w.lemma,512)) ||
           (w.pos !== undefined && !text(w.pos,100)) ||
-          (w.selectable !== undefined && typeof w.selectable!=='boolean'))
+          (w.selectable !== undefined && typeof w.selectable!=='boolean') ||
+          (w.readingEdited !== undefined && typeof w.readingEdited!=='boolean') ||
+          (w.rubyParts!==undefined&&(!Array.isArray(w.rubyParts)||w.rubyParts.length>512||
+            w.rubyParts.some(p=>!p||!text(p.text,512)||!text(p.reading,512))||
+            w.rubyParts.map(p=>p.text).join('')!==w.text)))
         throw Error('逐字稿包含无效的词语时间轴。');
       wordEnd = w.end;
     }
