@@ -1,10 +1,10 @@
 // One delegated gesture listener lets swipes start on words without also tapping them.
-export function bindReaderGestures(root,{onWord,onWordHold,onSwipe,onBrowse},delay=600){
+export function bindReaderGestures(root,{onWord,onWordHold,onJump,onSwipe,onBrowse},delay=600){
  let gesture=null,timer=null,suppress=false;
  const clear=()=>{clearTimeout(timer);timer=null;};
  root.addEventListener('pointerdown',event=>{
   if(event.isPrimary===false||event.button!==0){clear();gesture=null;suppress=true;return;}
-  if(event.target.closest('button,input,select,textarea'))return;
+  if(event.target.closest('button,input,select,textarea')&&!event.target.closest('[data-reader-jump]'))return;
   clear();suppress=false;
   gesture={id:event.pointerId,x:event.clientX,y:event.clientY,moved:false,held:false,word:event.target.closest('[data-word]')};
   if(gesture.word)timer=setTimeout(()=>{if(!gesture||gesture.moved)return;gesture.held=true;suppress=true;onWordHold(gesture.word);},delay);
@@ -26,6 +26,7 @@ export function bindReaderGestures(root,{onWord,onWordHold,onSwipe,onBrowse},del
  root.addEventListener('click',event=>{
   if(suppress){event.preventDefault();event.stopPropagation();suppress=false;return;}
   const word=event.target.closest('[data-word]');if(word){event.preventDefault();onWord(word);}
+  const jump=event.target.closest('[data-reader-jump]');if(jump){event.preventDefault();onJump?.(Number(jump.dataset.readerJump));}
  },true);
  root.addEventListener('contextmenu',event=>{
   const word=event.target.closest('[data-word]');if(!word)return;
