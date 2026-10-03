@@ -80,7 +80,7 @@ export function validateBackup(meta, payloadBytes) {
         !text(c.context,10000) || !text(c.note,5000) || !validTime(c.start) ||
         !validTime(c.end) || c.end<c.start || c.end>e.duration+2 ||
         !Number.isFinite(c.due) || !Number.isInteger(c.level) || c.level<0 || c.level>5 ||
-        (c.lemma!==undefined&&!text(c.lemma,512)))
+        (c.lemma!==undefined&&!text(c.lemma,512)) || (c.category!==undefined&&!text(c.category,60)))
       throw Error('备份中的词卡格式不正确。');
   }
   if (offset !== payloadBytes) throw Error('备份音频大小不匹配。');

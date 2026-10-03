@@ -1,5 +1,5 @@
-const CACHE='tingye-shell-2026.10.03.8';
-const ASSETS=['./','./index.html','./styles.css','./app.js','./client.js','./db.js','./validate.js','./lexicon.js','./practice.js','./theme.js','./furigana.js','./transcript-edit.js','./playlist.js','./segment-edit.js','./reader-gestures.js','./folders.js','./drag-order.js','./manifest.webmanifest','./icon.svg','./icons/icon-192.png','./icons/icon-512.png'];
+const CACHE='tingye-shell-2026.10.03.9';
+const ASSETS=['./','./index.html','./styles.css','./app.js','./client.js','./db.js','./validate.js','./lexicon.js','./practice.js','./theme.js','./furigana.js','./transcript-edit.js','./playlist.js','./segment-edit.js','./reader-gestures.js','./folders.js','./drag-order.js','./cards.js','./manifest.webmanifest','./icon.svg','./icons/icon-192.png','./icons/icon-512.png'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('tingye-shell-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()));});
 self.addEventListener('fetch',event=>{
