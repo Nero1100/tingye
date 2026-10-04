@@ -20,3 +20,7 @@ export function bindAudioEvents(audio,isCurrent,handlers){
  }
  return ()=>removers.forEach(remove=>remove());
 }
+export function restoreAudioPosition(audio,position){
+ // Let a new track begin naturally; a needless initial zero seek can interrupt startup.
+ if(position>0&&Math.abs(audio.currentTime-position)>.01)audio.currentTime=position;
+}

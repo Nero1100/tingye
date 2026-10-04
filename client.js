@@ -1,4 +1,4 @@
-import {all,read,write,remove,saveBatch,setEpisodeOrder} from './db.js';
+import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration} from './db.js?v=2026.10.03.16';
 import {validateTranscript,validatePreferences,validateBackup} from './validate.js';
 import {lexicalWords,dictionaryText} from './lexicon.js';
 import {Practice} from './practice.js';
@@ -10,11 +10,11 @@ import {orderedEpisodes,nextEpisodeId,sortAudioFiles,bindPress,appendedOrder,fin
 import {bindReaderGestures} from './reader-gestures.js';
 import {bindDragOrder,replaceSubsetOrder} from './drag-order.js';
 import {cardCategory,cardCategories,selectedCards,cardSentence} from './cards.js';
-import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.03.15';
-import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.03.15';
+import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.03.16';
+import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.03.16';
 import {validateFolders,folderEpisodes,folderMembership,restoreFolders,makeFolderCover} from './folders.js';
-import {releaseAudio,configureAudio,bindAudioEvents} from './audio-lifecycle.js?v=2026.10.03.15';
-import {ListPosition} from './list-position.js?v=2026.10.03.15';
+import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.03.16';
+import {ListPosition} from './list-position.js?v=2026.10.03.16';
 const main=document.querySelector('#main'),modal=document.querySelector('#modal');
 let audio=document.querySelector('#audio');
 const LANG={en:'英语',fr:'法语',ja:'日语'},GOTHIC='"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif',MINCHO='"Hiragino Mincho ProN","Yu Mincho",serif',BASE=new URL('./',import.meta.url);
@@ -169,7 +169,7 @@ async function openEpisode(id,initialPosition){
     await saveProgress();if(serial!==openSerial)return;audioGeneration++;cancelAnimationFrame(playbackFrame);const oldURL=objectURL;objectURL=null;releaseAudio(audio,URL.revokeObjectURL,oldURL);episode=e;if(mime)e.mime=mime;
     if(file){
       playbackMime=mime;objectURL=URL.createObjectURL(file.type===mime?file:new Blob([file],{type:mime}));const source=objectURL;
-      audio.onloadedmetadata=()=>{if(objectURL!==source||episode?.id!==id)return;const pos=resumePosition(initialPosition??e.progress??0,audio.duration,{explicit:Number.isFinite(initialPosition)});audio.currentTime=pos;if(!e.duration&&Number.isFinite(audio.duration)){e.duration=audio.duration;write('episodes',e).catch(report);if(view==='player'&&!immersive)renderPlayer();}updatePlayback();};
+      audio.onloadedmetadata=()=>{if(objectURL!==source||episode?.id!==id)return;const pos=resumePosition(initialPosition??e.progress??0,audio.duration,{explicit:Number.isFinite(initialPosition)});restoreAudioPosition(audio,pos);if(!e.duration&&Number.isFinite(audio.duration)){e.duration=audio.duration;saveDuration(e.id,e.duration).catch(report);if(view==='player'&&!immersive)renderPlayer();}updatePlayback();};
       audio.src=source;audio.load();configureAudio(audio,prefs.rate);
     }else{audio.onloadedmetadata=null;audio.removeAttribute('src');audio.load();}
     current=-1;wordCurrent=-1;
@@ -308,7 +308,7 @@ function recoverSound(){
  releaseAudio(old,URL.revokeObjectURL,oldURL);
  const fresh=document.createElement('audio');fresh.id='audio';fresh.preload='metadata';old.replaceWith(fresh);audio=fresh;practice.audio=fresh;connectAudioEvents();
  objectURL=URL.createObjectURL(mime&&file.type!==mime?new Blob([file],{type:mime}):file);const source=objectURL;
- fresh.onloadedmetadata=()=>{if(audio!==fresh||objectURL!==source)return;fresh.currentTime=resumePosition(position,fresh.duration,{explicit:true});current=-1;updatePlayback();};
+ fresh.onloadedmetadata=()=>{if(audio!==fresh||objectURL!==source)return;restoreAudioPosition(fresh,resumePosition(position,fresh.duration,{explicit:true}));current=-1;updatePlayback();};
  fresh.src=source;fresh.load();configureAudio(fresh,prefs.rate);
  // Call play synchronously from the recovery click to retain iPhone user activation.
  fresh.play().catch(reportPlayback);updatePlayback();toast('播放器已重新初始化');
