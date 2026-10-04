@@ -16,6 +16,37 @@ export function moveEpisode(ids,id,offset){
 export function nextEpisodeId(episodes,currentId,direction){
  const index=episodes.findIndex(e=>e.id===currentId);return index<0?null:episodes[index+direction]?.id||null;
 }
+// A shuffle cycle visits every track before starting another cycle. History
+// lets Previous retrace what was actually heard without changing saved order.
+export class ShuffleQueue{
+ constructor(random=Math.random){this.random=random;this.reset();}
+ reset(){this.scope='';this.remaining=[];this.history=[];this.cursor=-1;}
+ sync(ids,current){
+  const scope=JSON.stringify([...ids].sort());
+  if(scope!==this.scope){this.reset();this.scope=scope;this.remaining=ids.filter(id=>id!==current);}
+  if(ids.includes(current))this.select(current);
+ }
+ select(id){
+  if(!id||this.history[this.cursor]===id)return;
+  this.history.splice(this.cursor+1);this.history.push(id);this.cursor=this.history.length-1;
+  this.remaining=this.remaining.filter(candidate=>candidate!==id);
+ }
+ next(ids,current,direction=1){
+  if(!ids.length)return null;
+  this.sync(ids,current);
+  if(direction<0)return this.cursor>0?this.history[--this.cursor]:null;
+  if(this.cursor<this.history.length-1)return this.history[++this.cursor];
+  if(!this.remaining.length)this.remaining=ids.filter(id=>id!==current);
+  if(!this.remaining.length)return ids[0];
+  const index=Math.min(this.remaining.length-1,Math.floor(this.random()*this.remaining.length));
+  const [id]=this.remaining.splice(index,1);this.select(id);return id;
+ }
+}
+export function playbackTarget(episodes,currentId,{mode='sequence',direction=1,automatic=false,shuffle}={}){
+ if(automatic&&mode==='single')return episodes.some(e=>e.id===currentId)?currentId:null;
+ if(mode==='shuffle')return shuffle.next(episodes.map(e=>e.id),currentId,direction);
+ return nextEpisodeId(episodes,currentId,direction);
+}
 export function sortAudioFiles(files){return [...files].sort((a,b)=>collator.compare(a.webkitRelativePath||a.name,b.webkitRelativePath||b.name));}
 export async function findAudioMatch(episodes,file,hash,sizeOf,hashOf,sameContent=()=>true){
  for(const candidate of episodes.filter(e=>e.filename===file.name&&sizeOf(e)===file.size)){

@@ -44,6 +44,7 @@ export function validatePreferences(value) {
     appearance:['system','light','dark'].includes(p.appearance)?p.appearance:'system',
     palette:!p.designVersion&&(!p.palette||p.palette==='ocean')?'paper':['paper','ocean','sage','sand','lilac','rose','graphite'].includes(p.palette)?p.palette:'paper',designVersion:2,
     playlistSort:['manual','name','newest'].includes(p.playlistSort)?p.playlistSort:'manual',continuous:p.continuous!==false,
+    playbackMode:['sequence','shuffle','single'].includes(p.playbackMode)?p.playbackMode:'sequence',
     sourceSize:[1,1.15,1.3].includes(p.sourceSize)?p.sourceSize:1,translationSize:[1,1.15,1.3].includes(p.translationSize)?p.translationSize:1.15,
     immSize:Number.isFinite(p.immSize)?Math.min(1.6,Math.max(.8,p.immSize)):1,
     sourceColor:['ink','vermilion','pine','blue','ochre'].includes(p.sourceColor)?p.sourceColor:'ink',

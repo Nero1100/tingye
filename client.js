@@ -1,20 +1,21 @@
-import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration} from './db.js?v=2026.10.03.16';
-import {validateTranscript,validatePreferences,validateBackup} from './validate.js';
+import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration} from './db.js?v=2026.10.03.17';
+import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.03.17';
 import {lexicalWords,dictionaryText} from './lexicon.js';
 import {Practice} from './practice.js';
 import {palettes,applyTheme} from './theme.js';
 import {hasKanji,rubyParts,setRubyReading,prepareReadings} from './furigana.js';
 import {editedSentence,changedCards} from './transcript-edit.js';
 import {splitChoices,splitSentence,mergeSentences,resegmentCards} from './segment-edit.js';
-import {orderedEpisodes,nextEpisodeId,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js';
+import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.03.17';
+import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.03.17';
 import {bindReaderGestures} from './reader-gestures.js';
 import {bindDragOrder,replaceSubsetOrder} from './drag-order.js';
 import {cardCategory,cardCategories,selectedCards,cardSentence} from './cards.js';
-import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.03.16';
-import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.03.16';
+import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.03.17';
+import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.03.17';
 import {validateFolders,folderEpisodes,folderMembership,restoreFolders,makeFolderCover} from './folders.js';
-import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.03.16';
-import {ListPosition} from './list-position.js?v=2026.10.03.16';
+import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.03.17';
+import {ListPosition} from './list-position.js?v=2026.10.03.17';
 const main=document.querySelector('#main'),modal=document.querySelector('#modal');
 let audio=document.querySelector('#audio');
 const LANG={en:'英语',fr:'法语',ja:'日语'},GOTHIC='"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif',MINCHO='"Hiragino Mincho ProN","Yu Mincho",serif',BASE=new URL('./',import.meta.url);
@@ -22,12 +23,13 @@ let prefs=validatePreferences((await read('settings','preferences'))?.value);
 let episode=null,objectURL=null,view='library',filter='',current=-1,wordCurrent=-1,immersive=false,follow=true,clipEnd=null,toastTimer,backend=false,jobTimer,modalSerial=0,revealed=false,modalCanClose=null,backendVersion=0,immListening=false;
 const originalFiles=new Map();
 let openSerial=0,audioUnbind=()=>{},audioGeneration=0,playbackMime='';
-const libraryPositions=new ListPosition();
+const libraryPositions=new ListPosition(),shuffleQueue=new ShuffleQueue();
+let playlistSheet=null;
 function rememberLibrary(){libraryPositions.remember(main,main.dataset.libraryPositionKey);}
 function reportPlayback(error){const message=playbackError(error,audio.error);if(message)toast(message);}
 let folders=validateFolders((await read('settings','audio-folders'))?.value||[]),libraryFolder='',playlistFolder=(await read('settings','playlist-scope'))?.value||'',browseIndex=null,cardCategoryFilter='',cardFolderFilter='';
 if(!folders.some(f=>f.id===playlistFolder))playlistFolder='';
-async function choosePlaylistFolder(id){playlistFolder=folders.some(f=>f.id===id)?id:'';await write('settings',{id:'playlist-scope',value:playlistFolder});}
+async function choosePlaylistFolder(id){playlistFolder=folders.some(f=>f.id===id)?id:'';shuffleQueue.reset();await write('settings',{id:'playlist-scope',value:playlistFolder});}
 const folderName=e=>folders.find(f=>f.id===e.collectionId)?.name||e.folder||LANG[e.language];
 const folderCover=f=>f?.cover?`<img src="${esc(f.cover)}" alt="" loading="lazy">`:'<span aria-hidden="true">♫</span>';
 function playlistItems(collection){return folderEpisodes(orderedEpisodes(collection,prefs.playlistSort),playlistFolder);}
@@ -47,9 +49,9 @@ function report(e){toast(e?.name==='QuotaExceededError'?'设备空间不足，�
 function applyPrefs(){document.documentElement.style.setProperty('--source-scale',prefs.sourceSize);document.documentElement.style.setProperty('--translation-scale',prefs.translationSize);document.documentElement.style.setProperty('--imm-scale',prefs.immSize);const colors={ink:['var(--text)','var(--text)'],vermilion:['#9b4626','#efad91'],pine:['#42613a','#b0d09e'],blue:['#2e5b70','#a2cce0'],ochre:['#805d17','#e7ca87']};document.documentElement.style.setProperty('--jp-font',prefs.font==='mincho'?MINCHO:GOTHIC);document.documentElement.style.setProperty('--imm-font',prefs.immFont==='gothic'?GOTHIC:MINCHO);document.body.classList.toggle('hide-ruby',!prefs.reading);document.body.classList.toggle('hide-translations',!prefs.translation);document.querySelectorAll('.translation').forEach(el=>el.hidden=!prefs.translation);audio.playbackRate=Number(prefs.rate)||1;applyTheme(prefs);for(const [key,choice] of [['source-color',prefs.sourceColor],['translation-color',prefs.translationColor]])document.documentElement.style.setProperty('--'+key,colors[choice][document.documentElement.dataset.theme==='dark'?1:0]);}
 async function savePrefs(){await write('settings',{id:'preferences',value:prefs});applyPrefs();}
 function resetClip(){cancelPractice();if(clipEnd!==null)audio.pause();clipEnd=null;}
-function closeModal(){if(modalCanClose&&!modalCanClose())return;modalCanClose=null;modal.classList.remove('transcript-editor');if(immersive){main.inert=true;if($('.immersive-mode'))$('.immersive-mode').inert=false;}resetClip();modalSerial++;modal.close();clearInterval(jobTimer);jobTimer=null;}
-function openModal(title,body){modalCanClose=null;modal.classList.remove('transcript-editor');if(immersive&&$('.immersive-mode'))$('.immersive-mode').inert=true;resetClip();modalSerial++;clearInterval(jobTimer);jobTimer=null;modal.innerHTML=`<div class="dialog-head"><h2>${esc(title)}</h2><button id="close-modal" aria-label="关闭">×</button></div>${body}`;if(!modal.open)modal.showModal();on('#close-modal','click',closeModal);}
-modal.addEventListener('cancel',event=>{if(modalCanClose&&!modalCanClose()){event.preventDefault();return;}modalCanClose=null;modal.classList.remove('transcript-editor');if(immersive)main.inert=true;if(immersive&&$('.immersive-mode'))$('.immersive-mode').inert=false;resetClip();modalSerial++;clearInterval(jobTimer);jobTimer=null;});
+function closeModal(){if(modalCanClose&&!modalCanClose())return;playlistSheet?.dispose();playlistSheet=null;modalCanClose=null;modal.classList.remove('transcript-editor');if(immersive){main.inert=true;if($('.immersive-mode'))$('.immersive-mode').inert=false;}resetClip();modalSerial++;modal.close();clearInterval(jobTimer);jobTimer=null;}
+function openModal(title,body){playlistSheet?.dispose();playlistSheet=null;modalCanClose=null;modal.classList.remove('transcript-editor');if(immersive&&$('.immersive-mode'))$('.immersive-mode').inert=true;resetClip();modalSerial++;clearInterval(jobTimer);jobTimer=null;modal.innerHTML=`<div class="dialog-head"><h2>${esc(title)}</h2><button id="close-modal" aria-label="关闭">×</button></div>${body}`;if(!modal.open)modal.showModal();on('#close-modal','click',()=>{if(playlistSheet)playlistSheet.dismiss();else closeModal();});}
+modal.addEventListener('cancel',event=>{if(playlistSheet){event.preventDefault();return;}if(modalCanClose&&!modalCanClose()){event.preventDefault();return;}modalCanClose=null;modal.classList.remove('transcript-editor');if(immersive)main.inert=true;if(immersive&&$('.immersive-mode'))$('.immersive-mode').inert=false;resetClip();modalSerial++;clearInterval(jobTimer);jobTimer=null;});
 function setNav(){document.body.classList.toggle('player-open',view==='player');document.querySelectorAll('[data-nav]').forEach(b=>b.classList.toggle('active',b.dataset.nav===view));}
 function download(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
 function exportTranscript(e){download(new Blob([JSON.stringify({format:'tingye-transcript-v1',version:1,title:e.title,language:e.language,duration:e.duration,audio:{filename:e.filename,bytes:audioSize(e)},segments:e.segments||[]},null,2)],{type:'application/json'}),`${e.title}.tingye.json`);}
@@ -186,12 +188,26 @@ function wordsHTML(s,index){
 const icon=(name)=>{const paths={prev:'M18 5 8 12l10 7M5 5v14',next:'m6 5 10 7-10 7M19 5v14',list:'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01',sliders:'M4 7h16M4 17h16M8 4v6M16 14v6',repeat:'M5 7h13l-3-3m3 3-3 3M19 17H6l3 3m-3-3 3-3'};return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${paths[name]}" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>`;};
 function transportHTML(){return `<div class="transport"><button data-action="speed" aria-label="播放速度"><strong>${prefs.rate}×</strong>${immersive?'':'<small>倍速</small>'}</button><button data-action="prev" aria-label="${episode.segments?.length?'上一句':'后退 10 秒'}" title="长按切换上一集">${icon('prev')}${immersive?'':'<small>上一句</small>'}</button><button class="play" data-action="play" aria-label="${audio.paused&&!practice.waiting?'播放':'暂停'}">${audio.paused&&!practice.waiting?'▶':'Ⅱ'}</button><button data-action="next" aria-label="${episode.segments?.length?'下一句':'前进 10 秒'}" title="长按切换下一集">${icon('next')}${immersive?'':'<small>下一句</small>'}</button><button data-action="playlist" aria-label="播放列表">${icon('list')}${immersive?'':'<small>播放列表</small>'}</button></div>${immersive?`<div class="imm-switches"><button data-action="translation" class="${prefs.translation?'selected':''}">译文</button><button data-action="reading" class="${prefs.reading?'selected':''}">读音</button><button data-action="loop" class="${prefs.loop?'selected':''}">循环</button><button data-action="practice-settings" aria-label="精听设置">${icon('sliders')}</button></div><div class="practice-status" id="practice-status"></div>`:''}`;}
 function stepSentence(direction){if(episode.segments?.length)jump(direction<0?Math.max(0,(browseIndex??current)-1):Math.min(episode.segments.length-1,(browseIndex??current)+1),true);else if(audioFile(episode)){cancelPractice();audio.currentTime=Math.max(0,Math.min(episode.duration,audio.currentTime+direction*10));updatePlayback();}}
-async function playEpisode(id){if(modalCanClose&&!modalCanClose())return;modalCanClose=null;const wasImmersive=immersive;if(immersive)toggleImmersive();closeModal();await openEpisode(id,0);if(episode?.id!==id)return;if(wasImmersive&&episode.segments?.length)toggleImmersive();if(audioFile(episode))await togglePlay();else toast('请重新选择原文件或文件夹以播放这一集');}
-async function switchEpisode(direction,automatic=false){const items=playlistItems(await episodeCollection()),id=nextEpisodeId(items,episode?.id,direction);if(!id){if(!automatic)toast(direction>0?'已经是最后一集':'已经是第一集');return;}await playEpisode(id);}
+async function playEpisode(id){if(modalCanClose&&!modalCanClose())return;modalCanClose=null;const wasImmersive=immersive;if(immersive)toggleImmersive();closeModal();await openEpisode(id,0);if(episode?.id!==id)return;if(prefs.playbackMode==='shuffle')shuffleQueue.select(id);if(wasImmersive&&episode.segments?.length)toggleImmersive();if(audioFile(episode))await togglePlay();else toast('请重新选择原文件或文件夹以播放这一集');}
+async function switchEpisode(direction,automatic=false){
+ const items=playlistItems(await episodeCollection()),id=playbackTarget(items,episode?.id,{mode:prefs.playbackMode,direction,automatic,shuffle:shuffleQueue});
+ if(!id){if(!automatic)toast(direction>0?'已经是最后一集':prefs.playbackMode==='shuffle'?'没有更早的播放记录':'已经是第一集');return;}
+ if(automatic&&id===episode?.id){resetClip();audio.currentTime=0;current=-1;updatePlayback();await audio.play().catch(reportPlayback);return;}
+ await playEpisode(id);
+}
 async function saveDraggedOrder(ids,before){const collection=orderedEpisodes(await episodeCollection(),prefs.playlistSort),order=replaceSubsetOrder(collection.map(e=>e.id),before,ids);await setEpisodeOrder(order);prefs.playlistSort='manual';await savePrefs();toast('播放顺序已保存');}
 async function showPlaylist(editing=false){
  const collection=orderedEpisodes(await episodeCollection(),prefs.playlistSort),items=folderEpisodes(collection,playlistFolder);
- openModal('播放列表',`<label class="sr-only" for="playlist-folder">播放范围</label><select id="playlist-folder" aria-label="播放范围"><option value="">全部音频</option>${folders.map(f=>`<option value="${esc(f.id)}" ${playlistFolder===f.id?'selected':''}>${esc(f.name)}</option>`).join('')}</select><div class="playlist-options"><label class="checkbox-line"><input id="playlist-continuous" type="checkbox" ${prefs.continuous?'checked':''}>按列表连续播放</label><button id="playlist-edit" class="secondary">${editing?'完成排序':'调整顺序'}</button></div><div class="playlist-rows">${items.map((e,i)=>`<div class="playlist-row ${episode?.id===e.id?'playing':''}" data-sort-row="${e.id}"><button class="playlist-track" data-play-track="${e.id}"><small>${i+1}</small><span>${esc(e.title)}<small>${esc(folderName(e))} · ${e.duration?time(e.duration):'音频'}</small></span></button>${editing?`<div class="playlist-moves"><button class="drag-handle" data-drag-id="${e.id}" aria-label="拖动排序 ${esc(e.title)}" aria-pressed="false">≡</button></div>`:''}</div>`).join('')}</div>`);
+ openModal('播放列表',`<label class="sr-only" for="playlist-folder">播放范围</label><select id="playlist-folder" aria-label="播放范围"><option value="">全部音频</option>${folders.map(f=>`<option value="${esc(f.id)}" ${playlistFolder===f.id?'selected':''}>${esc(f.name)}</option>`).join('')}</select><div class="playlist-modes" role="group" aria-label="播放模式">${[['sequence','顺序播放'],['shuffle','随机播放'],['single','单集循环']].map(([mode,label])=>`<button data-playback-mode="${mode}" aria-pressed="${prefs.playbackMode===mode}" class="${prefs.playbackMode===mode?'selected':''}">${label}</button>`).join('')}</div><div class="playlist-options"><label class="checkbox-line"><input id="playlist-continuous" type="checkbox" ${prefs.continuous?'checked':''}>播完继续</label><button id="playlist-edit" class="secondary">${editing?'完成排序':'调整顺序'}</button></div><div class="playlist-rows">${items.map((e,i)=>`<div class="playlist-row ${episode?.id===e.id?'playing':''}" data-sort-row="${e.id}"><button class="playlist-track" data-play-track="${e.id}"><small>${i+1}</small><span>${esc(e.title)}<small>${esc(folderName(e))} · ${e.duration?time(e.duration):'音频'}</small></span></button>${editing?`<div class="playlist-moves"><button class="drag-handle" data-drag-id="${e.id}" aria-label="拖动排序 ${esc(e.title)}" aria-pressed="false">≡</button></div>`:''}</div>`).join('')}</div>`);
+ modal.classList.add('playlist-sheet');
+ $('.dialog-head').insertAdjacentHTML('beforebegin','<button class="sheet-grip" aria-label="向下滑动收起播放列表"><span></span></button>');
+ playlistSheet=bindPlaylistSheet(modal,closeModal);
+ modal.querySelectorAll('[data-playback-mode]').forEach(b=>b.onclick=async()=>{
+  if(prefs.playbackMode!==b.dataset.playbackMode)shuffleQueue.reset();
+  prefs.playbackMode=b.dataset.playbackMode;prefs.continuous=true;
+  modal.querySelectorAll('[data-playback-mode]').forEach(el=>{const active=el.dataset.playbackMode===prefs.playbackMode;el.classList.toggle('selected',active);el.setAttribute('aria-pressed',String(active));});
+  $('#playlist-continuous').checked=true;await savePrefs();
+ });
  if(editing)bindDragOrder($('.playlist-rows'),{onDrop:async(ids,before)=>{const top=$('.playlist-rows').scrollTop;await saveDraggedOrder(ids,before);await showPlaylist(true);$('.playlist-rows').scrollTop=top;if(view==='library')await renderLibrary();},onError:async error=>{report(error);await showPlaylist(true);}});
  on('#playlist-folder','change',async e=>{await choosePlaylistFolder(e.target.value);showPlaylist(editing);});
  on('#playlist-continuous','change',async e=>{prefs.continuous=e.target.checked;await savePrefs();});on('#playlist-edit','click',()=>showPlaylist(!editing));
