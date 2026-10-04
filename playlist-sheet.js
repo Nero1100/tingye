@@ -1,4 +1,4 @@
-// Only the playlist uses sheet gestures; other dialogs keep their edit guards.
+// Playback lists, word cards and automatic-save practice settings share sheet gestures.
 export function bindPlaylistSheet(dialog,close){
  const controller=new AbortController(),options={signal:controller.signal};
  const handle=dialog.querySelector('.sheet-grip'),rows=dialog.querySelector('.playlist-rows');
@@ -34,7 +34,7 @@ export function bindPlaylistSheet(dialog,close){
  // At the top of the list, a downward touch pulls the sheet. Scrolling and
  // the independent reorder handles otherwise keep their normal gestures.
  rows.addEventListener('touchstart',e=>{
-  if(e.touches.length!==1||rows.scrollTop>0||e.target.closest('.drag-handle'))return;
+  if(e.touches.length!==1||rows.scrollTop>0||e.target.closest('.drag-handle,input,select,textarea,button'))return;
   const t=e.touches[0];begin(t.clientX,t.clientY);
  },{...options,passive:true});
  rows.addEventListener('touchmove',e=>{
