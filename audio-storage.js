@@ -1,3 +1,4 @@
+import {audioMime} from './audio-media.js?v=2026.10.03.14';
 const hex=buffer=>[...new Uint8Array(buffer)].map(value=>value.toString(16).padStart(2,'0')).join('');
 export async function audioContentHash(blob){return hex(await crypto.subtle.digest('SHA-256',await blob.arrayBuffer()));}
 export function canReuseAudioCopy(episode,file,contentHash){
@@ -9,8 +10,9 @@ export async function withAudioCopy(episode,file,hash=episode.fingerprint){
  if(file.size>350*1048576)throw Error('每段音频不能超过 350 MB。');
  const expected=episode.audio?.size||episode.audioBytes||0;
  if(expected&&file.size!==expected||episode.fingerprint&&hash!==episode.fingerprint)throw Error('这不是原来的音频，请重新选择。');
- const mime=file.type||episode.mime||'audio/mpeg';
- const bytes=await file.arrayBuffer(),audio=new Blob([bytes],{type:mime});
+ const bytes=await file.arrayBuffer(),raw=new Blob([bytes]);
+ const mime=await audioMime(raw,file.name||episode.filename)||file.type||episode.mime||'';
+ const audio=new Blob([raw],{type:mime});
  if(audio.size!==file.size)throw Error('音频未完整读取，请重新选择。');
  const audioCopyHash=hex(await crypto.subtle.digest('SHA-256',bytes));
  return {...episode,storageMode:'copy',audio,audioBytes:audio.size,mime,audioCopyVersion:1,audioCopyHash,...(hash?{fingerprint:hash}:{})};
