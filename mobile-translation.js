@@ -7,8 +7,8 @@ export const TRANSLATION_MODELS={
  en:{id:'Xenova/opus-mt-en-zh',revision:'046f55aec303cdee3e0318604406d4df20f1e8ea'}
 };
 export const LANGUAGE_CODES={en:'eng_Latn',fr:'fra_Latn',ja:'jpn_Jpan'};
-import {prepareInWorker,downloadStatus,clearDownloads} from './model-download.js?v=2026.10.04.05';
-export function prepareTranslationModel(document,onProgress=()=>{},engine='light'){return prepareInWorker(new URL('./mobile-translation-worker.js?v=2026.10.04.05',import.meta.url),{language:document.language,engine},onProgress);}
+import {prepareInWorker,downloadStatus,clearDownloads} from './model-download.js?v=2026.10.04.06';
+export function prepareTranslationModel(document,onProgress=()=>{},engine='light'){return prepareInWorker(new URL('./mobile-translation-worker.js?v=2026.10.04.06',import.meta.url),{language:document.language,engine},onProgress);}
 export function translationTargets(document,{scope='pending',index=0,overwrite=false}={}){
  if(!LANGUAGE_CODES[document.language])throw Error('目前支持英语、法语和日语译成中文。');
  return document.segments.flatMap((s,i)=>{
@@ -39,7 +39,7 @@ export function runLocalTranslation(document,indices,onProgress=()=>{},engine='l
   const fail=message=>{if(finished)return;finished=true;stop();reject(Error(message));};
   const watchdog=()=>{clearTimeout(timer);timer=setTimeout(()=>fail('翻译长时间没有响应，原稿已保留。请保持听页在前台，先试译一句。'),15*60*1000);};
   try{
-   worker=new Worker(new URL('./mobile-translation-worker.js?v=2026.10.04.05',import.meta.url),{type:'module'});
+   worker=new Worker(new URL('./mobile-translation-worker.js?v=2026.10.04.06',import.meta.url),{type:'module'});
    worker.onmessage=({data})=>{
     if(finished)return;watchdog();
     if(data.type==='progress')onProgress(data);

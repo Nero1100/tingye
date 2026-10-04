@@ -1,11 +1,12 @@
-import {editedSentence} from './transcript-edit.js?v=2026.10.04.05';
-import {suggestSentences} from './sentence-boundaries.js?v=2026.10.04.05';
+import {speechTimeline} from './asr-timeline.js?v=2026.10.04.06';
+import {editedSentence} from './transcript-edit.js?v=2026.10.04.06';
+import {suggestSentences} from './sentence-boundaries.js?v=2026.10.04.06';
 export const SPEECH_CACHE='tingye-local-japanese-speech-v1';
-import {MODEL_FILES} from './model-manifests.js?v=2026.10.04.05';
-import {prepareInWorker,clearDownloads} from './model-download.js?v=2026.10.04.05';
+import {MODEL_FILES} from './model-manifests.js?v=2026.10.04.06';
+import {prepareInWorker,clearDownloads} from './model-download.js?v=2026.10.04.06';
 export const JAPANESE_MODEL=MODEL_FILES.speechBalanced;
 export const JAPANESE_MODELS={light:MODEL_FILES.speech,balanced:MODEL_FILES.speechBalanced};
-export function prepareJapaneseModel(onProgress=()=>{},mode='balanced'){return prepareInWorker(new URL('./mobile-transcription-worker.js?v=2026.10.04.05',import.meta.url),{mode},onProgress);}
+export function prepareJapaneseModel(onProgress=()=>{},mode='balanced'){return prepareInWorker(new URL('./mobile-transcription-worker.js?v=2026.10.04.06',import.meta.url),{mode},onProgress);}
 export async function clearSpeechModels(){await clearDownloads(SPEECH_CACHE);await caches.delete(SPEECH_CACHE);}
 export function japaneseTrialAllowed(episode){
  if(episode.language!=='ja')throw Error('手机转写试用目前只支持日语。');
@@ -17,17 +18,11 @@ export function audioActivityEnd(samples){
  return bins.filter(b=>b.rms>Math.max(.008,loudest*.08)).at(-1)?.end||0;
 }
 export function japaneseResultSegments(result,duration,activityEnd=0){
- if(!result?.text?.trim()||!Array.isArray(result.chunks)||!result.chunks.length)throw Error('没有识别出带时间轴的日语，请检查音频。');
- let previous=0;
- const segments=result.chunks.flatMap((chunk,i)=>{
-  const text=chunk.text?.trim();if(!text)return [];
-  if(!Array.isArray(chunk.timestamp))throw Error('识别结果缺少时间轴，原稿保留。');
-  const start=chunk.timestamp[0],end=chunk.timestamp[1]??(i===result.chunks.length-1?duration:null);
-  if(!Number.isFinite(start)||!Number.isFinite(end)||start<previous-.15||end<start||start>duration||end>duration+1)throw Error('识别时间轴不完整，原稿保留。');
-  previous=end;return [editedSentence({id:i,start:Math.max(0,start),end:Math.min(duration,end),text,translation:'',words:[],translationPending:true,segmentTimingEstimated:chunk.timestamp[1]===null},text,'','ja')];
- });
- if(!segments.length)throw Error('没有识别到有效句子。');
- if(activityEnd-segments.at(-1).end>Math.max(2,duration*.15))throw Error('识别时间轴未覆盖后面的声音，可能漏识别。原稿保留，请换更短的音频测试。');
+ const timeline=speechTimeline(result,duration);
+ const segments=timeline.map((chunk,id)=>editedSentence({...chunk,id,translation:'',words:[],translationPending:true},chunk.text,'','ja'));
+ if(activityEnd-segments.at(-1).end>Math.max(2,duration*.15)){
+  for(const s of segments)s.transcriptionWarning='后半段声音可能未完整识别。已保留识别文字，请试听核对；原稿尚未替换。';
+ }
  // Segment timestamps come from ASR; word positions and additional punctuation
  // boundaries are estimated and remain explicitly editable in the phone editor.
  return suggestSentences(segments,'ja').map((s,id)=>({...s,id,translation:'',translationEdited:false,translationPending:true,transcriptionEngine:result.model===MODEL_FILES.speechBalanced.id?'local-whisper-small':'local-whisper-base',wordTimingEstimated:true}));
@@ -53,7 +48,7 @@ export function runJapaneseTranscription(samples,onProgress=()=>{},mode='balance
   rejectTask=reject;const fail=message=>{if(finished)return;finished=true;stop();reject(Error(message));};
   const watchdog=()=>{clearTimeout(timer);timer=setTimeout(()=>fail('转写长时间没有响应，原稿保留。请保持听页在前台，使用更短的音频测试。'),15*60*1000);};
   try{
-   worker=new Worker(new URL('./mobile-transcription-worker.js?v=2026.10.04.05',import.meta.url),{type:'module'});
+   worker=new Worker(new URL('./mobile-transcription-worker.js?v=2026.10.04.06',import.meta.url),{type:'module'});
    worker.onmessage=({data})=>{if(finished)return;watchdog();if(data.type==='progress')onProgress(data);else if(data.type==='done'){finished=true;stop();resolve(data.result);}else if(data.type==='error')fail(data.message);};
    worker.onerror=()=>fail('本机转写未能运行，原稿保留。请检查下载或换更短的音频。');watchdog();worker.postMessage({language:'ja',samples,mode},[samples.buffer]);
   }catch(error){fail(error.message);}

@@ -1,6 +1,6 @@
-import {MODEL_CACHE,DIRECT_MODEL,TRANSLATION_MODELS,LANGUAGE_CODES} from './mobile-translation.js?v=2026.10.04.05';
-import {MODEL_FILES} from './model-manifests.js?v=2026.10.04.05';
-import {isIOSDevice} from './model-download.js?v=2026.10.04.05';
+import {MODEL_CACHE,DIRECT_MODEL,TRANSLATION_MODELS,LANGUAGE_CODES} from './mobile-translation.js?v=2026.10.04.06';
+import {MODEL_FILES} from './model-manifests.js?v=2026.10.04.06';
+import {isIOSDevice} from './model-download.js?v=2026.10.04.06';
 const progress=message=>self.postMessage({type:'progress',...message});
 let started=false;
 self.onmessage=async({data})=>{
@@ -8,7 +8,7 @@ self.onmessage=async({data})=>{
  try{
   if(data.engine==='direct'&&isIOSDevice())throw Error('手机请使用轻量翻译，大模型请在电脑上使用。');
   const entries=data.engine==='direct'?null:[...(data.language==='en'?[]:MODEL_FILES[data.language]?.files||[]),...MODEL_FILES.en.files];
-  const {configureLocalRuntime,preparePublicModels}=await import('./mobile-runtime.js?v=2026.10.04.05');
+  const {configureLocalRuntime,preparePublicModels}=await import('./mobile-runtime.js?v=2026.10.04.06');
   if(data.action==='prepare'){
    if(!LANGUAGE_CODES[data.language])throw Error('不支持这种语言。');
    if(entries)await preparePublicModels(MODEL_CACHE,entries,progress);self.postMessage({type:'done'});return;

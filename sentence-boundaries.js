@@ -1,5 +1,5 @@
-import {editedSentence} from './transcript-edit.js?v=2026.10.04.05';
-import {splitSentence} from './segment-edit.js?v=2026.10.04.05';
+import {editedSentence} from './transcript-edit.js?v=2026.10.04.06';
+import {splitSentence} from './segment-edit.js?v=2026.10.04.06';
 const closers='"\'”’」』）)»';
 const abbreviations=new Set(['mr.','mrs.','ms.','dr.','prof.','sr.','jr.','st.','vs.','etc.','e.g.','i.e.','m.','mme.','mlle.','p.ex.']);
 function endsSentence(text){

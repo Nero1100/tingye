@@ -22,3 +22,5 @@ export class Practice {
     },prefs.gap*1000);
   }
 }
+
+export function practiceOptions(prefs){return prefs.sentenceLoop?{...prefs,repeats:0,gap:0,pause:false}:prefs;}

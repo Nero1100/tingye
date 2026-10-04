@@ -1,4 +1,4 @@
-import {validatePlaybackLists} from './playback-list.js?v=2026.10.04.05';
+import {validatePlaybackLists} from './playback-list.js?v=2026.10.04.06';
 import {validateFolders} from './folders.js';
 const languages = ['en', 'fr', 'ja'];
 const validTime = n => Number.isFinite(n) && n >= 0 && n <= 86400;
@@ -38,7 +38,7 @@ export function validatePreferences(value) {
   const p = value || {};
   return {font:p.font==='mincho'?'mincho':'gothic',immFont:p.immFont==='gothic'?'gothic':'mincho',
     reading:p.reading!==false,translation:p.translation!==false,
-    rate:[.6,.75,1,1.25,1.5,2].includes(p.rate)?p.rate:1,loop:p.loop===true,pause:p.pause===true,
+    rate:[.6,.75,1,1.25,1.5,2].includes(p.rate)?p.rate:1,loop:p.loop===true&&p.sentenceLoop!==true,sentenceLoop:p.sentenceLoop===true,pause:p.pause===true,
     repeats:[0,1,2,3,5,10].includes(p.repeats)?p.repeats:3,
     gap:[0,.5,1,2,3,5,10].includes(p.gap)?p.gap:2,
     mask:['none','source','translation','both'].includes(p.mask)?p.mask:'none',listeningMask:p.listeningMask===true,
