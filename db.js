@@ -25,3 +25,27 @@ export function setEpisodeOrder(ids){return new Promise((resolve,reject)=>{
  ids.forEach((id,order)=>{const request=store.get(id);request.onsuccess=()=>{if(request.result)store.put({...request.result,order});};});
  t.oncomplete=resolve;t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error);
 });}
+// Delete only selected audio bytes, atomically, using the latest learning records.
+export function deleteAudioCopies(items,{removeRecords=false}={}){return new Promise((resolve,reject)=>{
+ const selected=new Map(items.map(e=>[e.id,e]));
+ if(!selected.size){resolve({ids:[],bytes:0,count:0,removeRecords});return;}
+ const t=db.transaction(removeRecords?['episodes','cards','settings','progress']:['episodes'],'readwrite'),store=t.objectStore('episodes');let failure,bytes=0;
+ for(const [id,expected] of selected){
+  const request=store.get(id);request.onsuccess=()=>{
+   if(failure)return;
+   try{
+    const e=request.result;
+    if(!e?.audio?.size||e.audio.size!==expected.bytes||(e.audioCopyHash||'')!==expected.hash||(e.fingerprint||'')!==expected.fingerprint)throw Error('音频副本已经发生变化，请返回列表重新选择。');
+    bytes+=e.audio.size;
+    if(removeRecords){store.delete(id);t.objectStore('progress').delete(id);t.objectStore('settings').delete(durationKey(id));}
+    else{const next={...e,audio:null,storageMode:'external',audioBytes:e.audio.size};delete next.audioCopyHash;delete next.audioCopyVersion;store.put(next);}
+   }catch(error){failure=error;t.abort();}
+  };
+ }
+ if(removeRecords){
+  const cards=t.objectStore('cards'),cursor=cards.openCursor();cursor.onsuccess=()=>{if(failure)return;const row=cursor.result;if(row){if(selected.has(row.value.episodeId))row.delete();row.continue();}};
+  const settings=t.objectStore('settings'),lists=settings.get('playback-lists');lists.onsuccess=()=>{if(failure||!lists.result)return;const record=lists.result;settings.put({...record,value:record.value.map(state=>({...state,ids:state.ids.filter(id=>!selected.has(id)),excluded:state.excluded.filter(id=>!selected.has(id))}))});};
+ }
+ t.oncomplete=()=>resolve({ids:[...selected.keys()],bytes,count:selected.size,removeRecords});
+ t.onerror=()=>reject(failure||t.error);t.onabort=()=>reject(failure||t.error||Error('删除未完成，原副本保留。'));
+});}
