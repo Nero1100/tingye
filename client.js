@@ -1,25 +1,26 @@
-import {planTranscriptImports,phoneInterface,transcriptExportName} from './transcript-batch.js?v=2026.10.04.12';
-import {clearModelDownloads,clearBrowserTranslation} from './browser-model-cleanup.js?v=2026.10.04.12';
-import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration,replaceEpisodeTranscripts} from './db.js?v=2026.10.04.12';
-import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.04.12';
+import {planTranscriptImports,phoneInterface,transcriptExportName} from './transcript-batch.js?v=2026.10.04.13';
+import {clearModelDownloads,clearBrowserTranslation} from './browser-model-cleanup.js?v=2026.10.04.13';
+import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration,replaceEpisodeTranscripts} from './db.js?v=2026.10.04.13';
+import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.04.13';
 import {lexicalWords,dictionaryText} from './lexicon.js';
-import {Practice,practiceOptions} from './practice.js?v=2026.10.04.12';
+import {Practice,practiceOptions} from './practice.js?v=2026.10.04.13';
 import {palettes,applyTheme} from './theme.js';
 import {hasKanji,rubyParts,setRubyReading,prepareReadings} from './furigana.js';
-import {editedSentence,changedCards,replacementTranscript} from './transcript-edit.js?v=2026.10.04.12';
-import {splitChoices,splitSentence,mergeSentences,resegmentCards} from './segment-edit.js?v=2026.10.04.12';
-import {boundaryWords,suggestSentences} from './sentence-boundaries.js?v=2026.10.04.12';
-import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.04.12';
-import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.04.12';
-import {validatePlaybackLists,reconcilePlaybackList,selectPlaybackEpisodes,reorderPlaybackList,restorePlaybackLists,includePlaybackEpisode} from './playback-list.js?v=2026.10.04.12';
-import {bindReaderGestures} from './reader-gestures.js?v=2026.10.04.12';
+import {editedSentence,changedCards,replacementTranscript} from './transcript-edit.js?v=2026.10.04.13';
+import {splitChoices,splitSentence,mergeSentences,resegmentCards} from './segment-edit.js?v=2026.10.04.13';
+import {boundaryWords,suggestSentences} from './sentence-boundaries.js?v=2026.10.04.13';
+import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.04.13';
+import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.04.13';
+import {validatePlaybackLists,reconcilePlaybackList,selectPlaybackEpisodes,reorderPlaybackList,restorePlaybackLists,includePlaybackEpisode} from './playback-list.js?v=2026.10.04.13';
+import {bindReaderGestures} from './reader-gestures.js?v=2026.10.04.13';
 import {bindDragOrder,replaceSubsetOrder} from './drag-order.js';
 import {cardCategory,cardCategories,selectedCards,cardSentence} from './cards.js';
-import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.04.12';
-import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.04.12';
+import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.04.13';
+import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.04.13';
 import {validateFolders,folderEpisodes,folderMembership,restoreFolders,makeFolderCover} from './folders.js';
-import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.04.12';
-import {ListPosition} from './list-position.js?v=2026.10.04.12';
+import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.04.13';
+import {ListPosition} from './list-position.js?v=2026.10.04.13';
+import {appRoute,setAppRoute,bindHomeEdgeGuard} from './navigation.js?v=2026.10.04.13';
 const phone=phoneInterface(navigator.userAgent,navigator.maxTouchPoints);
 const main=document.querySelector('#main'),modal=document.querySelector('#modal');
 let audio=document.querySelector('#audio');
@@ -268,7 +269,7 @@ async function batchImportScripts(){
  });
 }
 
-async function openEpisode(id,initialPosition){
+async function openEpisode(id,initialPosition,{replaceRoute=false}={}){
   uncoveredSentences.clear();rememberLibrary();const serial=++openSerial;resetClip();const e=await read('episodes',id);if(serial!==openSerial)return;if(!e)throw Error('找不到这段音频。');
   await ensureEpisodeInPlaylist(e);if(serial!==openSerial)return;
   e.segments=(e.segments||[]).map(s=>prepareReadings({...s,words:lexicalWords(s,e.language)},e.language));
@@ -283,7 +284,7 @@ async function openEpisode(id,initialPosition){
     }else{audio.onloadedmetadata=null;audio.removeAttribute('src');audio.load();}
     current=-1;wordCurrent=-1;
   }else{episode=e;if(Number.isFinite(initialPosition)&&file){current=-1;audio.currentTime=initialPosition;}}
-  delete main.dataset.libraryPositionKey;view='player';follow=true;browseIndex=null;setNav();renderPlayer();location.hash=`audio/${id}`;
+  delete main.dataset.libraryPositionKey;view='player';follow=true;browseIndex=null;setNav();renderPlayer();setAppRoute(`audio/${id}`,replaceRoute);
   if('mediaSession'in navigator)navigator.mediaSession.metadata=new MediaMetadata({title:e.title,artist:'听页',album:LANG[e.language]});
 }
 
@@ -859,8 +860,12 @@ function podcastImport(){
     }catch(e){if(modalSerial===serial)report(e);}if(modalSerial===serial)b.disabled=false;
   });
 }
-async function navigate(target){rememberLibrary();delete main.dataset.libraryPositionKey;resetClip();if(immersive)toggleImmersive();$('.player-dock')?.remove();view=target;location.hash=target;if(target==='library')await renderLibrary();if(target==='cards')await renderCards();if(target==='settings')await renderSettings();miniPlayer();if(target!=='library')main.scrollTo(0,0);}
-document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>navigate(b.dataset.nav).catch(report));window.addEventListener('hashchange',()=>{const hash=location.hash.slice(1);if(hash.startsWith('audio/')){const id=hash.slice(6);if(episode?.id!==id||view!=='player')openEpisode(id).catch(report);}else if(['library','cards','settings'].includes(hash)&&view!==hash)navigate(hash).catch(report);});
+async function navigate(target,{replaceRoute=false}={}){rememberLibrary();delete main.dataset.libraryPositionKey;resetClip();if(immersive)toggleImmersive();$('.player-dock')?.remove();view=target;setAppRoute(target,replaceRoute);if(target==='library')await renderLibrary();if(target==='cards')await renderCards();if(target==='settings')await renderSettings();miniPlayer();if(target!=='library')main.scrollTo(0,0);}
+document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>navigate(b.dataset.nav).catch(report));
+window.addEventListener('hashchange',()=>{const route=appRoute(location.hash);if(route.view==='player'){if(episode?.id!==route.id||view!=='player')openEpisode(route.id,undefined,{replaceRoute:true}).catch(report);}else if(view!==route.view)navigate(route.view,{replaceRoute:true}).catch(report);else{setAppRoute(route.hash,true);setNav();}});
+const installedApp=()=>navigator.standalone===true||matchMedia('(display-mode: standalone)').matches;
+bindHomeEdgeGuard(main,()=>installedApp()&&view==='library'&&!libraryFolder&&!immersive&&!modal.open);
+window.addEventListener('pageshow',event=>{if(event.persisted){setNav();applyPrefs();window.scrollTo(0,0);}});
 document.addEventListener('keydown',e=>{if(e.defaultPrevented||modal.open||document.activeElement?.closest('button,[role=button],a')||['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;if(e.code==='Space'&&episode){e.preventDefault();togglePlay();}if(e.key==='ArrowRight'&&episode)jump(Math.min(episode.segments.length-1,current+1),true);if(e.key==='ArrowLeft'&&episode)jump(Math.max(0,current-1),true);if(e.key==='Escape'&&immersive)toggleImmersive();if(e.key.toLowerCase()==='r'&&episode)jump(Math.max(0,current),true);});
 applyPrefs();matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyPrefs);
 try{if(['localhost','127.0.0.1'].includes(location.hostname)){const r=await fetch(new URL('api/status',BASE));if(r.ok){const status=await r.json();backend=status.available===true;backendVersion=status.version||1;}}}catch{}
@@ -877,4 +882,4 @@ async function retireBrowserTranslation(){
  await clearBrowserTranslation();await write('settings',{id:key,value:true});
 }
 retireBrowserTranslation().catch(error=>console.warn('旧翻译模型尚未清理',error));
-const initial=location.hash.slice(1);if(initial.startsWith('audio/'))await openEpisode(initial.slice(6)).catch(()=>renderLibrary());else await navigate(['cards','settings'].includes(initial)?initial:'library');
+const initial=appRoute(location.hash);if(initial.view==='player')await openEpisode(initial.id,undefined,{replaceRoute:true}).catch(()=>navigate('library',{replaceRoute:true}));else await navigate(initial.view,{replaceRoute:true});

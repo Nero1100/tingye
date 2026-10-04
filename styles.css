@@ -109,3 +109,4 @@ html{height:100%;overflow:hidden;overscroll-behavior:none}body{height:100vh;heig
 
 /* The library, cards and settings begin directly below the device safe area. */
 body:not(.player-open)>main{padding-top:calc(24px + env(safe-area-inset-top,0px))}
+body{background:var(--bg)}
