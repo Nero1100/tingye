@@ -5,10 +5,12 @@ https://github.com/microsoft/onnxruntime
 Corresponding licenses are included in this directory.
 
 Optional models, downloaded separately by the user:
-onnx-community/kotoba-whisper-v2.2-ONNX (Apache-2.0)
-https://huggingface.co/onnx-community/kotoba-whisper-v2.2-ONNX
-https://huggingface.co/kotoba-tech/kotoba-whisper-v2.2
-Japanese speech trial only; Python punctuation/diarization modules are not included.
+onnx-community/whisper-small and onnx-community/whisper-base
+https://huggingface.co/onnx-community/whisper-small
+https://huggingface.co/onnx-community/whisper-base
+Converted from OpenAI Whisper (MIT), used here for Japanese speech only.
+https://github.com/openai/whisper
+Legacy Kotoba model caches are no longer downloaded by the phone trial.
 onnx-community/Qwen3-1.7B-ONNX (Apache-2.0)
 https://huggingface.co/onnx-community/Qwen3-1.7B-ONNX
 https://huggingface.co/Qwen/Qwen3-1.7B
