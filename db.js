@@ -1,3 +1,4 @@
+import {applyTranscriptPatch} from './transcript-batch.js';
 export const db = await new Promise((resolve,reject)=>{
   const request=indexedDB.open('tingye',2);
   request.onupgradeneeded=()=>{for(const name of ['episodes','cards','settings','progress'])if(!request.result.objectStoreNames.contains(name))request.result.createObjectStore(name,{keyPath:'id'});};
@@ -13,6 +14,12 @@ export function saveDuration(id,duration){if(!id||!Number.isFinite(duration)||du
 export function write(store,value){return new Promise((resolve,reject)=>{const t=db.transaction(store,'readwrite');t.objectStore(store).put(value);t.oncomplete=resolve;t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error);});}
 export function remove(store,id){return new Promise((resolve,reject)=>{const t=db.transaction(store==='episodes'?['episodes','progress','settings']:store,'readwrite');t.objectStore(store).delete(id);if(store==='episodes'){t.objectStore('progress').delete(id);t.objectStore('settings').delete(durationKey(id));}t.oncomplete=resolve;t.onerror=()=>reject(t.error);});}
 export function saveBatch(episodes,cards,settings=[]){return new Promise((resolve,reject)=>{const t=db.transaction(['episodes','cards','settings'],'readwrite');for(const e of episodes)t.objectStore('episodes').put(e);for(const c of cards)t.objectStore('cards').put(c);for(const s of settings)t.objectStore('settings').put(s);t.oncomplete=resolve;t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error);});}
+// Read each current record in the same transaction; a conflict rolls back the whole batch.
+export function replaceEpisodeTranscripts(patches){return new Promise((resolve,reject)=>{
+ const t=db.transaction('episodes','readwrite'),store=t.objectStore('episodes');let failure;
+ for(const patch of patches){const r=store.get(patch.id);r.onsuccess=()=>{if(failure)return;try{store.put(applyTranscriptPatch(r.result,patch));}catch(error){failure=error;t.abort();}};}
+ t.oncomplete=resolve;t.onerror=()=>reject(failure||t.error);t.onabort=()=>reject(failure||t.error||Error('替换未完成，旧稿保留。'));
+});}
 export function setEpisodeOrder(ids){return new Promise((resolve,reject)=>{
  const t=db.transaction('episodes','readwrite'),store=t.objectStore('episodes');
  ids.forEach((id,order)=>{const request=store.get(id);request.onsuccess=()=>{if(request.result)store.put({...request.result,order});};});
