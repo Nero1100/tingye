@@ -1,5 +1,5 @@
 // Shared, pinned browser inference runtime. No personal data leaves the device.
-import {ModelStore} from './model-download.js?v=2026.10.04.04';
+import {ModelStore} from './model-download.js?v=2026.10.04.05';
 const RUNTIME_URL='https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0-dev.20250409-89f8206ba4/dist/ort-wasm-simd-threaded.jsep.wasm';
 export async function prepareRuntime(progress=()=>{}){
  const cache=await caches.open('tingye-translation-runtime-v1');

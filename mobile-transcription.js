@@ -1,11 +1,11 @@
-import {editedSentence} from './transcript-edit.js?v=2026.10.04.04';
-import {suggestSentences} from './sentence-boundaries.js?v=2026.10.04.04';
+import {editedSentence} from './transcript-edit.js?v=2026.10.04.05';
+import {suggestSentences} from './sentence-boundaries.js?v=2026.10.04.05';
 export const SPEECH_CACHE='tingye-local-japanese-speech-v1';
-import {MODEL_FILES} from './model-manifests.js?v=2026.10.04.04';
-import {prepareInWorker,clearDownloads} from './model-download.js?v=2026.10.04.04';
+import {MODEL_FILES} from './model-manifests.js?v=2026.10.04.05';
+import {prepareInWorker,clearDownloads} from './model-download.js?v=2026.10.04.05';
 export const JAPANESE_MODEL=MODEL_FILES.speechBalanced;
 export const JAPANESE_MODELS={light:MODEL_FILES.speech,balanced:MODEL_FILES.speechBalanced};
-export function prepareJapaneseModel(onProgress=()=>{},mode='balanced'){return prepareInWorker(new URL('./mobile-transcription-worker.js?v=2026.10.04.04',import.meta.url),{mode},onProgress);}
+export function prepareJapaneseModel(onProgress=()=>{},mode='balanced'){return prepareInWorker(new URL('./mobile-transcription-worker.js?v=2026.10.04.05',import.meta.url),{mode},onProgress);}
 export async function clearSpeechModels(){await clearDownloads(SPEECH_CACHE);await caches.delete(SPEECH_CACHE);}
 export function japaneseTrialAllowed(episode){
  if(episode.language!=='ja')throw Error('手机转写试用目前只支持日语。');
@@ -53,7 +53,7 @@ export function runJapaneseTranscription(samples,onProgress=()=>{},mode='balance
   rejectTask=reject;const fail=message=>{if(finished)return;finished=true;stop();reject(Error(message));};
   const watchdog=()=>{clearTimeout(timer);timer=setTimeout(()=>fail('转写长时间没有响应，原稿保留。请保持听页在前台，使用更短的音频测试。'),15*60*1000);};
   try{
-   worker=new Worker(new URL('./mobile-transcription-worker.js?v=2026.10.04.04',import.meta.url),{type:'module'});
+   worker=new Worker(new URL('./mobile-transcription-worker.js?v=2026.10.04.05',import.meta.url),{type:'module'});
    worker.onmessage=({data})=>{if(finished)return;watchdog();if(data.type==='progress')onProgress(data);else if(data.type==='done'){finished=true;stop();resolve(data.result);}else if(data.type==='error')fail(data.message);};
    worker.onerror=()=>fail('本机转写未能运行，原稿保留。请检查下载或换更短的音频。');watchdog();worker.postMessage({language:'ja',samples,mode},[samples.buffer]);
   }catch(error){fail(error.message);}
