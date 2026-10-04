@@ -1,4 +1,14 @@
 import {prepareReadings} from './furigana.js';
+import {validateTranscript} from './validate.js?v=2026.10.03.20';
+export function replacementTranscript(episode,data){
+  validateTranscript(data);
+  const bytes=episode.audio?.size||episode.audioBytes||0;
+  if(data.audio?.bytes&&bytes&&data.audio.bytes!==bytes)throw Error('音频大小与逐字稿记录不同，请选择对应的逐字稿。');
+  if(episode.duration&&data.segments.some(s=>s.end>episode.duration+2))throw Error('时间轴超过音频长度，请选择对应的音频。');
+  const result={...episode,language:data.language,segments:structuredClone(data.segments),duration:episode.duration||data.duration||0};
+  delete result.transcriptUndo;
+  return result;
+}
 function tokens(text,language){
   if(Intl.Segmenter)return [...new Intl.Segmenter(language,{granularity:'word'}).segment(text)].map(p=>({text:p.segment,selectable:p.isWordLike===true}));
   return (text.match(/\s+|[\p{L}\p{N}’']+|[^\p{L}\p{N}\s]/gu)||[]).map(text=>({text,selectable:/[\p{L}\p{N}]/u.test(text)}));

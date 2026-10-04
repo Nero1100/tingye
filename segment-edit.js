@@ -5,11 +5,14 @@ export function splitChoices(segment){
 }
 export function splitSentence(segment,cut,time,translations){
  if(!Number.isInteger(cut)||cut<1||cut>=segment.words.length)throw Error('请选择词语之间的拆分位置。');
- const left=structuredClone(segment),right=structuredClone(segment),a=segment.words[cut-1],b=segment.words[cut];
- if(!Number.isFinite(time)||time<=segment.start||time>=segment.end||time<a.end-.3||time>b.start+.2)throw Error('拆分时间应在这两个词之间，请根据音频调整。');
+ const left=structuredClone(segment),right=structuredClone(segment);
+ if(!Number.isFinite(time)||time<=segment.start||time>=segment.end)throw Error('拆分时间应在这一句的开始与结束之间。');
  left.words=left.words.slice(0,cut);right.words=right.words.slice(cut);left.text=left.words.map(w=>w.text).join('').trim();right.text=right.words.map(w=>w.text).join('').trim();
  if(!left.text||!right.text)throw Error('拆分后的两句都需要有文字。');
  left.end=time;right.start=time;
+ // A hand-set boundary can correct estimated ASR word times. Keep other words intact.
+ for(const w of left.words){if(w.start>time||w.end>time){w.start=Math.min(w.start,time);w.end=Math.min(w.end,time);w.timingEstimated=true;}}
+ for(const w of right.words){if(w.start<time||w.end<time){w.start=Math.max(w.start,time);w.end=Math.max(w.end,time);w.timingEstimated=true;}}
  [left,right].forEach((s,i)=>{s.translation=translations[i];s.translationEdited=!!segment.translationEdited||translations[i]!== (i===0?segment.translation||'':'');s.boundaryEdited=true;s.editedAt=Date.now();});
  return [left,right];
 }
