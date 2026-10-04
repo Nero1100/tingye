@@ -1,8 +1,14 @@
 // Shared, pinned browser inference runtime. No personal data leaves the device.
-import {ModelStore} from './model-download.js?v=2026.10.04.03';
+import {ModelStore} from './model-download.js?v=2026.10.04.04';
 const RUNTIME_URL='https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0-dev.20250409-89f8206ba4/dist/ort-wasm-simd-threaded.jsep.wasm';
 export async function prepareRuntime(progress=()=>{}){
  const cache=await caches.open('tingye-translation-runtime-v1');
+ // Prepare the small JS loaders too, without importing or initializing a model.
+ // A first inference after downloading must also work without a connection.
+ for(const file of ['transformers.min.js','ort.bundle.min.mjs','ort-wasm-simd-threaded.jsep.mjs']){
+  const url=new URL('./vendor/translation/'+file,import.meta.url).href;
+  if(!await cache.match(url)){const response=await fetch(url);if(!response.ok)throw Error('运行文件下载未完成。');await cache.put(url,response);}
+ }
  if(!await cache.match(RUNTIME_URL)){
   progress({message:'下载本机运行文件 · 约 22 MB…'});const response=await fetch(RUNTIME_URL);if(!response.ok)throw Error('运行文件下载未完成。');
   const blob=await response.blob();await cache.put(RUNTIME_URL,new Response(blob,{headers:{'content-length':String(blob.size)}}));

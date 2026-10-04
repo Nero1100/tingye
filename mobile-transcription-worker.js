@@ -1,5 +1,5 @@
-import {SPEECH_CACHE,JAPANESE_MODELS} from './mobile-transcription.js?v=2026.10.04.03';
-import {configureLocalRuntime,preparePublicModels} from './mobile-runtime.js?v=2026.10.04.03';
+import {SPEECH_CACHE,JAPANESE_MODELS} from './mobile-transcription.js?v=2026.10.04.04';
+import {configureLocalRuntime,preparePublicModels} from './mobile-runtime.js?v=2026.10.04.04';
 const progress=data=>self.postMessage({type:'progress',...data});let started=false;
 self.onmessage=async({data})=>{
  if(started)return;started=true;
