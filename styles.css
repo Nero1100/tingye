@@ -110,3 +110,4 @@ html{height:100%;overflow:hidden;overscroll-behavior:none}body{height:100vh;heig
 /* The library, cards and settings begin directly below the device safe area. */
 body:not(.player-open)>main{padding-top:calc(24px + env(safe-area-inset-top,0px))}
 body{background:var(--bg)}
+.batch-transcription-rows{max-height:38dvh;overflow:auto;overscroll-behavior:contain}.batch-transcription-row{padding:14px 0;border-bottom:1px solid var(--border)}.batch-transcription-row strong{display:block;font-size:.92rem;overflow-wrap:anywhere}.batch-transcription-row small{display:block;line-height:1.6;margin-top:6px;overflow-wrap:anywhere}.batch-transcription-row .actions{margin-top:8px}.batch-transcription-row button{font-size:.8rem;padding:7px 14px;min-height:38px}
