@@ -1,26 +1,28 @@
-import {planTranscriptImports,phoneInterface,transcriptExportName} from './transcript-batch.js?v=2026.10.04.14';
-import {clearModelDownloads,clearBrowserTranslation} from './browser-model-cleanup.js?v=2026.10.04.14';
-import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration,replaceEpisodeTranscripts} from './db.js?v=2026.10.04.14';
-import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.04.14';
+import {submitLocalForm} from './local-upload.js?v=2026.10.04.15';
+import {mountJobMonitor,jobProgress,terminalJob} from './job-monitor.js?v=2026.10.04.15';
+import {planTranscriptImports,phoneInterface,transcriptExportName} from './transcript-batch.js?v=2026.10.04.15';
+import {clearModelDownloads,clearBrowserTranslation} from './browser-model-cleanup.js?v=2026.10.04.15';
+import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration,replaceEpisodeTranscripts} from './db.js?v=2026.10.04.15';
+import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.04.15';
 import {lexicalWords,dictionaryText} from './lexicon.js';
-import {Practice,practiceOptions} from './practice.js?v=2026.10.04.14';
+import {Practice,practiceOptions} from './practice.js?v=2026.10.04.15';
 import {palettes,applyTheme} from './theme.js';
 import {hasKanji,rubyParts,setRubyReading,prepareReadings} from './furigana.js';
-import {editedSentence,changedCards,replacementTranscript} from './transcript-edit.js?v=2026.10.04.14';
-import {splitChoices,splitSentence,mergeSentences,resegmentCards} from './segment-edit.js?v=2026.10.04.14';
-import {boundaryWords,suggestSentences} from './sentence-boundaries.js?v=2026.10.04.14';
-import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.04.14';
-import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.04.14';
-import {validatePlaybackLists,reconcilePlaybackList,selectPlaybackEpisodes,reorderPlaybackList,restorePlaybackLists,includePlaybackEpisode} from './playback-list.js?v=2026.10.04.14';
-import {bindReaderGestures} from './reader-gestures.js?v=2026.10.04.14';
+import {editedSentence,changedCards,replacementTranscript} from './transcript-edit.js?v=2026.10.04.15';
+import {splitChoices,splitSentence,mergeSentences,resegmentCards} from './segment-edit.js?v=2026.10.04.15';
+import {boundaryWords,suggestSentences} from './sentence-boundaries.js?v=2026.10.04.15';
+import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.04.15';
+import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.04.15';
+import {validatePlaybackLists,reconcilePlaybackList,selectPlaybackEpisodes,reorderPlaybackList,restorePlaybackLists,includePlaybackEpisode} from './playback-list.js?v=2026.10.04.15';
+import {bindReaderGestures} from './reader-gestures.js?v=2026.10.04.15';
 import {bindDragOrder,replaceSubsetOrder} from './drag-order.js';
 import {cardCategory,cardCategories,selectedCards,cardSentence} from './cards.js';
-import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.04.14';
-import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.04.14';
+import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.04.15';
+import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.04.15';
 import {validateFolders,folderEpisodes,folderMembership,restoreFolders,makeFolderCover} from './folders.js';
-import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.04.14';
-import {ListPosition} from './list-position.js?v=2026.10.04.14';
-import {appRoute,setAppRoute,bindHomeEdgeGuard} from './navigation.js?v=2026.10.04.14';
+import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.04.15';
+import {ListPosition} from './list-position.js?v=2026.10.04.15';
+import {appRoute,setAppRoute,bindHomeEdgeGuard} from './navigation.js?v=2026.10.04.15';
 const phone=phoneInterface(navigator.userAgent,navigator.maxTouchPoints);
 const main=document.querySelector('#main'),modal=document.querySelector('#modal');
 let audio=document.querySelector('#audio');
@@ -85,9 +87,9 @@ async function toggleListeningMask(){
  if(immersive)renderImmersiveSentence();
 }
 function resetClip(){cancelPractice();if(clipEnd!==null)audio.pause();clipEnd=null;}
-function closeModal(){if(modalCanClose&&!modalCanClose())return;playlistSheet?.dispose();playlistSheet=null;modalCanClose=null;modal.classList.remove('transcript-editor','word-sheet','practice-sheet');if(immersive){main.inert=true;if($('.immersive-mode'))$('.immersive-mode').inert=false;}resetClip();modalSerial++;modal.close();clearInterval(jobTimer);jobTimer=null;}
-function openModal(title,body){closeSpeedMenu();playlistSheet?.dispose();playlistSheet=null;modalCanClose=null;modal.classList.remove('transcript-editor','word-sheet','practice-sheet');if(immersive&&$('.immersive-mode'))$('.immersive-mode').inert=true;resetClip();modalSerial++;clearInterval(jobTimer);jobTimer=null;modal.innerHTML=`<div class="dialog-head"><h2>${esc(title)}</h2><button id="close-modal" aria-label="关闭">×</button></div>${body}`;if(!modal.open)modal.showModal();on('#close-modal','click',()=>{if(playlistSheet)playlistSheet.dismiss();else closeModal();});}
-modal.addEventListener('cancel',event=>{if(playlistSheet){event.preventDefault();return;}if(modalCanClose&&!modalCanClose()){event.preventDefault();return;}modalCanClose=null;modal.classList.remove('transcript-editor','word-sheet','practice-sheet');if(immersive)main.inert=true;if(immersive&&$('.immersive-mode'))$('.immersive-mode').inert=false;resetClip();modalSerial++;clearInterval(jobTimer);jobTimer=null;});
+function closeModal(){if(modalCanClose&&!modalCanClose())return;playlistSheet?.dispose();playlistSheet=null;modalCanClose=null;modal.classList.remove('transcript-editor','word-sheet','practice-sheet','processing-dialog');if(immersive){main.inert=true;if($('.immersive-mode'))$('.immersive-mode').inert=false;}resetClip();modalSerial++;modal.close();clearInterval(jobTimer);jobTimer=null;}
+function openModal(title,body){closeSpeedMenu();playlistSheet?.dispose();playlistSheet=null;modalCanClose=null;modal.classList.remove('transcript-editor','word-sheet','practice-sheet','processing-dialog');if(immersive&&$('.immersive-mode'))$('.immersive-mode').inert=true;resetClip();modalSerial++;clearInterval(jobTimer);jobTimer=null;modal.innerHTML=`<div class="dialog-head"><h2>${esc(title)}</h2><button id="close-modal" aria-label="关闭">×</button></div>${body}`;if(!modal.open)modal.showModal();on('#close-modal','click',()=>{if(playlistSheet)playlistSheet.dismiss();else closeModal();});}
+modal.addEventListener('cancel',event=>{if(playlistSheet){event.preventDefault();return;}if(modalCanClose&&!modalCanClose()){event.preventDefault();return;}modalCanClose=null;modal.classList.remove('transcript-editor','word-sheet','practice-sheet','processing-dialog');if(immersive)main.inert=true;if(immersive&&$('.immersive-mode'))$('.immersive-mode').inert=false;resetClip();modalSerial++;clearInterval(jobTimer);jobTimer=null;});
 function setNav(){closeSpeedMenu();document.body.classList.toggle('player-open',view==='player');document.querySelectorAll('[data-nav]').forEach(b=>b.classList.toggle('active',b.dataset.nav===view));}
 function download(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
 async function exportTranscript(e){try{await saveTranscriptDocument(transcriptData(e),transcriptExportName(transcriptData(e)));}catch(error){report(error);}}
@@ -765,9 +767,15 @@ async function computerBatch(draft=null){
  if(!backend||backendVersion<8){toast('请启动新版电脑工具以使用批量转写。');return;}
  const pending=(await read('settings','transcription-batch'))?.value;
  const destination=await exportRequest('api/export-settings');
- let files=draft?.files||[],batchId=pending?.id||null;
+ let files=draft?.files||[],batchId=pending?.id||null,upload=null,cancelRequested=false;
  openModal('批量转写与导出',`${pending?'<p class="note">继续查看上一次批量任务。</p>':`<label for="batch-audio">选择多个音频</label><input id="batch-audio" type="file" multiple accept="audio/*,.mp3,.m4a,.wav,.flac,.ogg,.opus,.aac,.mp4,.webm"><label for="batch-folder">或选择音频文件夹</label><input id="batch-folder" type="file" multiple webkitdirectory><p class="note" id="batch-selected"></p><label for="batch-language">这一批的音频语言</label><select id="batch-language">${Object.entries(LANG).map(([key,label])=>`<option value="${key}" ${(draft?.language||'ja')===key?'selected':''}>${label}</option>`).join('')}</select><label class="checkbox-line"><input id="batch-translate" type="checkbox" ${draft?.translate===false?'':'checked'}>同时生成中文译文</label><label for="batch-engine">翻译方式</label><select id="batch-engine"><option value="quality">高质量 · 结合对话上下文</option><option value="fast" ${draft?.engine==='fast'?'selected':''}>快速 · 小模型逐句翻译</option></select><label for="batch-glossary">人名、店名或术语（可选）</label><textarea id="batch-glossary" maxlength="5000" rows="2" placeholder="一行一条，例如：みどり = みどり咖啡馆">${esc(draft?.glossary||'')}</textarea><label class="checkbox-line"><input id="batch-auto-export" type="checkbox" ${draft?.autoExport===false?'':'checked'}>完成后自动保存到设置的文件夹</label><p class="note">每批最多 100 个音频、合计 2 GB，单个不超过 350 MB。日语使用 MOSS，依次转写和翻译。音频名字对应逐字稿名字，例如 15-2.wav → 15-2.json。</p><button class="primary full" id="start-batch">开始批量处理</button>`}<button class="secondary full section-title" id="batch-export-location">逐字稿保存位置</button><p class="note" id="batch-destination">${esc(destination.enabled?'保存到：'+destination.directory:'未设置保存文件夹；完成后可以打包下载全部逐字稿。')}</p><div id="batch-result" role="status"></div><div id="batch-rows" class="batch-transcription-rows"></div><button class="primary full section-title" id="export-batch" disabled>导出已完成的逐字稿</button><p class="note" id="batch-export-status"></p><button class="secondary full section-title" id="new-batch" ${pending?'':'hidden'}>开始新的批量任务</button><p class="note">提交完成后，关闭页面不影响电脑处理。重新打开这个入口可继续查看；请在关闭电脑工具之前保存或导出结果。</p>`);
  const serial=modalSerial,alive=()=>modal.open&&modalSerial===serial&&!!$('#batch-result');
+ const monitor=mountJobMonitor(modal,'batch-result',backendVersion>=9,async()=>{
+  await exportRequest(`api/batches/${batchId}/cancel`,{});cancelRequested=true;monitor.cancelling();
+  if(upload)upload.abort();else{clearTimeout(jobTimer);await poll();}
+ });
+ if(batchId)monitor.start();
+
  const batchError=row=>/Invalid data found|Error opening input|No such file or directory/.test(row.detail||'')?'无法读取音频，请检查文件格式和完整性。':row.detail||row.message;
  const selected=()=>{if($('#batch-selected'))$('#batch-selected').textContent=files.length?`已选择 ${files.length} 个音频 · ${size(files.reduce((n,f)=>n+f.size,0))}`:'尚未选择音频。';};selected();
  const currentDraft=()=>batchId?null:{files,language:$('#batch-language').value,translate:$('#batch-translate').checked,engine:$('#batch-engine').value,glossary:$('#batch-glossary').value,autoExport:$('#batch-auto-export').checked};
@@ -780,11 +788,13 @@ async function computerBatch(draft=null){
   try{
    const response=await fetch(new URL(`api/batches/${batchId}`,BASE)),batch=await response.json();
    if(!alive())return;if(!response.ok)throw Error(batch.detail||'读取批量任务失败。');
-   $('#batch-result').innerHTML=`<div class="job"><strong>${batch.state==='done'?'批量处理完成':'正在批量处理'}</strong><progress max="100" value="${batch.progress}"></progress><p class="note">共 ${batch.total} 个 · 完成 ${batch.done} 个 · 失败 ${batch.failed} 个${batch.auto_export?' · 完成的稿件自动保存':''}</p></div>`;
+   const finished=terminalJob(batch.state);
+   if(finished)monitor.finish();else if(batch.state==='cancelling')monitor.cancelling();
+   $('#batch-result').innerHTML=`<div class="job"><strong>${finished?batch.state==='cancelled'?'已取消剩余任务':'批量处理完成':batch.state==='cancelling'?'正在取消':'正在批量处理'}</strong><progress max="100" value="${batch.progress}"></progress><p class="note">整批 ${batch.progress}% · 共 ${batch.total} 个 · 完成 ${batch.done} 个 · 失败 ${batch.failed} 个${batch.cancelled?` · 已取消 ${batch.cancelled} 个`:''}</p>${batch.active?`<div class="job-current"><span>当前音频</span><h3>${esc(batch.active.filename)}</h3>${jobProgress(batch.active)}</div>`:''}${finished&&batch.done?'<p class="note">已完成的逐字稿已保留，可以继续导出。</p>':''}</div>`;
    $('#batch-rows').innerHTML=batch.items.map(row=>`<article class="batch-transcription-row"><strong>${esc(row.filename)}</strong><small>${esc(row.state==='error'?batchError(row):row.saved?'已保存：'+row.saved.filename:row.state==='done'?`${row.segments} 个句段 · 已完成`:row.message||'等待转写')}${row.state==='done'&&row.translation_warning?' · 中文翻译未完成':''}${row.export_error?' · 保存失败，可重新导出':''}</small>${row.state==='done'?`<div class="actions"><button class="secondary" data-batch-edit="${row.id}">校对</button><button class="secondary" data-batch-download="${row.id}">导出</button></div>`:''}</article>`).join('');
-   $('#export-batch').disabled=!batch.done;$('#new-batch').hidden=batch.state!=='done';
+   $('#export-batch').disabled=!batch.done;$('#new-batch').hidden=!finished;
    for(const button of document.querySelectorAll('[data-batch-edit],[data-batch-download]'))button.onclick=async()=>{button.disabled=true;try{const id=button.dataset.batchEdit||button.dataset.batchDownload,response=await fetch(new URL(`api/jobs/${id}`,BASE)),job=await response.json();if(!response.ok)throw Error(job.detail||'读取结果失败。');if(!alive())return;if(button.dataset.batchEdit)openDocumentEditor(job.result);else await saveTranscriptDocument(job.result,transcriptExportName(job.result));}catch(error){report(error);}finally{if(button.isConnected)button.disabled=false;}};
-   if(batch.state!=='done')jobTimer=setTimeout(poll,1500);
+   if(!finished)jobTimer=setTimeout(poll,1000);
   }catch(error){if(alive()){$('#batch-result').innerHTML=`<p class="note">${esc(error.message)}</p><button class="secondary" id="retry-batch-status">重新查看任务</button>`;$('#new-batch').hidden=false;on('#retry-batch-status','click',poll);}}
  }
  on('#export-batch','click',async()=>{
@@ -811,12 +821,12 @@ async function computerBatch(draft=null){
    if(files.some(f=>!f.size||f.size>350*1048576))throw Error('音频不能为空，且每个文件不能超过 350 MB。');
    const options=currentDraft(),form=new FormData();for(const file of files)form.append('audio',file,file.name);
    form.append('language',options.language);form.append('translate',String(options.translate));form.append('translation_engine',options.engine);form.append('glossary',options.glossary);form.append('auto_export',String(options.autoExport));
-   modalCanClose=()=>false;$('#batch-result').innerHTML='<p class="note">正在提交音频给电脑工具，请稍候…</p>';
-   const response=await fetch(new URL('api/batches',BASE),{method:'POST',body:form}),result=await response.json();
-   if(!response.ok)throw Error(result.detail||'批量任务未能启动。');
+   batchId=crypto.randomUUID();form.append('request_id',batchId);cancelRequested=false;upload=new AbortController();
+   modalCanClose=()=>false;monitor.start();monitor.upload(0);
+   const result=await submitLocalForm(new URL('api/batches',BASE),form,{signal:upload.signal,onProgress:p=>{if(alive()&&!cancelRequested)monitor.upload(p);}});upload=null;
    batchId=result.id;await write('settings',{id:'transcription-batch',value:{id:batchId}});
-   if(alive()){modalCanClose=null;button.hidden=true;$('#batch-audio').disabled=true;$('#batch-folder').disabled=true;for(const id of ['batch-language','batch-translate','batch-engine','batch-glossary','batch-auto-export'])$('#'+id).disabled=true;await poll();}
-  }catch(error){if(alive()){modalCanClose=null;button.disabled=false;$('#batch-result').innerHTML='';report(error);}}
+   if(alive()){modalCanClose=null;await poll();}
+  }catch(error){upload=null;if(alive()){modalCanClose=null;button.disabled=false;if(cancelRequested){monitor.finish();$('#batch-result').innerHTML='<p>已取消提交，未开始的音频不会处理。</p>';$('#new-batch').hidden=false;}else{batchId=null;monitor.retry();$('#batch-result').innerHTML='';report(error);}}}
  });
 }
 async function computerTranscription(existing){
@@ -831,6 +841,12 @@ async function computerTranscription(existing){
   on('#batch-asr','click',()=>computerBatch());
   const serial=modalSerial;
   const alive=()=>modal.open&&modalSerial===serial&&!!$('#asr-result');
+  let jobId=pending?.id||null,upload=null,cancelRequested=false;
+  const monitor=mountJobMonitor(modal,'asr-result',backendVersion>=9,async()=>{
+   await exportRequest(`api/jobs/${jobId}/cancel`,{});cancelRequested=true;monitor.cancelling();
+   if(upload)upload.abort();else{clearTimeout(jobTimer);await poll(jobId);}
+  });
+  if(jobId)monitor.start();
   on('#new-asr','click',async()=>{await remove('settings','transcription-job');await computerTranscription(requestedAudio);});
   async function poll(id){
     if(!alive())return;
@@ -838,7 +854,9 @@ async function computerTranscription(existing){
       const r=await fetch(new URL(`api/jobs/${id}`,BASE)),job=await r.json();
       if(!alive())return;
       if(!r.ok)throw Error(job.detail||'读取任务失败。');
-      $('#asr-result').innerHTML=`<div class="job"><strong>${esc(job.message)}</strong><progress max="100" value="${job.progress||0}"></progress><p class="note">${job.progress||0}%</p></div>`;
+      $('#asr-result').innerHTML=`<div class="job">${job.filename?`<h3>${esc(job.filename)}</h3>`:''}${jobProgress(job)}</div>`;
+      if(terminalJob(job.state))monitor.finish();else if(job.state==='cancelling')monitor.cancelling();
+      if(job.state==='cancelled'){$('#new-asr').hidden=false;return;}
       if(job.state==='done'){
         $('#new-asr').hidden=false;
         $('#asr-result').innerHTML=`<div class="job"><strong>${esc(job.message)}</strong>${job.result.translation_warning?'<p class="note">翻译未完成；逐字稿仍可导出。可稍后使用“补译逐字稿”。</p>':''}<p class="note">${job.result.segments.length} 个句段 · 音频 ${time(job.result.duration)}</p><button class="primary full" id="download-asr">导出逐字稿与时间轴</button><button class="secondary full section-title" id="edit-generated-document">人工校对原文、译文与假名</button>${existing?.id?'<button class="secondary full section-title" id="attach-asr">用于当前音频</button>':''}</div>`;
@@ -857,12 +875,12 @@ async function computerTranscription(existing){
       const file=existing?audioFile(existing)&&new File([audioFile(existing)],existing.filename,{type:audioFile(existing).type}):$('#asr-audio').files[0];
       if(!file)throw Error(existing?'请先连接原音频，再开始电脑转写。':'请选择音频文件。');if(file.size>350*1048576)throw Error('音频不能超过 350 MB。');
       const form=new FormData();form.append('audio',file);form.append('language',$('#asr-language').value);form.append('translate',String($('#asr-translate').checked));form.append('translation_engine',$('#asr-engine').value);form.append('glossary',$('#asr-glossary').value);
-      $('#asr-result').innerHTML='<p class="note">正在提交给本机转写工具…</p>';
-      const response=await fetch(new URL('api/jobs',BASE),{method:'POST',body:form}),result=await response.json();
-      if(!response.ok)throw Error(result.detail||'任务未能启动。');
+      jobId=crypto.randomUUID();form.append('request_id',jobId);upload=new AbortController();cancelRequested=false;
+      modalCanClose=()=>false;monitor.start();monitor.upload(0);
+      const result=await submitLocalForm(new URL('api/jobs',BASE),form,{signal:upload.signal,onProgress:p=>{if(alive()&&!cancelRequested)monitor.upload(p);}});upload=null;modalCanClose=null;jobId=result.id;
       await write('settings',{id:'transcription-job',value:{id:result.id,episodeId:existing?.id||null}});
       if(alive()){button.hidden=true;await poll(result.id);}
-    }catch(e){if(alive()){report(e);button.disabled=false;}}
+    }catch(e){upload=null;modalCanClose=null;if(alive()){button.disabled=false;if(cancelRequested){monitor.finish();$('#asr-result').innerHTML='<p>已取消提交。</p>';$('#new-asr').hidden=false;}else{jobId=null;monitor.retry();$('#asr-result').innerHTML='';report(e);}}}
   });
 }
 
@@ -874,21 +892,25 @@ function translateScript(readings=false,prepared=null){
   if(!readings){$('#translate-file').nextElementSibling.textContent='重新生成中文译文，保留原文、时间轴和人工假名。高质量翻译结合前后文；不会自动覆盖人工修改的译文。';$('#start-translation').insertAdjacentHTML('beforebegin','<label for="translation-engine">翻译方式</label><select id="translation-engine"><option value="quality">高质量 · 结合上下文</option><option value="fast">快速 · 小模型</option></select><label for="translation-glossary">人名、店名或术语（可选）</label><textarea id="translation-glossary" maxlength="5000" rows="2" placeholder="一行一条：原文 = 中文译法"></textarea><label class="checkbox-line"><input id="translation-overwrite" type="checkbox">同时更新人工修改的中文译文</label>');}
   if(prepared){$('#translate-file').hidden=true;$('#translate-file').previousElementSibling.textContent=prepared.title||'当前音频逐字稿';}
   const serial=modalSerial,alive=()=>modal.open&&serial===modalSerial&&!!$('#translation-result');
+  let translationId=null;
+  const monitor=mountJobMonitor(modal,'translation-result',backendVersion>=9,async()=>{await exportRequest(`api/jobs/${translationId}/cancel`,{});monitor.cancelling();clearTimeout(jobTimer);await poll(translationId);});
   async function poll(id){
     if(!alive())return;
     try{const response=await fetch(new URL(`api/jobs/${id}`,BASE)),job=await response.json();if(!alive())return;if(!response.ok)throw Error(job.detail||'读取失败');
-      $('#translation-result').innerHTML=`<p class="note">${esc(job.message)} · ${job.progress||0}%</p>`;
+      $('#translation-result').innerHTML=jobProgress(job);
+      if(terminalJob(job.state))monitor.finish();else if(job.state==='cancelling')monitor.cancelling();
+      if(job.state==='cancelled'){monitor.retry();$('#start-translation').disabled=false;return;}
       if(job.state==='done'){
         if(!readings&&job.result.translation_warning)throw Error('中文翻译未完成，请检查模型下载与本机工具后重试。');
         $('#translation-result').innerHTML=`<button class="primary full section-title" id="save-translated-script">${readings?'导出假名修订逐字稿':'导出含中文译文的逐字稿'}</button><button class="secondary full section-title" id="edit-processed-document">人工校对</button>${targetId?'<button class="primary full section-title" id="apply-translated-document">应用译文到当前音频</button>':''}`;on('#apply-translated-document','click',async()=>{try{const e=await read('episodes',targetId);if(!e||e.language!==prepared.language||e.segments.length!==prepared.segments.length||e.segments.some((s,i)=>s.text!==prepared.segments[i].text||s.start!==prepared.segments[i].start||s.end!==prepared.segments[i].end))throw Error('原文或断句已修改，请导出译文后重新核对，不会覆盖当前逐字稿。');e.segments=e.segments.map((s,i)=>s.translationEdited&&s.translation!==prepared.segments[i].translation?s:{...s,translation:job.result.segments[i].translation,translationEdited:job.result.segments[i].translationEdited});await write('episodes',e);prefs.translation=true;await savePrefs();if(episode?.id===targetId)episode=e;closeModal();if(immersive)renderImmersiveSentence();else if(view==='player')renderPlayer();toast('中文译文已应用，原文和假名保留');}catch(error){report(error);}});on('#edit-processed-document','click',()=>openDocumentEditor(job.result));
         on('#save-translated-script','click',()=>saveTranscriptDocument(job.result,transcriptExportName(job.result)).catch(report));$('#start-translation').disabled=false;return;
       }
       if(job.state==='error')throw Error(job.message);jobTimer=setTimeout(()=>poll(id),1500);
-    }catch(error){if(alive()){report(error);$('#start-translation').disabled=false;$('#translation-result').innerHTML=`<p class="note">${esc(error.message)}</p>`;}}
+    }catch(error){if(alive()){monitor.retry();report(error);$('#start-translation').disabled=false;$('#translation-result').innerHTML=`<p class="note">${esc(error.message)}</p>`;}}
   }
   on('#start-translation','click',async()=>{const button=$('#start-translation');button.disabled=true;try{
     const file=prepared?new File([JSON.stringify(prepared)],'当前逐字稿.json',{type:'application/json'}):$('#translate-file').files[0];if(!file)throw Error('请选择逐字稿。');if(file.size>30*1048576)throw Error('逐字稿文件过大。');validateTranscript(JSON.parse(await file.text()));
-    const body=new FormData();body.append('transcript',file);if(!readings){body.append('translation_engine',$('#translation-engine').value);body.append('glossary',$('#translation-glossary').value);body.append('overwrite',String($('#translation-overwrite').checked));}const response=await fetch(new URL(readings?'api/readings':'api/translate',BASE),{method:'POST',body}),job=await response.json();if(!response.ok)throw Error(job.detail||'任务未能启动');if(alive())await poll(job.id);
+    const body=new FormData();body.append('transcript',file);if(!readings){body.append('translation_engine',$('#translation-engine').value);body.append('glossary',$('#translation-glossary').value);body.append('overwrite',String($('#translation-overwrite').checked));}const response=await fetch(new URL(readings?'api/readings':'api/translate',BASE),{method:'POST',body}),job=await response.json();if(!response.ok)throw Error(job.detail||'任务未能启动');translationId=job.id;if(alive()){monitor.start();await poll(job.id);}
   }catch(error){if(alive()){report(error);button.disabled=false;}}});
 }
 function podcastImport(){
