@@ -1,7 +1,12 @@
-import {editedSentence} from './transcript-edit.js?v=2026.10.04.01';
-import {suggestSentences} from './sentence-boundaries.js?v=2026.10.04.01';
+import {editedSentence} from './transcript-edit.js?v=2026.10.04.03';
+import {suggestSentences} from './sentence-boundaries.js?v=2026.10.04.03';
 export const SPEECH_CACHE='tingye-local-japanese-speech-v1';
-export const JAPANESE_MODEL={id:'onnx-community/kotoba-whisper-v2.2-ONNX',revision:'6da07195e83145e4fca2a8a1ba6f4c2e837b3798'};
+import {MODEL_FILES} from './model-manifests.js?v=2026.10.04.03';
+import {prepareInWorker,clearDownloads} from './model-download.js?v=2026.10.04.03';
+export const JAPANESE_MODEL=MODEL_FILES.speechBalanced;
+export const JAPANESE_MODELS={light:MODEL_FILES.speech,balanced:MODEL_FILES.speechBalanced};
+export function prepareJapaneseModel(onProgress=()=>{},mode='balanced'){return prepareInWorker(new URL('./mobile-transcription-worker.js?v=2026.10.04.03',import.meta.url),{mode},onProgress);}
+export async function clearSpeechModels(){await clearDownloads(SPEECH_CACHE);await caches.delete(SPEECH_CACHE);}
 export function japaneseTrialAllowed(episode){
  if(episode.language!=='ja')throw Error('手机转写试用目前只支持日语。');
  if(!Number.isFinite(episode.duration)||episode.duration<=0||episode.duration>90)throw Error('请先选一段 90 秒以内的日语音频测试。长音频仍可使用原来的电脑工具。');
@@ -25,7 +30,7 @@ export function japaneseResultSegments(result,duration,activityEnd=0){
  if(activityEnd-segments.at(-1).end>Math.max(2,duration*.15))throw Error('识别时间轴未覆盖后面的声音，可能漏识别。原稿保留，请换更短的音频测试。');
  // Segment timestamps come from ASR; word positions and additional punctuation
  // boundaries are estimated and remain explicitly editable in the phone editor.
- return suggestSentences(segments,'ja').map((s,id)=>({...s,id,translation:'',translationEdited:false,translationPending:true,transcriptionEngine:'local-kotoba',wordTimingEstimated:true}));
+ return suggestSentences(segments,'ja').map((s,id)=>({...s,id,translation:'',translationEdited:false,translationPending:true,transcriptionEngine:result.model===MODEL_FILES.speechBalanced.id?'local-whisper-small':'local-whisper-base',wordTimingEstimated:true}));
 }
 export async function decodeJapaneseTrial(file){
  if(!file||file.size>80*1048576)throw Error('请使用 80 MB 以内的短音频测试。');
@@ -41,14 +46,14 @@ export async function decodeJapaneseTrial(file){
   return (await offline.startRendering()).getChannelData(0).slice();
  }finally{await context.close().catch(()=>{});}
 }
-export function runJapaneseTranscription(samples,onProgress=()=>{},mode='compatible'){
+export function runJapaneseTranscription(samples,onProgress=()=>{},mode='balanced'){
  let worker,timer,finished=false,rejectTask;
  const stop=()=>{clearTimeout(timer);worker?.terminate();};
  const promise=new Promise((resolve,reject)=>{
   rejectTask=reject;const fail=message=>{if(finished)return;finished=true;stop();reject(Error(message));};
   const watchdog=()=>{clearTimeout(timer);timer=setTimeout(()=>fail('转写长时间没有响应，原稿保留。请保持听页在前台，使用更短的音频测试。'),15*60*1000);};
   try{
-   worker=new Worker(new URL('./mobile-transcription-worker.js?v=2026.10.04.01',import.meta.url),{type:'module'});
+   worker=new Worker(new URL('./mobile-transcription-worker.js?v=2026.10.04.03',import.meta.url),{type:'module'});
    worker.onmessage=({data})=>{if(finished)return;watchdog();if(data.type==='progress')onProgress(data);else if(data.type==='done'){finished=true;stop();resolve(data.result);}else if(data.type==='error')fail(data.message);};
    worker.onerror=()=>fail('本机转写未能运行，原稿保留。请检查下载或换更短的音频。');watchdog();worker.postMessage({language:'ja',samples,mode},[samples.buffer]);
   }catch(error){fail(error.message);}

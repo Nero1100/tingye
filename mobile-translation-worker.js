@@ -1,13 +1,21 @@
-import {MODEL_CACHE,DIRECT_MODEL,TRANSLATION_MODELS,LANGUAGE_CODES} from './mobile-translation.js?v=2026.10.04.01';
+import {MODEL_CACHE,DIRECT_MODEL,TRANSLATION_MODELS,LANGUAGE_CODES} from './mobile-translation.js?v=2026.10.04.03';
+import {MODEL_FILES} from './model-manifests.js?v=2026.10.04.03';
+import {isIOSDevice} from './model-download.js?v=2026.10.04.03';
 const progress=message=>self.postMessage({type:'progress',...message});
 let started=false;
 self.onmessage=async({data})=>{
  if(started)return;started=true;
  try{
+  if(data.engine==='direct'&&isIOSDevice())throw Error('手机请使用轻量翻译，大模型请在电脑上使用。');
+  const entries=data.engine==='direct'?null:[...(data.language==='en'?[]:MODEL_FILES[data.language]?.files||[]),...MODEL_FILES.en.files];
+  const {configureLocalRuntime,preparePublicModels}=await import('./mobile-runtime.js?v=2026.10.04.03');
+  if(data.action==='prepare'){
+   if(!LANGUAGE_CODES[data.language])throw Error('不支持这种语言。');
+   if(entries)await preparePublicModels(MODEL_CACHE,entries,progress);self.postMessage({type:'done'});return;
+  }
   if(!LANGUAGE_CODES[data.language]||!Array.isArray(data.texts)||!data.texts.length||data.texts.length>20000||data.texts.some(t=>typeof t!=='string'||!t.trim()||t.length>(data.language==='ja'?180:500)))throw Error('请先调整断句，再翻译。');
   progress({stage:'load',message:'准备本机翻译模型…'});
-  const {configureLocalRuntime}=await import('./mobile-runtime.js?v=2026.10.04.01');
-  const pipeline=await configureLocalRuntime(MODEL_CACHE,progress);
+  const pipeline=await configureLocalRuntime(MODEL_CACHE,progress,entries);
   const downloads=new Map();
   if(data.engine==='direct'){
    progress({stage:'load',message:'检查本机翻译能力…'});
@@ -29,7 +37,7 @@ self.onmessage=async({data})=>{
    }
    await translator.dispose();self.postMessage({type:'done',translations});return;
   }
-  async function loadModel(language){const model=TRANSLATION_MODELS[language];return pipeline('translation',model.id,{revision:model.revision,device:'wasm',dtype:'q8',progress_callback:p=>{
+  async function loadModel(language){const model=TRANSLATION_MODELS[language];return pipeline('translation',model.id,{revision:model.revision,local_files_only:true,device:'wasm',dtype:'q8',progress_callback:p=>{
    const file=model.id+':'+p.file;
    if(p.status==='progress')downloads.set(file,{loaded:p.loaded||0,total:p.total||0});
    if(p.status==='done'&&downloads.has(file)){const entry=downloads.get(file);entry.loaded=entry.total;}

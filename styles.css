@@ -84,3 +84,5 @@ html{height:100%;overflow:hidden;overscroll-behavior:none}body{height:100vh;heig
 @media(max-width:360px){.reader-tools{gap:3px}.reader-tools #transcript-tools{font-size:.75rem}.reader-tools button{padding-inline:3px;font-size:.65rem}}
 
 .local-translation-preview{border-top:1px solid var(--border);padding:12px 0}.local-translation-preview small{color:var(--muted)}.local-translation-preview p{line-height:1.65;overflow-wrap:anywhere;margin:8px 0}
+
+.sentence-remask{position:absolute;top:0;right:48px;min-height:36px;padding:4px 8px;color:var(--muted);font-size:.75rem;border:1px solid var(--border);border-radius:99px;z-index:2}.sentence{position:relative}

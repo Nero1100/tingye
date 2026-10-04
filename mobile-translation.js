@@ -7,6 +7,8 @@ export const TRANSLATION_MODELS={
  en:{id:'Xenova/opus-mt-en-zh',revision:'046f55aec303cdee3e0318604406d4df20f1e8ea'}
 };
 export const LANGUAGE_CODES={en:'eng_Latn',fr:'fra_Latn',ja:'jpn_Jpan'};
+import {prepareInWorker,downloadStatus,clearDownloads} from './model-download.js?v=2026.10.04.03';
+export function prepareTranslationModel(document,onProgress=()=>{},engine='light'){return prepareInWorker(new URL('./mobile-translation-worker.js?v=2026.10.04.03',import.meta.url),{language:document.language,engine},onProgress);}
 export function translationTargets(document,{scope='pending',index=0,overwrite=false}={}){
  if(!LANGUAGE_CODES[document.language])throw Error('目前支持英语、法语和日语译成中文。');
  return document.segments.flatMap((s,i)=>{
@@ -29,7 +31,7 @@ export function applyLocalTranslations(current,before,indices,translations,engin
  });
  return next;
 }
-export function runLocalTranslation(document,indices,onProgress=()=>{},engine='direct'){
+export function runLocalTranslation(document,indices,onProgress=()=>{},engine='light'){
  let worker,timer,finished=false,rejectTask;
  const stop=()=>{clearTimeout(timer);worker?.terminate();};
  const promise=new Promise((resolve,reject)=>{
@@ -37,7 +39,7 @@ export function runLocalTranslation(document,indices,onProgress=()=>{},engine='d
   const fail=message=>{if(finished)return;finished=true;stop();reject(Error(message));};
   const watchdog=()=>{clearTimeout(timer);timer=setTimeout(()=>fail('翻译长时间没有响应，原稿已保留。请保持听页在前台，先试译一句。'),15*60*1000);};
   try{
-   worker=new Worker(new URL('./mobile-translation-worker.js?v=2026.10.04.01',import.meta.url),{type:'module'});
+   worker=new Worker(new URL('./mobile-translation-worker.js?v=2026.10.04.03',import.meta.url),{type:'module'});
    worker.onmessage=({data})=>{
     if(finished)return;watchdog();
     if(data.type==='progress')onProgress(data);
@@ -54,6 +56,6 @@ export async function translationCacheStatus(){
  if(!globalThis.caches)return {bytes:0,files:0};
  const cache=await caches.open(MODEL_CACHE),keys=await cache.keys();let bytes=0;
  for(const key of keys){const response=await cache.match(key);bytes+=Number(response.headers.get('content-length')||0);}
- return {bytes,files:keys.length};
+ const downloaded=await downloadStatus(MODEL_CACHE);return {bytes:bytes+downloaded.bytes,files:keys.length+downloaded.files};
 }
-export async function clearTranslationCache(){if(globalThis.caches)await caches.delete(MODEL_CACHE);}
+export async function clearTranslationCache(){await clearDownloads(MODEL_CACHE);if(globalThis.caches)await caches.delete(MODEL_CACHE);}
