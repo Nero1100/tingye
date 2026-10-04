@@ -1,25 +1,25 @@
-import {planTranscriptImports,phoneInterface,transcriptExportName} from './transcript-batch.js?v=2026.10.04.11';
-import {clearModelDownloads,clearBrowserTranslation} from './browser-model-cleanup.js?v=2026.10.04.11';
-import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration,replaceEpisodeTranscripts} from './db.js?v=2026.10.04.11';
-import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.04.11';
+import {planTranscriptImports,phoneInterface,transcriptExportName} from './transcript-batch.js?v=2026.10.04.12';
+import {clearModelDownloads,clearBrowserTranslation} from './browser-model-cleanup.js?v=2026.10.04.12';
+import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration,replaceEpisodeTranscripts} from './db.js?v=2026.10.04.12';
+import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.04.12';
 import {lexicalWords,dictionaryText} from './lexicon.js';
-import {Practice,practiceOptions} from './practice.js?v=2026.10.04.11';
+import {Practice,practiceOptions} from './practice.js?v=2026.10.04.12';
 import {palettes,applyTheme} from './theme.js';
 import {hasKanji,rubyParts,setRubyReading,prepareReadings} from './furigana.js';
-import {editedSentence,changedCards,replacementTranscript} from './transcript-edit.js?v=2026.10.04.11';
-import {splitChoices,splitSentence,mergeSentences,resegmentCards} from './segment-edit.js?v=2026.10.04.11';
-import {boundaryWords,suggestSentences} from './sentence-boundaries.js?v=2026.10.04.11';
-import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.04.11';
-import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.04.11';
-import {validatePlaybackLists,reconcilePlaybackList,selectPlaybackEpisodes,reorderPlaybackList,restorePlaybackLists} from './playback-list.js?v=2026.10.04.11';
-import {bindReaderGestures} from './reader-gestures.js?v=2026.10.04.11';
+import {editedSentence,changedCards,replacementTranscript} from './transcript-edit.js?v=2026.10.04.12';
+import {splitChoices,splitSentence,mergeSentences,resegmentCards} from './segment-edit.js?v=2026.10.04.12';
+import {boundaryWords,suggestSentences} from './sentence-boundaries.js?v=2026.10.04.12';
+import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.04.12';
+import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.04.12';
+import {validatePlaybackLists,reconcilePlaybackList,selectPlaybackEpisodes,reorderPlaybackList,restorePlaybackLists,includePlaybackEpisode} from './playback-list.js?v=2026.10.04.12';
+import {bindReaderGestures} from './reader-gestures.js?v=2026.10.04.12';
 import {bindDragOrder,replaceSubsetOrder} from './drag-order.js';
 import {cardCategory,cardCategories,selectedCards,cardSentence} from './cards.js';
-import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.04.11';
-import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.04.11';
+import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.04.12';
+import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.04.12';
 import {validateFolders,folderEpisodes,folderMembership,restoreFolders,makeFolderCover} from './folders.js';
-import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.04.11';
-import {ListPosition} from './list-position.js?v=2026.10.04.11';
+import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.04.12';
+import {ListPosition} from './list-position.js?v=2026.10.04.12';
 const phone=phoneInterface(navigator.userAgent,navigator.maxTouchPoints);
 const main=document.querySelector('#main'),modal=document.querySelector('#modal');
 let audio=document.querySelector('#audio');
@@ -51,6 +51,12 @@ async function playlistState(collection,scope=playlistFolder){
 async function playlistItems(collection){
  const {available,state}=await playlistState(collection),byId=new Map(available.map(e=>[e.id,e]));
  return state.ids.map(id=>byId.get(id));
+}
+async function ensureEpisodeInPlaylist(e){
+ const collection=await episodeCollection();
+ if(!folderEpisodes(collection,playlistFolder).some(item=>item.id===e.id))await choosePlaylistFolder(e.collectionId&&folders.some(f=>f.id===e.collectionId)?e.collectionId:'');
+ const {available,state}=await playlistState(collection);
+ if(!state.ids.includes(e.id)){await savePlaybackList(includePlaybackEpisode(available,state,e.id));shuffleQueue.reset();}
 }
 const audioSize=e=>e.audio?.size||e.audioBytes||0;
 const audioFile=e=>e.audio||originalFiles.get(e.id)||null;
@@ -264,6 +270,7 @@ async function batchImportScripts(){
 
 async function openEpisode(id,initialPosition){
   uncoveredSentences.clear();rememberLibrary();const serial=++openSerial;resetClip();const e=await read('episodes',id);if(serial!==openSerial)return;if(!e)throw Error('找不到这段音频。');
+  await ensureEpisodeInPlaylist(e);if(serial!==openSerial)return;
   e.segments=(e.segments||[]).map(s=>prepareReadings({...s,words:lexicalWords(s,e.language)},e.language));
   const file=audioFile(e);if(!file&&Number.isFinite(initialPosition)){e.progress=initialPosition;await write('progress',{id:e.id,seconds:initialPosition});}
   if(episode?.id!==id||audio.error||!audio.getAttribute('src')&&file){
@@ -760,7 +767,7 @@ async function computerTranscription(existing){
   const savedJob=(await read('settings','transcription-job'))?.value;
   const pending=(!existing||(existing.id&&savedJob?.episodeId===existing.id))?savedJob:null;
   if(pending?.episodeId)existing=await read('episodes',pending.episodeId);
-  openModal('电脑转写',`${pending?'<p class="note">继续查看上一次转写任务。</p>':existing?`<div class="file-meta">${esc(existing.title)}</div>`:'<label for="asr-audio">临时处理的音频</label><input id="asr-audio" type="file" accept="audio/*,.mp3,.m4a,.wav,.flac,.ogg">'}${pending?'':`<label for="asr-language">音频语言</label><select id="asr-language">${Object.entries(LANG).map(([c,n])=>`<option value="${c}" ${existing?.language===c?'selected':''}>${n}</option>`).join('')}</select><p class="note">处理后清理临时音频。高质量翻译结合前后文，首次需下载约 2.5 GB 免费模型；本机已准备好的模型可离线使用。</p><label class="checkbox-line"><input id="asr-translate" type="checkbox" checked>同时生成中文译文</label><label for="asr-engine">翻译方式</label><select id="asr-engine"><option value="quality">高质量 · 结合对话上下文</option><option value="fast">快速 · 小模型逐句翻译</option></select><label for="asr-glossary">人名、店名或术语（可选）</label><textarea id="asr-glossary" maxlength="5000" rows="2" placeholder="一行一条，例如：みどり = みどり咖啡馆"></textarea><button class="primary full" id="start-asr">开始本机处理</button>`}<button class="secondary full section-title" id="asr-export-location">逐字稿保存位置</button><div id="asr-result"></div><button class="secondary full section-title" id="new-asr" ${pending?'':'hidden'}>开始新的转写</button>`);
+  openModal('电脑转写',`${pending?'<p class="note">继续查看上一次转写任务。</p>':existing?`<div class="file-meta">${esc(existing.title)}</div>`:'<label for="asr-audio">临时处理的音频</label><input id="asr-audio" type="file" accept="audio/*,.mp3,.m4a,.wav,.flac,.ogg">'}${pending?'':`<label for="asr-language">音频语言</label><select id="asr-language">${Object.entries(LANG).map(([c,n])=>`<option value="${c}" ${(existing?.language||(backendVersion>=7?'ja':'en'))===c?'selected':''}>${n}</option>`).join('')}</select><p class="note">${backendVersion>=7?'日语使用 MOSS，优先 GPU 加速；英语和法语沿用原模型。':''}处理后清理临时音频。高质量翻译结合前后文，首次需下载约 2.5 GB 免费模型；本机已准备好的模型可离线使用。</p><label class="checkbox-line"><input id="asr-translate" type="checkbox" checked>同时生成中文译文</label><label for="asr-engine">翻译方式</label><select id="asr-engine"><option value="quality">高质量 · 结合对话上下文</option><option value="fast">快速 · 小模型逐句翻译</option></select><label for="asr-glossary">人名、店名或术语（可选）</label><textarea id="asr-glossary" maxlength="5000" rows="2" placeholder="一行一条，例如：みどり = みどり咖啡馆"></textarea><button class="primary full" id="start-asr">开始本机处理</button>`}<button class="secondary full section-title" id="asr-export-location">逐字稿保存位置</button><div id="asr-result"></div><button class="secondary full section-title" id="new-asr" ${pending?'':'hidden'}>开始新的转写</button>`);
   on('#asr-export-location','click',()=>exportLocation(()=>computerTranscription(requestedAudio)));
   const serial=modalSerial;
   const alive=()=>modal.open&&modalSerial===serial&&!!$('#asr-result');

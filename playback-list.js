@@ -26,6 +26,11 @@ export function selectPlaybackEpisodes(episodes,state,selectedIds){
  for(const id of available)if(selected.has(id)&&!kept.has(id))ids.push(id);
  return {...current,ids,excluded:available.filter(id=>!selected.has(id))};
 }
+export function includePlaybackEpisode(episodes,state,id){
+ if(!episodes.some(e=>e.id===id))throw Error('找不到这段音频。');
+ const next=reconcilePlaybackList(episodes,state);
+ return {...next,ids:next.ids.includes(id)?next.ids:[...next.ids,id],excluded:next.excluded.filter(item=>item!==id)};
+}
 export function reorderPlaybackList(state,before,ordered){
  const members=new Set(state.ids);
  if(before.length!==members.size||new Set(before).size!==members.size||before.some(id=>!members.has(id))||
