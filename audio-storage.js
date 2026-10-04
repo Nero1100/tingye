@@ -1,4 +1,4 @@
-import {audioMime} from './audio-media.js?v=2026.10.04.09';
+import {audioMime} from './audio-media.js?v=2026.10.04.10';
 const hex=buffer=>[...new Uint8Array(buffer)].map(value=>value.toString(16).padStart(2,'0')).join('');
 export async function audioContentHash(blob){return hex(await crypto.subtle.digest('SHA-256',await blob.arrayBuffer()));}
 export function canReuseAudioCopy(episode,file,contentHash){

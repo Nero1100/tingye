@@ -1,25 +1,25 @@
-import {planTranscriptImports,phoneInterface,transcriptExportName} from './transcript-batch.js?v=2026.10.04.09';
-import {clearModelDownloads,clearBrowserTranslation} from './browser-model-cleanup.js?v=2026.10.04.09';
-import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration,replaceEpisodeTranscripts} from './db.js?v=2026.10.04.09';
-import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.04.09';
+import {planTranscriptImports,phoneInterface,transcriptExportName} from './transcript-batch.js?v=2026.10.04.10';
+import {clearModelDownloads,clearBrowserTranslation} from './browser-model-cleanup.js?v=2026.10.04.10';
+import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration,replaceEpisodeTranscripts} from './db.js?v=2026.10.04.10';
+import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.04.10';
 import {lexicalWords,dictionaryText} from './lexicon.js';
-import {Practice,practiceOptions} from './practice.js?v=2026.10.04.09';
+import {Practice,practiceOptions} from './practice.js?v=2026.10.04.10';
 import {palettes,applyTheme} from './theme.js';
 import {hasKanji,rubyParts,setRubyReading,prepareReadings} from './furigana.js';
-import {editedSentence,changedCards,replacementTranscript} from './transcript-edit.js?v=2026.10.04.09';
-import {splitChoices,splitSentence,mergeSentences,resegmentCards} from './segment-edit.js?v=2026.10.04.09';
-import {boundaryWords,suggestSentences} from './sentence-boundaries.js?v=2026.10.04.09';
-import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.04.09';
-import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.04.09';
-import {validatePlaybackLists,reconcilePlaybackList,selectPlaybackEpisodes,reorderPlaybackList,restorePlaybackLists} from './playback-list.js?v=2026.10.04.09';
-import {bindReaderGestures} from './reader-gestures.js?v=2026.10.04.09';
+import {editedSentence,changedCards,replacementTranscript} from './transcript-edit.js?v=2026.10.04.10';
+import {splitChoices,splitSentence,mergeSentences,resegmentCards} from './segment-edit.js?v=2026.10.04.10';
+import {boundaryWords,suggestSentences} from './sentence-boundaries.js?v=2026.10.04.10';
+import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.04.10';
+import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.04.10';
+import {validatePlaybackLists,reconcilePlaybackList,selectPlaybackEpisodes,reorderPlaybackList,restorePlaybackLists} from './playback-list.js?v=2026.10.04.10';
+import {bindReaderGestures} from './reader-gestures.js?v=2026.10.04.10';
 import {bindDragOrder,replaceSubsetOrder} from './drag-order.js';
 import {cardCategory,cardCategories,selectedCards,cardSentence} from './cards.js';
-import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.04.09';
-import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.04.09';
+import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.04.10';
+import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.04.10';
 import {validateFolders,folderEpisodes,folderMembership,restoreFolders,makeFolderCover} from './folders.js';
-import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.04.09';
-import {ListPosition} from './list-position.js?v=2026.10.04.09';
+import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.04.10';
+import {ListPosition} from './list-position.js?v=2026.10.04.10';
 const phone=phoneInterface(navigator.userAgent,navigator.maxTouchPoints);
 const main=document.querySelector('#main'),modal=document.querySelector('#modal');
 let audio=document.querySelector('#audio');
@@ -855,7 +855,7 @@ function podcastImport(){
 async function navigate(target){rememberLibrary();delete main.dataset.libraryPositionKey;resetClip();if(immersive)toggleImmersive();$('.player-dock')?.remove();view=target;location.hash=target;if(target==='library')await renderLibrary();if(target==='cards')await renderCards();if(target==='settings')await renderSettings();miniPlayer();if(target!=='library')main.scrollTo(0,0);}
 document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>navigate(b.dataset.nav).catch(report));window.addEventListener('hashchange',()=>{const hash=location.hash.slice(1);if(hash.startsWith('audio/')){const id=hash.slice(6);if(episode?.id!==id||view!=='player')openEpisode(id).catch(report);}else if(['library','cards','settings'].includes(hash)&&view!==hash)navigate(hash).catch(report);});
 document.addEventListener('keydown',e=>{if(e.defaultPrevented||modal.open||document.activeElement?.closest('button,[role=button],a')||['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;if(e.code==='Space'&&episode){e.preventDefault();togglePlay();}if(e.key==='ArrowRight'&&episode)jump(Math.min(episode.segments.length-1,current+1),true);if(e.key==='ArrowLeft'&&episode)jump(Math.max(0,current-1),true);if(e.key==='Escape'&&immersive)toggleImmersive();if(e.key.toLowerCase()==='r'&&episode)jump(Math.max(0,current),true);});
-function connectionState(){$('#connection').textContent=navigator.onLine?'本机保存':'离线 · 本机保存';}window.addEventListener('online',connectionState);window.addEventListener('offline',connectionState);connectionState();applyPrefs();matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyPrefs);
+applyPrefs();matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyPrefs);
 try{if(['localhost','127.0.0.1'].includes(location.hostname)){const r=await fetch(new URL('api/status',BASE));if(r.ok){const status=await r.json();backend=status.available===true;backendVersion=status.version||1;}}}catch{}
 if('serviceWorker'in navigator&&window.isSecureContext)navigator.serviceWorker.register(new URL('sw.js',BASE),{scope:BASE.pathname}).catch(console.error);
 if('mediaSession'in navigator){for(const [name,handler] of [['play',()=>togglePlay()],['pause',()=>{cancelPractice();audio.pause();}],['seekto',d=>{if(Number.isFinite(d.seekTime)&&episode&&audioFile(episode)){resetClip();current=-1;audio.currentTime=Math.min(episode?.duration||0,Math.max(0,d.seekTime));if(repetitionActive()&&!audio.paused&&episode.segments?.length)practice.start(Math.max(0,segmentAt(audio.currentTime)));updatePlayback();}}],['previoustrack',()=>episode&&switchEpisode(-1).catch(report)],['nexttrack',()=>episode&&switchEpisode(1).catch(report)]])try{navigator.mediaSession.setActionHandler(name,handler);}catch{}}
