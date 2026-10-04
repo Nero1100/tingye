@@ -1,22 +1,22 @@
-import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration} from './db.js?v=2026.10.03.18';
-import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.03.18';
+import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration} from './db.js?v=2026.10.03.19';
+import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.03.19';
 import {lexicalWords,dictionaryText} from './lexicon.js';
 import {Practice} from './practice.js';
 import {palettes,applyTheme} from './theme.js';
 import {hasKanji,rubyParts,setRubyReading,prepareReadings} from './furigana.js';
 import {editedSentence,changedCards} from './transcript-edit.js';
 import {splitChoices,splitSentence,mergeSentences,resegmentCards} from './segment-edit.js';
-import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.03.18';
-import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.03.18';
-import {validatePlaybackLists,reconcilePlaybackList,selectPlaybackEpisodes,reorderPlaybackList,restorePlaybackLists} from './playback-list.js?v=2026.10.03.18';
+import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.03.19';
+import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.03.19';
+import {validatePlaybackLists,reconcilePlaybackList,selectPlaybackEpisodes,reorderPlaybackList,restorePlaybackLists} from './playback-list.js?v=2026.10.03.19';
 import {bindReaderGestures} from './reader-gestures.js';
 import {bindDragOrder,replaceSubsetOrder} from './drag-order.js';
 import {cardCategory,cardCategories,selectedCards,cardSentence} from './cards.js';
-import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.03.18';
-import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.03.18';
+import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.03.19';
+import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.03.19';
 import {validateFolders,folderEpisodes,folderMembership,restoreFolders,makeFolderCover} from './folders.js';
-import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.03.18';
-import {ListPosition} from './list-position.js?v=2026.10.03.18';
+import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.03.19';
+import {ListPosition} from './list-position.js?v=2026.10.03.19';
 const main=document.querySelector('#main'),modal=document.querySelector('#modal');
 let audio=document.querySelector('#audio');
 const LANG={en:'英语',fr:'法语',ja:'日语'},GOTHIC='"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif',MINCHO='"Hiragino Mincho ProN","Yu Mincho",serif',BASE=new URL('./',import.meta.url);
@@ -213,7 +213,7 @@ async function switchEpisode(direction,automatic=false){
 async function saveDraggedOrder(ids,before){const collection=orderedEpisodes(await episodeCollection(),prefs.playlistSort),order=replaceSubsetOrder(collection.map(e=>e.id),before,ids);await setEpisodeOrder(order);prefs.playlistSort='manual';await savePrefs();toast('音频库顺序已保存');}
 async function showPlaylist(editing=false){
  const scope=playlistFolder,collection=await episodeCollection(),items=await playlistItems(collection);
- openModal('播放列表',`<label class="sr-only" for="playlist-folder">播放范围</label><select id="playlist-folder" aria-label="播放范围"><option value="">全部音频</option>${folders.map(f=>`<option value="${esc(f.id)}" ${playlistFolder===f.id?'selected':''}>${esc(f.name)}</option>`).join('')}</select><div class="playlist-modes" role="group" aria-label="播放模式">${[['sequence','顺序播放'],['shuffle','随机播放'],['single','单集循环']].map(([mode,label])=>`<button data-playback-mode="${mode}" aria-pressed="${prefs.playbackMode===mode}" class="${prefs.playbackMode===mode?'selected':''}">${label}</button>`).join('')}</div><div class="playlist-options"><label class="checkbox-line"><input id="playlist-continuous" type="checkbox" ${prefs.continuous?'checked':''}>播完继续</label><div class="playlist-edit-actions"><button id="playlist-pick" class="secondary">选择集数</button><button id="playlist-edit" class="secondary">${editing?'完成排序':'调整顺序'}</button></div></div><div class="playlist-rows">${items.length?items.map((e,i)=>`<div class="playlist-row ${episode?.id===e.id?'playing':''}" data-sort-row="${e.id}"><button class="playlist-track" data-play-track="${e.id}"><small>${i+1}</small><span>${esc(e.title)}<small>${esc(folderName(e))} · ${e.duration?time(e.duration):'音频'}</small></span></button>${editing?`<div class="playlist-moves"><button class="drag-handle" data-drag-id="${e.id}" aria-label="拖动排序 ${esc(e.title)}" aria-pressed="false">≡</button></div>`:''}</div>`).join(''):'<p class="note playlist-empty">播放列表为空，点“选择集数”加入想听的音频。</p>'}</div>`);
+ openModal('播放列表',`<label class="sr-only" for="playlist-folder">播放范围</label><select id="playlist-folder" aria-label="播放范围"><option value="">全部音频</option>${folders.map(f=>`<option value="${esc(f.id)}" ${playlistFolder===f.id?'selected':''}>${esc(f.name)}</option>`).join('')}</select><div class="playlist-modes" role="group" aria-label="播放模式">${[['sequence','顺序播放'],['shuffle','随机播放'],['single','单集循环']].map(([mode,label])=>`<button data-playback-mode="${mode}" aria-pressed="${prefs.playbackMode===mode}" class="${prefs.playbackMode===mode?'selected':''}">${label}</button>`).join('')}</div><div class="playlist-options"><label class="checkbox-line"><input id="playlist-continuous" type="checkbox" ${prefs.continuous?'checked':''}>播完继续</label><div class="playlist-edit-actions"><button id="playlist-pick" class="secondary">选择集数</button><button id="playlist-edit" class="secondary">${editing?'完成排序':'调整顺序'}</button></div></div><div class="playlist-rows">${items.length?items.map((e,i)=>`<div class="playlist-row ${episode?.id===e.id?'playing':''}" data-sort-row="${e.id}"><button class="playlist-track" data-play-track="${e.id}"><small>${i+1}</small><span>${esc(e.title)}<small>${esc(folderName(e))} · ${e.duration?time(e.duration):'音频'}</small></span></button><div class="playlist-row-actions">${editing?`<button class="drag-handle" data-drag-id="${e.id}" aria-label="拖动排序 ${esc(e.title)}" aria-pressed="false">≡</button>`:''}<button class="playlist-remove" data-remove-track="${e.id}" aria-label="移出播放列表 ${esc(e.title)}" title="移出播放列表">×</button></div></div>`).join(''):'<p class="note playlist-empty">播放列表为空，点“选择集数”加入想听的音频。</p>'}</div>`);
  modal.classList.add('playlist-sheet');
  $('.dialog-head').insertAdjacentHTML('beforebegin','<button class="sheet-grip" aria-label="向下滑动收起播放列表"><span></span></button>');
  playlistSheet=bindPlaylistSheet(modal,closeModal);
@@ -227,6 +227,20 @@ async function showPlaylist(editing=false){
  on('#playlist-pick','click',()=>choosePlaylistEpisodes().catch(report));
  on('#playlist-folder','change',async e=>{await choosePlaylistFolder(e.target.value);showPlaylist(editing);});
  on('#playlist-continuous','change',async e=>{prefs.continuous=e.target.checked;await savePrefs();});on('#playlist-edit','click',()=>showPlaylist(!editing));
+ let removing=false;
+ modal.querySelectorAll('[data-remove-track]').forEach(button=>button.onclick=async()=>{
+  if(removing)return;removing=true;
+  const serial=modalSerial,top=$('.playlist-rows').scrollTop,buttons=[...modal.querySelectorAll('[data-remove-track]')],index=buttons.indexOf(button),focused=document.activeElement===button;
+  buttons.forEach(b=>b.disabled=true);
+  try{
+   const {available,state}=await playlistState(await episodeCollection(),scope);
+   await savePlaybackList(selectPlaybackEpisodes(available,state,state.ids.filter(id=>id!==button.dataset.removeTrack)));
+   shuffleQueue.reset();toast('已移出播放列表');
+   if(serial!==modalSerial)return;
+   await showPlaylist(editing);$('.playlist-rows').scrollTop=top;
+   if(focused){const remaining=[...modal.querySelectorAll('[data-remove-track]')];(remaining[Math.min(index,remaining.length-1)]||$('#playlist-pick')).focus({preventScroll:true});}
+  }catch(error){report(error);}finally{removing=false;buttons.forEach(b=>{if(b.isConnected)b.disabled=false;});}
+ });
  document.querySelectorAll('[data-play-track]').forEach(b=>b.onclick=()=>playEpisode(b.dataset.playTrack).catch(report));
 }
 async function choosePlaylistEpisodes(){
