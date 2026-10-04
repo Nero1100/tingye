@@ -45,6 +45,7 @@ export class ShuffleQueue{
 export function playbackTarget(episodes,currentId,{mode='sequence',direction=1,automatic=false,shuffle}={}){
  if(automatic&&mode==='single')return episodes.some(e=>e.id===currentId)?currentId:null;
  if(mode==='shuffle')return shuffle.next(episodes.map(e=>e.id),currentId,direction);
+ if(!episodes.some(e=>e.id===currentId))return direction>0?episodes[0]?.id||null:episodes.at(-1)?.id||null;
  return nextEpisodeId(episodes,currentId,direction);
 }
 export function sortAudioFiles(files){return [...files].sort((a,b)=>collator.compare(a.webkitRelativePath||a.name,b.webkitRelativePath||b.name));}
