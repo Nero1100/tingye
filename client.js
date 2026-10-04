@@ -1,25 +1,25 @@
-import {planTranscriptImports,phoneInterface,transcriptExportName} from './transcript-batch.js?v=2026.10.04.10';
-import {clearModelDownloads,clearBrowserTranslation} from './browser-model-cleanup.js?v=2026.10.04.10';
-import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration,replaceEpisodeTranscripts} from './db.js?v=2026.10.04.10';
-import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.04.10';
+import {planTranscriptImports,phoneInterface,transcriptExportName} from './transcript-batch.js?v=2026.10.04.11';
+import {clearModelDownloads,clearBrowserTranslation} from './browser-model-cleanup.js?v=2026.10.04.11';
+import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration,replaceEpisodeTranscripts} from './db.js?v=2026.10.04.11';
+import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.04.11';
 import {lexicalWords,dictionaryText} from './lexicon.js';
-import {Practice,practiceOptions} from './practice.js?v=2026.10.04.10';
+import {Practice,practiceOptions} from './practice.js?v=2026.10.04.11';
 import {palettes,applyTheme} from './theme.js';
 import {hasKanji,rubyParts,setRubyReading,prepareReadings} from './furigana.js';
-import {editedSentence,changedCards,replacementTranscript} from './transcript-edit.js?v=2026.10.04.10';
-import {splitChoices,splitSentence,mergeSentences,resegmentCards} from './segment-edit.js?v=2026.10.04.10';
-import {boundaryWords,suggestSentences} from './sentence-boundaries.js?v=2026.10.04.10';
-import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.04.10';
-import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.04.10';
-import {validatePlaybackLists,reconcilePlaybackList,selectPlaybackEpisodes,reorderPlaybackList,restorePlaybackLists} from './playback-list.js?v=2026.10.04.10';
-import {bindReaderGestures} from './reader-gestures.js?v=2026.10.04.10';
+import {editedSentence,changedCards,replacementTranscript} from './transcript-edit.js?v=2026.10.04.11';
+import {splitChoices,splitSentence,mergeSentences,resegmentCards} from './segment-edit.js?v=2026.10.04.11';
+import {boundaryWords,suggestSentences} from './sentence-boundaries.js?v=2026.10.04.11';
+import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.04.11';
+import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.04.11';
+import {validatePlaybackLists,reconcilePlaybackList,selectPlaybackEpisodes,reorderPlaybackList,restorePlaybackLists} from './playback-list.js?v=2026.10.04.11';
+import {bindReaderGestures} from './reader-gestures.js?v=2026.10.04.11';
 import {bindDragOrder,replaceSubsetOrder} from './drag-order.js';
 import {cardCategory,cardCategories,selectedCards,cardSentence} from './cards.js';
-import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.04.10';
-import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.04.10';
+import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.04.11';
+import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.04.11';
 import {validateFolders,folderEpisodes,folderMembership,restoreFolders,makeFolderCover} from './folders.js';
-import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.04.10';
-import {ListPosition} from './list-position.js?v=2026.10.04.10';
+import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.04.11';
+import {ListPosition} from './list-position.js?v=2026.10.04.11';
 const phone=phoneInterface(navigator.userAgent,navigator.maxTouchPoints);
 const main=document.querySelector('#main'),modal=document.querySelector('#modal');
 let audio=document.querySelector('#audio');
@@ -506,7 +506,7 @@ function recoverSound(){
  // Call play synchronously from the recovery click to retain iPhone user activation.
  fresh.play().catch(reportPlayback);updatePlayback();toast('播放器已重新初始化');
 }
-function setImmersiveAccess(active){document.body.style.overflow=active?'hidden':'';main.inert=active;document.querySelector('.app-header').inert=active;document.querySelector('nav').inert=active;}
+function setImmersiveAccess(active){document.body.style.overflow=active?'hidden':'';main.inert=active;const header=document.querySelector('.app-header');if(header)header.inert=active;document.querySelector('nav').inert=active;}
 function toggleImmersive(){
  closeSpeedMenu();
  if(immersive){immersive=false;immListening=false;browseIndex=null;follow=true;setImmersiveAccess(false);$('.immersive-mode')?.remove();renderPlayer();return;}

@@ -101,12 +101,11 @@ html{height:100%;overflow:hidden;overscroll-behavior:none}body{height:100vh;heig
 .practice-sheet .practice-sheet-body{max-height:62dvh;padding-bottom:6px}.practice-sheet-body>label:first-child{margin-top:0}.practice-save-status{margin-bottom:4px;min-height:1.4em;font-size:.78rem;color:var(--muted)}
 
 .bottom-nav button>svg{display:block;flex:none;width:23px;height:23px;color:inherit}
-:root{background:var(--bg)}
-.player-fixed{background:var(--bg)}
 .reader-tools #transcript-tools{padding:8px 10px;min-height:40px;line-height:1.4;flex-shrink:0}
 .batch-script-preview{max-height:38dvh;overflow:auto;overscroll-behavior:contain;margin:12px 0 18px}
 .batch-script-row{padding:12px 0;border-bottom:1px solid var(--border);display:grid;gap:5px;overflow-wrap:anywhere}
 .batch-script-row strong{font-size:.9rem;font-weight:600}
 .batch-script-row small{font-size:.8rem}
-/* Keep only the top safe area, without extra space above the brand. */
-body>.app-header{position:sticky;top:0;background:var(--bg);padding-top:env(safe-area-inset-top,0px);padding-bottom:8px;filter:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+
+/* The library, cards and settings begin directly below the device safe area. */
+body:not(.player-open)>main{padding-top:calc(24px + env(safe-area-inset-top,0px))}
