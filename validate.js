@@ -1,4 +1,4 @@
-import {validatePlaybackLists} from './playback-list.js?v=2026.10.03.20';
+import {validatePlaybackLists} from './playback-list.js?v=2026.10.03.21';
 import {validateFolders} from './folders.js';
 const languages = ['en', 'fr', 'ja'];
 const validTime = n => Number.isFinite(n) && n >= 0 && n <= 86400;
@@ -41,7 +41,7 @@ export function validatePreferences(value) {
     rate:[.6,.75,1,1.25,1.5,2].includes(p.rate)?p.rate:1,loop:p.loop===true,pause:p.pause===true,
     repeats:[0,1,2,3,5,10].includes(p.repeats)?p.repeats:3,
     gap:[0,.5,1,2,3,5,10].includes(p.gap)?p.gap:2,
-    mask:['none','source','translation','both'].includes(p.mask)?p.mask:'none',
+    mask:['none','source','translation','both'].includes(p.mask)?p.mask:'none',listeningMask:p.listeningMask===true,
     appearance:['system','light','dark'].includes(p.appearance)?p.appearance:'system',
     palette:!p.designVersion&&(!p.palette||p.palette==='ocean')?'paper':['paper','ocean','sage','sand','lilac','rose','graphite'].includes(p.palette)?p.palette:'paper',designVersion:2,
     playlistSort:['manual','name','newest'].includes(p.playlistSort)?p.playlistSort:'manual',continuous:p.continuous!==false,
