@@ -99,3 +99,5 @@ html{height:100%;overflow:hidden;overscroll-behavior:none}body{height:100vh;heig
 .transport button[data-action="sentence-loop"].selected{color:var(--accent)}.transport button[data-action="sentence-loop"].selected small{color:var(--accent)}.transport button:disabled{opacity:.35}
 
 .practice-sheet .practice-sheet-body{max-height:62dvh;padding-bottom:6px}.practice-sheet-body>label:first-child{margin-top:0}.practice-save-status{margin-bottom:4px;min-height:1.4em;font-size:.78rem;color:var(--muted)}
+
+.bottom-nav button>svg{display:block;flex:none;width:23px;height:23px;color:inherit}

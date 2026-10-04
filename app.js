@@ -1,1 +1,1 @@
-import './client.js?v=2026.10.04.07';
+import './client.js?v=2026.10.04.08';
