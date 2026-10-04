@@ -1,5 +1,5 @@
 import {prepareReadings} from './furigana.js';
-import {validateTranscript} from './validate.js?v=2026.10.03.21';
+import {validateTranscript} from './validate.js?v=2026.10.04.01';
 export function replacementTranscript(episode,data){
   validateTranscript(data);
   const bytes=episode.audio?.size||episode.audioBytes||0;
@@ -30,7 +30,7 @@ export function editedSentence(segment,text,translation,language){
     const end=a+(Math.max(a,b)-a)*position/length;
     return {...(matching?structuredClone(matching):{}),...part,start,end,reading:matching?.reading||'',lemma:matching?.lemma||part.text.trim(),timingEstimated:true};
   });
-  draft.text=text;draft.textEdited=true;draft.timingEstimated=true;
+  draft.text=text;draft.textEdited=true;draft.translationPending=true;draft.timingEstimated=true;
   return prepareReadings(draft,language);
 }
 export function changedCards(cards,episodeId,before,after){

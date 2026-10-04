@@ -13,14 +13,14 @@ export function splitSentence(segment,cut,time,translations){
  // A hand-set boundary can correct estimated ASR word times. Keep other words intact.
  for(const w of left.words){if(w.start>time||w.end>time){w.start=Math.min(w.start,time);w.end=Math.min(w.end,time);w.timingEstimated=true;}}
  for(const w of right.words){if(w.start<time||w.end<time){w.start=Math.max(w.start,time);w.end=Math.max(w.end,time);w.timingEstimated=true;}}
- [left,right].forEach((s,i)=>{s.translation=translations[i];s.translationEdited=!!segment.translationEdited||translations[i]!== (i===0?segment.translation||'':'');s.boundaryEdited=true;s.editedAt=Date.now();});
+ [left,right].forEach((s,i)=>{s.translation=translations[i];s.translationEdited=translations[i]!== (i===0?segment.translation||'':'');s.translationPending=!s.translationEdited;s.boundaryEdited=true;s.editedAt=Date.now();});
  return [left,right];
 }
 export function mergeSentences(left,right,language){
  if([left,right].some(s=>(s.words||[]).map(w=>w.text).join('').trim()!==s.text.trim()))throw Error('词语与原文不一致，请先按修改后的原文更新词语，再合句。');
  const result=structuredClone(left);result.end=right.end;result.text=join(left.text,right.text,language);result.words.push(...structuredClone(right.words));
  if(language!=='ja'&&!/\s$/.test(left.words.at(-1)?.text||'')&&!/^\s/.test(right.words[0]?.text||''))result.words.splice(left.words.length,0,{text:' ',start:right.start,end:right.start,selectable:false});
- result.translation=[left.translation,right.translation].filter(Boolean).join(' ');result.translationEdited=!!left.translationEdited||!!right.translationEdited;result.boundaryEdited=true;result.editedAt=Date.now();return result;
+ result.translation=[left.translation,right.translation].filter(Boolean).join(' ');result.translationEdited=false;result.translationPending=true;result.boundaryEdited=true;result.editedAt=Date.now();return result;
 }
 export function resegmentCards(cards,episodeId,before,after){
  return cards.filter(c=>c.episodeId===episodeId).map(c=>{

@@ -1,4 +1,4 @@
-import {validatePlaybackLists} from './playback-list.js?v=2026.10.03.21';
+import {validatePlaybackLists} from './playback-list.js?v=2026.10.04.01';
 import {validateFolders} from './folders.js';
 const languages = ['en', 'fr', 'ja'];
 const validTime = n => Number.isFinite(n) && n >= 0 && n <= 86400;
@@ -12,7 +12,7 @@ export function validateTranscript(data) {
   for (const s of data.segments) {
     if (!validTime(s.start) || !validTime(s.end) || s.end < s.start ||
         s.start < end - .15 || s.end > data.duration + 2 || !text(s.text, 10000) ||
-        !Array.isArray(s.words) || (s.translationEdited!==undefined&&typeof s.translationEdited!=='boolean') || (s.translation !== undefined && !text(s.translation, 10000)))
+        !Array.isArray(s.words) || (s.translationEdited!==undefined&&typeof s.translationEdited!=='boolean') || (s.translationPending!==undefined&&typeof s.translationPending!=='boolean') || (s.translation !== undefined && !text(s.translation, 10000)))
       throw Error('逐字稿的句段格式不正确。');
     end = s.end;
     let wordEnd = s.start;
