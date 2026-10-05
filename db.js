@@ -30,6 +30,8 @@ export function setEpisodeOrder(ids){return new Promise((resolve,reject)=>{
 export function applyCloudTranscript(id,document,link,{initial=false,confirmed=false}={}){
  return new Promise((resolve,reject)=>{
   const transaction=db.transaction('episodes','readwrite'),store=transaction.objectStore('episodes');let failure;
+  // Moving a shared transcript to another local audio must not leave two live bindings.
+  if(initial&&confirmed){const cursor=store.openCursor();cursor.onsuccess=()=>{const row=cursor.result;if(!row)return;const other=row.value;if(other.id!==id&&other.cloudTranscript?.scope===link.scope&&other.cloudTranscript?.id===link.id){const next={...other};delete next.cloudTranscript;row.update(next);}row.continue();};}
   const request=store.get(id);request.onsuccess=()=>{
    try{
     const e=request.result;if(!e)throw Error('对应音频已移除，请重新关联。');

@@ -23,7 +23,7 @@ export async function showSyncUI({sync,open,modal,all,read,write,on,close,report
  on('#sync-logout','click',async()=>{try{await sync.logout();close();toast('已退出同步账号，本机资料保留');}catch(error){report(error);}});
  for(const button of modal.querySelectorAll('[data-sync-associate]'))button.onclick=()=>{
   const item=sync.items[Number(button.dataset.syncAssociate)],eligible=episodes.filter(e=>e.language===item.language);
-  open('关联共享逐字稿',`<p class="note">${escapeHTML(item.filename)} · ${Math.round(item.duration)} 秒</p><label for="sync-episode">这台设备上对应的音频</label><select id="sync-episode"><option value="">请选择音频</option>${eligible.map(e=>`<option value="${escapeHTML(e.id)}">${escapeHTML(e.title)} · ${escapeHTML(e.filename)}</option>`).join('')}</select><p class="note">确认后，新稿将替换所选音频的原文、译文、假名和时间轴，并接收后续修订；音频副本、词卡和进度保留。</p><button class="primary full" id="confirm-sync-associate">关联并使用最新稿</button>`);
+  open('关联共享逐字稿',`<p class="note">${escapeHTML(item.filename)} · ${Math.round(item.duration)} 秒</p><label for="sync-episode">这台设备上对应的音频</label><select id="sync-episode"><option value="">请选择音频</option>${eligible.map(e=>`<option value="${escapeHTML(e.id)}">${escapeHTML(e.title)} · ${escapeHTML(e.filename)}</option>`).join('')}</select><p class="note">确认后，新稿将替换所选音频的原文、译文、假名和时间轴，并接收后续修订；音频副本、词卡和进度保留。如果这份共享稿已关联其他音频，旧关联会取消，旧音频的资料仍保留。</p><button class="primary full" id="confirm-sync-associate">关联并使用最新稿</button>`);
   on('#confirm-sync-associate','click',async()=>{const id=modal.querySelector('#sync-episode').value;if(!id){toast('请选择对应音频');return;}const b=modal.querySelector('#confirm-sync-associate');b.disabled=true;try{await sync.associate(item,id);close();toast('已关联，之后自动接收新稿');}catch(error){report(error);}finally{b.disabled=false;}});
  };
 }
