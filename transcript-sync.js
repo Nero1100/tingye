@@ -25,7 +25,7 @@ export class TranscriptSync {
  get scope(){return this.config?this.config.firebase.projectId+':'+this.config.space:'';}
  get key(){return this.user?this.scope+':'+this.user.uid:'';}
  get ready(){return !!(this.user&&this.role);}
- update(){this.changed?.();}
+ update(){this.changed?.();Promise.resolve(this.uiRefresh?.()).catch(()=>{});}
  async start(){
   try{this.config=connection((await this.read('settings','sync-connection'))?.value||cloudConfig);if(!this.config){this.update();return;}
    this.sdk=await import('./firebase-vendor.js');const s=this.sdk;
@@ -68,6 +68,23 @@ export class TranscriptSync {
   this.pending=[...this.pending.filter(p=>p.id!==id),entry];await this.storePending();this.update();this.flush().catch(()=>{});return {queued:true,id};
  }
  async storePending(){await this.write('settings',{id:'sync-outbox/'+this.key,value:this.pending});}
+ async enqueueBatch(rows,progress=()=>{}){
+  if(!this.ready||this.role!=='editor'||!this.canWrite())throw Error('请在电脑工具中登录发布账号。');
+  const generation=this.generation,key=this.key,entries=[];
+  for(const [index,row] of rows.entries()){
+   const packet=await packageTranscript(row.document);
+   if(!packet.matchKey)throw Error('逐字稿缺少对应的文件名。');
+   const id='t-'+await sha256(packet.document.language+'\n'+packet.matchKey);
+   if(id!==row.id||packet.hash!==row.hash)throw Error('逐字稿已改变，请重新读取文件。');
+   entries.push({id,document:packet.document,hash:packet.hash,baseHash:row.baseHash,created:Date.now()});progress(index+1,rows.length);
+  }
+  if(generation!==this.generation||key!==this.key)throw Error('账号已切换，请重新导入。');
+  const known=new Map();for(const entry of entries)known.set(entry.id,(await this.read('settings','sync-published/'+key+'/'+entry.id))?.value);
+  if(generation!==this.generation||key!==this.key)throw Error('账号已切换，请重新导入。');
+  const latest=new Map(this.pending.map(entry=>[entry.id,entry]));
+  for(const entry of entries){const previous=latest.get(entry.id);latest.set(entry.id,{...entry,baseHash:previous?previous.baseHash:entry.baseHash??known.get(entry.id)?.hash??null});}
+  const next=[...latest.values()];await this.write('settings',{id:'sync-outbox/'+key,value:next});this.pending=next;this.update();this.flush().catch(()=>{});return entries.length;
+ }
  async flush(){if(this.flushPromise)return this.flushPromise;if(!this.ready||this.role!=='editor'||!this.canWrite()||!navigator.onLine)return;
   const generation=this.generation,key=this.key;
   this.flushPromise=(async()=>{
@@ -77,7 +94,7 @@ export class TranscriptSync {
     try{await this.publish(entry,generation);if(generation!==this.generation)break;
      await this.write('settings',{id:'sync-published/'+key+'/'+entry.id,value:{hash:entry.hash}});
      this.pending=this.pending.filter(p=>p.id!==entry.id||p.hash!==entry.hash).map(p=>p.id===entry.id?{...p,baseHash:entry.hash}:p);await this.storePending();this.error='';this.notify?.('逐字稿已同步');
-    }catch(error){if(generation===this.generation){this.error=syncMessage(error);this.update();}break;}
+    }catch(error){if(generation===this.generation){this.error=syncMessage(error);this.pending=this.pending.map(p=>p.id===entry.id&&p.hash===entry.hash?{...p,error:this.error}:p);await this.storePending();this.update();}if(error.code!=='sync/conflict')break;}
    }
   })().finally(()=>{this.running=false;this.flushPromise=null;this.update();});return this.flushPromise;
  }
@@ -85,7 +102,7 @@ export class TranscriptSync {
   const s=this.sdk,packet=await packageTranscript(entry.document),ref=s.doc(this.db,'spaces',this.config.space,'transcripts',entry.id);
   const previous=await s.getDocFromServer(ref),prior=previous.data();
   if(prior?.hash===packet.hash)return;
-  if(prior&&prior.hash!==entry.baseHash)throw Error('共享逐字稿已有另一份修订。请先获取最新稿后再保存；本机文件和待同步修订均保留。');
+  if(prior&&prior.hash!==entry.baseHash)throw Object.assign(Error('共享逐字稿已有另一份修订。请先获取最新稿后再保存；本机文件和待同步修订均保留。'),{code:'sync/conflict'});
   const revision='r-'+packet.hash.slice(0,32);
   // Bound each commit below Firestore's 10 MiB request limit. The manifest stays unchanged until all parts exist.
   for(let offset=0;offset<packet.parts.length;offset+=20){
@@ -95,7 +112,7 @@ export class TranscriptSync {
   if(generation!==this.generation)throw Error('账号已切换，本次同步已停止。');
   await s.runTransaction(this.db,async transaction=>{
    const latest=await transaction.get(ref),value=latest.data();if(value?.hash===packet.hash)return;
-   if((value?.hash||null)!==(prior?.hash||null))throw Error('云端逐字稿已改变，本机修订保留，请重新核对。');
+   if((value?.hash||null)!==(prior?.hash||null))throw Object.assign(Error('云端逐字稿已改变，本机修订保留，请重新核对。'),{code:'sync/conflict'});
    transaction.set(ref,{revision,hash:packet.hash,parts:packet.parts.length,bytes:packet.bytes,matchKey:packet.matchKey,
     title:packet.document.title,filename:packet.document.audio.filename,language:packet.document.language,duration:packet.document.duration,
     previousRevision:prior?.revision||'',previousParts:prior?.parts||0,updatedAt:s.serverTimestamp()});
@@ -123,8 +140,9 @@ export class TranscriptSync {
     if(!e||match.needsConfirmation||e.cloudTranscript?.hash===item.hash||!this.canApply(e.id))continue;
     // A writer's pending local revision must never be overwritten by its own listener.
     if(this.pending.some(p=>p.id===item.id))continue;
-    const document=await this.load(item);if(generation!==this.generation||!this.canApply(e.id))continue;
-    await this.apply(e.id,document,{scope,id:item.id,hash:item.hash,revision:item.revision},{initial:!match.bound});this.update();
+    try{const document=await this.load(item);if(generation!==this.generation||!this.canApply(e.id))continue;
+     await this.apply(e.id,document,{scope,id:item.id,hash:item.hash,revision:item.revision},{initial:!match.bound,expected:match.expected});this.update();
+    }catch(error){if(generation===this.generation){this.error=syncMessage(error);this.update();}}
    }
   })().finally(()=>{this.receivePromise=null;});return this.receivePromise;
  }

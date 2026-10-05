@@ -1,4 +1,4 @@
-import {applyTranscriptPatch} from './transcript-batch.js';
+import {applyTranscriptPatch,transcriptFingerprint,transcriptName} from './transcript-batch.js';
 export const db = await new Promise((resolve,reject)=>{
   const request=indexedDB.open('tingye',2);
   request.onupgradeneeded=()=>{for(const name of ['episodes','cards','settings','progress'])if(!request.result.objectStoreNames.contains(name))request.result.createObjectStore(name,{keyPath:'id'});};
@@ -27,16 +27,17 @@ export function setEpisodeOrder(ids){return new Promise((resolve,reject)=>{
 });}
 
 // Cloud updates replace transcript fields only; local audio, cards, progress and ordering remain untouched.
-export function applyCloudTranscript(id,document,link,{initial=false,confirmed=false}={}){
+export function applyCloudTranscript(id,document,link,{initial=false,confirmed=false,expected=null}={}){
  return new Promise((resolve,reject)=>{
   const transaction=db.transaction('episodes','readwrite'),store=transaction.objectStore('episodes');let failure;
   // Moving a shared transcript to another local audio must not leave two live bindings.
   if(initial&&confirmed){const cursor=store.openCursor();cursor.onsuccess=()=>{const row=cursor.result;if(!row)return;const other=row.value;if(other.id!==id&&other.cloudTranscript?.scope===link.scope&&other.cloudTranscript?.id===link.id){const next={...other};delete next.cloudTranscript;row.update(next);}row.continue();};}
+  if(initial&&!confirmed){const cursor=store.openCursor();cursor.onsuccess=()=>{const row=cursor.result;if(!row||failure)return;const other=row.value;if(other.id!==id&&!other.cloudTranscript&&other.language===document.language&&transcriptName(other.filename)===transcriptName(document.audio?.filename)){failure=Error('有多个同名音频，请选择对应音频。');transaction.abort();return;}row.continue();};}
   const request=store.get(id);request.onsuccess=()=>{
    try{
     const e=request.result;if(!e)throw Error('对应音频已移除，请重新关联。');
     if(!initial&&(e.cloudTranscript?.scope!==link.scope||e.cloudTranscript?.id!==link.id))throw Error('音频关联已改变，原稿保留。');
-    if(initial&&!confirmed&&(e.segments?.length||e.cloudTranscript))throw Error('这段音频已有逐字稿，请确认关联后再替换。');
+    if(initial&&!confirmed&&(e.cloudTranscript||!expected||transcriptFingerprint(e)!==expected||transcriptName(e.filename)!==transcriptName(document.audio?.filename)))throw Error('音频或逐字稿已改变，请重新匹配。');
     if(e.language!==document.language||e.duration&&Math.abs(e.duration-document.duration)>Math.max(2,document.duration*.005))throw Error('语言或音频时长不同，请选择对应音频。');
     const next={...e,segments:structuredClone(document.segments),duration:e.duration||document.duration,cloudTranscript:{...link}};
     delete next.transcriptUndo;store.put(next);

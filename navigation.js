@@ -1,15 +1,31 @@
-// Startup and history restoration replace an entry instead of adding another home.
+// Tabs are peers. Only folder/player screens add depth to the app's history.
 export function appRoute(hash){
  const value=String(hash||'').replace(/^#/,'');
  if(value.startsWith('audio/')&&value.length>6)return {view:'player',id:value.slice(6),hash:value};
+ if(value.startsWith('folder/')&&value.length>7)return {view:'library',id:value.slice(7),hash:value};
  const view=['cards','settings'].includes(value)?value:'library';
  return {view,hash:view};
 }
 export function setAppRoute(hash,replace=false,browser=window){
  const next='#'+hash;
- if(browser.location.hash===next)return;
- if(replace)browser.history.replaceState(browser.history.state,'',next);
- else browser.location.hash=hash;
+ const route=appRoute(next),previous=appRoute(browser.location.hash),saved=browser.history.state?.tingyeRoute;
+ const root=route.view!=='player'&&!route.id;
+ if(root){browser.history.replaceState({...browser.history.state,tingyeRoute:{trail:[route.hash]}},'',next);return;}
+ if(saved?.trail?.at(-1)===hash&&browser.location.hash===next)return;
+ let trail=saved?.trail?.at(-1)===previous.hash?[...saved.trail]:[previous.hash];
+ if(replace){
+  // Opening a deep link starts with a real library parent for both native and button back.
+  browser.history.replaceState({...browser.history.state,tingyeRoute:{trail:['library']}},'','#library');
+  browser.history.pushState({...browser.history.state,tingyeRoute:{trail:['library',hash]}},'',next);return;
+ }
+ if(route.view==='player'&&previous.view==='player'||route.id&&previous.id&&route.view==='library'&&previous.view==='library'){
+  trail[trail.length-1]=hash;browser.history.replaceState({...browser.history.state,tingyeRoute:{trail}},'',next);
+ }else{trail.push(hash);browser.history.pushState({...browser.history.state,tingyeRoute:{trail}},'',next);}
+}
+export function backAppRoute(browser=window){
+ const trail=browser.history.state?.tingyeRoute?.trail;
+ if(trail?.length>1){browser.history.back();return true;}
+ return false;
 }
 export function bindHomeEdgeGuard(root,isHome){
  // Reserve the outer 16px gutter for the installed app's home boundary.

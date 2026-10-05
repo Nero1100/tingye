@@ -1,5 +1,5 @@
 import {validateTranscript} from './validate.js';
-import {transcriptName} from './transcript-batch.js';
+import {transcriptName,transcriptFingerprint} from './transcript-batch.js';
 const encoder=new TextEncoder();
 export const MAX_PART_BYTES=192000,MAX_PARTS=170;
 export async function sha256(text){return [...new Uint8Array(await crypto.subtle.digest('SHA-256',encoder.encode(text)))].map(n=>n.toString(16).padStart(2,'0')).join('');}
@@ -31,12 +31,40 @@ export async function unpackTranscript(manifest,parts){
  const payload=parts.join('');if(encoder.encode(payload).length!==manifest.bytes||await sha256(payload)!==manifest.hash)throw Error('逐字稿校验未通过，原稿保留。');
  const document=publicTranscript(JSON.parse(payload));if(document.audio.filename!==manifest.filename||document.language!==manifest.language||document.duration!==manifest.duration)throw Error('逐字稿与云端索引不同，原稿保留。');return document;
 }
+export function namedTranscript(input,name){
+ const document=publicTranscript(input),key=transcriptName(name);
+ if(!key)throw Error('逐字稿文件名为空。');
+ if(document.audio.filename&&transcriptName(document.audio.filename)!==key)throw Error('稿内音频名与逐字稿文件名不同，请核对名称。');
+ if(!document.audio.filename)document.audio.filename=String(name).split(/[\\/]/).pop().replace(/\.json$/i,'');
+ return document;
+}
+export async function planSharedImports(selected,catalog=[],progress=()=>{}){
+ const files=Array.from(selected).filter(f=>/\.json$/i.test(f.name));
+ if(!files.length)throw Error('没有找到 JSON 逐字稿文件。');
+ if(files.length>1000||files.reduce((n,f)=>n+f.size,0)>200*1048576)throw Error('这一批超过 1000 份或 200 MB，请分批导入。');
+ const rows=[],keys=new Map();
+ for(const [index,file] of files.entries()){
+  const row={name:file.webkitRelativePath||file.name,status:'skipped'};rows.push(row);
+  try{
+   if(file.size>30*1048576)throw Error('文件超过 30 MB');
+   const packet=await packageTranscript(namedTranscript(JSON.parse((await file.text()).replace(/^\uFEFF/,'')),file.name));
+   if(!packet.document.segments.length)throw Error('逐字稿没有句子');
+   const id='t-'+await sha256(packet.document.language+'\n'+packet.matchKey),prior=catalog.find(item=>item.id===id);
+   Object.assign(row,{id,document:packet.document,hash:packet.hash,baseHash:prior?.hash||null,status:prior?.hash===packet.hash?'unchanged':'ready'});
+   keys.set(id,[...(keys.get(id)||[]),row]);
+  }catch(error){row.reason=error instanceof SyntaxError?'JSON 格式不正确':error.message;}
+  progress(index+1,files.length);
+ }
+ for(const duplicates of keys.values())if(duplicates.length>1)for(const row of duplicates){row.status='skipped';row.reason='同语言逐字稿重名，请只选择一份';}
+ return rows;
+}
 export function matchingEpisode(manifest,episodes,scope){
  const bound=episodes.filter(e=>e.cloudTranscript?.scope===scope&&e.cloudTranscript.id===manifest.id);
  if(bound.length===1)return {episode:bound[0],bound:true};if(bound.length>1)return {reason:'多个音频关联了同一份逐字稿，请重新关联。'};
  const matches=episodes.filter(e=>!e.cloudTranscript&&e.language===manifest.language&&transcriptName(e.filename)===manifest.matchKey);
  if(matches.length!==1)return {reason:matches.length?'有多个同名音频，请选择对应音频。':'请先导入对应音频。'};
  const e=matches[0];if(e.duration&&Math.abs(e.duration-manifest.duration)>Math.max(2,manifest.duration*.005))return {reason:'音频时长不同，请核对后手动关联。'};
- // Existing local corrections are never silently replaced on first contact.
- return {episode:e,needsConfirmation:!!e.segments?.length};
+ // The shared library is authoritative for a unique filename, language and duration match.
+ // Retain a fingerprint so a simultaneous local replacement cannot be overwritten.
+ return {episode:e,expected:transcriptFingerprint(e)};
 }
