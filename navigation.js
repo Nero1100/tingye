@@ -27,6 +27,23 @@ export function backAppRoute(browser=window){
  if(trail?.length>1){browser.history.back();return true;}
  return false;
 }
+export function bindRouteRestore(browser,restore,onError=()=>{}){
+ // A hash history traversal fires both popstate and hashchange. Never overlap renders.
+ let running=null,pending=null,active=null;
+ const schedule=()=>{
+  const hash=browser.location.hash;
+  if(running&&active===hash&&pending===null)return running;
+  pending=hash;
+  if(running)return running;
+  running=Promise.resolve().then(async()=>{
+   while(pending!==null){active=pending;pending=null;await restore(appRoute(active));}
+  }).catch(onError).finally(()=>{running=null;active=null;});
+  return running;
+ };
+ browser.addEventListener('popstate',schedule);
+ browser.addEventListener('hashchange',schedule);
+ return ()=>{browser.removeEventListener('popstate',schedule);browser.removeEventListener('hashchange',schedule);};
+}
 export function bindHomeEdgeGuard(root,isHome){
  // Reserve the outer 16px gutter for the installed app's home boundary.
  // Content touches, other screens and open dialogs keep their usual gestures.
