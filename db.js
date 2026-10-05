@@ -25,6 +25,24 @@ export function setEpisodeOrder(ids){return new Promise((resolve,reject)=>{
  ids.forEach((id,order)=>{const request=store.get(id);request.onsuccess=()=>{if(request.result)store.put({...request.result,order});};});
  t.oncomplete=resolve;t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error);
 });}
+
+// Cloud updates replace transcript fields only; local audio, cards, progress and ordering remain untouched.
+export function applyCloudTranscript(id,document,link,{initial=false,confirmed=false}={}){
+ return new Promise((resolve,reject)=>{
+  const transaction=db.transaction('episodes','readwrite'),store=transaction.objectStore('episodes');let failure;
+  const request=store.get(id);request.onsuccess=()=>{
+   try{
+    const e=request.result;if(!e)throw Error('对应音频已移除，请重新关联。');
+    if(!initial&&(e.cloudTranscript?.scope!==link.scope||e.cloudTranscript?.id!==link.id))throw Error('音频关联已改变，原稿保留。');
+    if(initial&&!confirmed&&(e.segments?.length||e.cloudTranscript))throw Error('这段音频已有逐字稿，请确认关联后再替换。');
+    if(e.language!==document.language||e.duration&&Math.abs(e.duration-document.duration)>Math.max(2,document.duration*.005))throw Error('语言或音频时长不同，请选择对应音频。');
+    const next={...e,segments:structuredClone(document.segments),duration:e.duration||document.duration,cloudTranscript:{...link}};
+    delete next.transcriptUndo;store.put(next);
+   }catch(error){failure=error;transaction.abort();}
+  };
+  transaction.oncomplete=()=>resolve(id);transaction.onerror=()=>reject(failure||transaction.error);transaction.onabort=()=>reject(failure||transaction.error);
+ });
+}
 // Delete only selected audio bytes, atomically, using the latest learning records.
 export function deleteAudioCopies(items,{removeRecords=false}={}){return new Promise((resolve,reject)=>{
  const selected=new Map(items.map(e=>[e.id,e]));
