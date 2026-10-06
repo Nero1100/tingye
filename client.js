@@ -1,32 +1,33 @@
-import {TranscriptSync} from './transcript-sync.js?v=2026.10.06.1';
-import {syncPanel,showSyncUI,showSyncBatchUI} from './sync-ui.js?v=2026.10.06.1';
-import {packageTranscript,namedTranscript} from './cloud-transcript.js?v=2026.10.06.1';
-import {showCopyManager} from './audio-copies.js?v=2026.10.06.1';
-import {submitLocalForm} from './local-upload.js?v=2026.10.06.1';
-import {mountJobMonitor,jobProgress,terminalJob} from './job-monitor.js?v=2026.10.06.1';
-import {planTranscriptImports,phoneInterface,transcriptExportName} from './transcript-batch.js?v=2026.10.06.1';
-import {clearModelDownloads,clearBrowserTranslation} from './browser-model-cleanup.js?v=2026.10.06.1';
-import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration,replaceEpisodeTranscripts,deleteAudioCopies,applyCloudTranscript} from './db.js?v=2026.10.06.1';
-import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.06.1';
+import {plainTranscriptText,plainTranscriptName} from './plain-text.js?v=2026.10.06.2';
+import {TranscriptSync} from './transcript-sync.js?v=2026.10.06.2';
+import {syncPanel,showSyncUI,showSyncBatchUI} from './sync-ui.js?v=2026.10.06.2';
+import {packageTranscript,namedTranscript} from './cloud-transcript.js?v=2026.10.06.2';
+import {showCopyManager} from './audio-copies.js?v=2026.10.06.2';
+import {submitLocalForm} from './local-upload.js?v=2026.10.06.2';
+import {mountJobMonitor,jobProgress,terminalJob} from './job-monitor.js?v=2026.10.06.2';
+import {planTranscriptImports,phoneInterface,transcriptExportName} from './transcript-batch.js?v=2026.10.06.2';
+import {clearModelDownloads,clearBrowserTranslation} from './browser-model-cleanup.js?v=2026.10.06.2';
+import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration,replaceEpisodeTranscripts,deleteAudioCopies,applyCloudTranscript} from './db.js?v=2026.10.06.2';
+import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.06.2';
 import {lexicalWords,dictionaryText} from './lexicon.js';
-import {Practice,practiceOptions} from './practice.js?v=2026.10.06.1';
+import {Practice,practiceOptions} from './practice.js?v=2026.10.06.2';
 import {palettes,applyTheme} from './theme.js';
 import {hasKanji,rubyParts,setRubyReading,prepareReadings} from './furigana.js';
-import {editedSentence,changedCards,replacementTranscript} from './transcript-edit.js?v=2026.10.06.1';
-import {splitChoices,splitSentence,mergeSentences,resegmentCards} from './segment-edit.js?v=2026.10.06.1';
-import {boundaryWords,suggestSentences} from './sentence-boundaries.js?v=2026.10.06.1';
-import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.06.1';
-import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.06.1';
-import {validatePlaybackLists,reconcilePlaybackList,selectPlaybackEpisodes,reorderPlaybackList,restorePlaybackLists,includePlaybackEpisode} from './playback-list.js?v=2026.10.06.1';
-import {bindReaderGestures} from './reader-gestures.js?v=2026.10.06.1';
+import {editedSentence,changedCards,replacementTranscript} from './transcript-edit.js?v=2026.10.06.2';
+import {splitChoices,splitSentence,mergeSentences,resegmentCards} from './segment-edit.js?v=2026.10.06.2';
+import {boundaryWords,suggestSentences} from './sentence-boundaries.js?v=2026.10.06.2';
+import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.06.2';
+import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.06.2';
+import {validatePlaybackLists,reconcilePlaybackList,selectPlaybackEpisodes,reorderPlaybackList,restorePlaybackLists,includePlaybackEpisode} from './playback-list.js?v=2026.10.06.2';
+import {bindReaderGestures} from './reader-gestures.js?v=2026.10.06.2';
 import {bindDragOrder,replaceSubsetOrder} from './drag-order.js';
 import {cardCategory,cardCategories,selectedCards,cardSentence} from './cards.js';
-import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.06.1';
-import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.06.1';
+import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.06.2';
+import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.06.2';
 import {validateFolders,folderEpisodes,folderMembership,restoreFolders,makeFolderCover} from './folders.js';
-import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.06.1';
-import {ListPosition} from './list-position.js?v=2026.10.06.1';
-import {appRoute,setAppRoute,backAppRoute,bindHomeEdgeGuard,bindRouteRestore} from './navigation.js?v=2026.10.06.1';
+import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.06.2';
+import {ListPosition} from './list-position.js?v=2026.10.06.2';
+import {appRoute,setAppRoute,backAppRoute,bindHomeEdgeGuard,bindRouteRestore} from './navigation.js?v=2026.10.06.2';
 const phone=phoneInterface(navigator.userAgent,navigator.maxTouchPoints);
 const main=document.querySelector('#main'),modal=document.querySelector('#modal');
 let audio=document.querySelector('#audio');
@@ -107,6 +108,7 @@ function openModal(title,body){closeSpeedMenu();playlistSheet?.dispose();playlis
 modal.addEventListener('cancel',event=>{if(playlistSheet){event.preventDefault();return;}if(modalCanClose&&!modalCanClose()){event.preventDefault();return;}modalCanClose=null;modal.classList.remove('transcript-editor','word-sheet','practice-sheet','processing-dialog','copy-manager');if(immersive)main.inert=true;if(immersive&&$('.immersive-mode'))$('.immersive-mode').inert=false;resetClip();modalSerial++;clearInterval(jobTimer);jobTimer=null;});
 function setNav(){closeSpeedMenu();document.body.classList.toggle('player-open',view==='player');document.querySelectorAll('[data-nav]').forEach(b=>b.classList.toggle('active',b.dataset.nav===view));}
 function download(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
+function exportPlainText(document){download(new Blob([plainTranscriptText(document)],{type:'text/plain;charset=utf-8'}),plainTranscriptName(document));}
 async function exportTranscript(e){try{await saveTranscriptDocument(transcriptData(e),transcriptExportName(transcriptData(e)));}catch(error){report(error);}}
 async function exportRequest(path,body){
  const response=await fetch(new URL(path,BASE),body===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
@@ -647,7 +649,7 @@ function openDocumentEditor(document,index=0,persist=null,session={modified:fals
     <div class="actions boundary-actions"><button class="secondary" id="auto-editor-segments">自动分句</button><button class="secondary" id="split-editor-sentence">拆分这一句</button><button class="secondary" id="merge-editor-next" ${index===document.segments.length-1?'disabled':''}>与下一句合并</button></div>
     ${backend?'<button class="secondary full" id="editor-computer-translate">在电脑重新生成中文</button>':''}<p class="note">${draft.translationPending?'原文或断句已改变，这一句的译文需要更新。':'可在电脑生成对应译文，或直接人工校对。'}</p><label for="editor-translation">中文译文</label><textarea id="editor-translation" rows="3" maxlength="10000">${esc(draft.translation||'')}</textarea>
     ${document.language==='ja'?'<h3 class="editor-heading">假名标注</h3><p class="note">只给汉字部分填读音，可留空取消标注。例如「話し」的「話」填「はな」；名词「話」填「はなし」。</p><div id="ruby-editor-fields"></div><div class="editor-preview source" lang="ja" id="ruby-editor-preview"></div>':''}
-    <div class="editor-footer"><button class="primary full" id="save-editor-sentence">${directSave?'保存这一句到原文件':persist?'保存这一句':'保留这一句的修订'}</button><div class="actions"><button class="secondary" id="editor-previous" ${index===0?'disabled':''}>上一句</button><button class="secondary" id="editor-next" ${index===document.segments.length-1?'disabled':''}>保存并下一句</button><button class="secondary" id="export-editor-file">${directSave?'另存副本':'导出修订文件'}</button></div>${directSave?`<button class="primary full section-title" id="save-editor-file">保存原文件 · 自动同步</button><p class="note" id="editor-save-status" role="status">${esc(session.binding?.path||'第一次保存请选择目标文件，之后直接覆盖保存。')}</p><button class="secondary full" id="restore-editor-file" ${session.binding?.has_backup?'':'disabled'}>恢复文件的上一版</button>`:''}</div>`);
+    <div class="editor-footer"><button class="primary full" id="save-editor-sentence">${directSave?'保存这一句到原文件':persist?'保存这一句':'保留这一句的修订'}</button><div class="actions"><button class="secondary" id="editor-previous" ${index===0?'disabled':''}>上一句</button><button class="secondary" id="editor-next" ${index===document.segments.length-1?'disabled':''}>保存并下一句</button><button class="secondary" id="export-editor-file">${directSave?'另存副本':'导出修订文件'}</button>${document.language==='ja'?'<button class="secondary" id="export-editor-text">导出纯日语文本</button>':''}</div>${directSave?`<button class="primary full section-title" id="save-editor-file">保存原文件 · 自动同步</button><p class="note" id="editor-save-status" role="status">${esc(session.binding?.path||'第一次保存请选择目标文件，之后直接覆盖保存。')}</p><button class="secondary full" id="restore-editor-file" ${session.binding?.has_backup?'':'disabled'}>恢复文件的上一版</button>`:''}</div>`);
   modal.classList.add('transcript-editor');
   const canDiscard=()=>!dirty||confirm('这一句的修改尚未保存，确定放弃吗？');
   modalCanClose=()=>canDiscard()&&(persist||!session.modified||session.exported||confirm('修订文件尚未导出。关闭会丢失这个窗口里的修订，确定关闭吗？'));
@@ -712,7 +714,7 @@ function openDocumentEditor(document,index=0,persist=null,session={modified:fals
   }
   on('#save-editor-file','click',async()=>{if(dirty&&!await save(false,false))return;await commitFile();});
   on('#restore-editor-file','click',async()=>{if(!session.binding||!confirm('恢复原文件到上一版？当前文件会作为新的上一版保留。'))return;try{const result=await exportRequest('api/document/restore',{id:session.binding.id,expected:session.binding.expected});session.binding=result;await session.onBound?.(result);if(persist?.resegment)await persist.resegment(document.segments,result.transcript.segments);session.modified=false;session.exported=true;modalCanClose=null;openDocumentEditor(result.transcript,0,persist,session);toast('原文件已恢复，请核对后保存并同步');}catch(error){report(error);}});
-  on('#export-editor-file','click',async()=>{if(dirty&&!await save(false,false))return;try{await saveTranscriptDocument(document,transcriptExportName(document));session.exported=true;}catch(error){report(error);}});fields();
+  on('#export-editor-file','click',async()=>{if(dirty&&!await save(false,false))return;try{await saveTranscriptDocument(document,transcriptExportName(document));session.exported=true;}catch(error){report(error);}});on('#export-editor-text','click',async()=>{if(dirty&&!await save(false,false))return;try{exportPlainText(document);}catch(error){report(error);}});fields();
 }
 const documentQuery=selector=>[...window.document.querySelectorAll(selector)];
 
@@ -850,9 +852,9 @@ async function computerBatch(draft=null){
    const finished=terminalJob(batch.state);
    if(finished)monitor.finish();else if(batch.state==='cancelling')monitor.cancelling();
    $('#batch-result').innerHTML=`<div class="job"><strong>${finished?batch.state==='cancelled'?'已取消剩余任务':'批量处理完成':batch.state==='cancelling'?'正在取消':'正在批量处理'}</strong><progress max="100" value="${batch.progress}"></progress><p class="note">整批 ${batch.progress}% · 共 ${batch.total} 个 · 完成 ${batch.done} 个 · 失败 ${batch.failed} 个${batch.cancelled?` · 已取消 ${batch.cancelled} 个`:''}</p>${batch.active?`<div class="job-current"><span>当前音频</span><h3>${esc(batch.active.filename)}</h3>${jobProgress(batch.active)}</div>`:''}${finished&&batch.done?'<p class="note">已完成的逐字稿已保留，可以继续导出。</p>':''}</div>`;
-   $('#batch-rows').innerHTML=batch.items.map(row=>`<article class="batch-transcription-row"><strong>${esc(row.filename)}</strong><small>${esc(row.state==='error'?batchError(row):row.saved?'已保存：'+row.saved.filename:row.state==='done'?`${row.segments} 个句段 · 已完成`:row.message||'等待转写')}${row.state==='done'&&row.translation_warning?' · 中文翻译未完成':''}${row.export_error?' · 保存失败，可重新导出':''}</small>${row.state==='done'?`<div class="actions"><button class="secondary" data-batch-edit="${row.id}">校对</button><button class="secondary" data-batch-download="${row.id}">导出</button></div>`:''}</article>`).join('');
+   $('#batch-rows').innerHTML=batch.items.map(row=>`<article class="batch-transcription-row"><strong>${esc(row.filename)}</strong><small>${esc(row.state==='error'?batchError(row):row.saved?'已保存：'+row.saved.filename:row.state==='done'?`${row.segments} 个句段 · 已完成`:row.message||'等待转写')}${row.state==='done'&&row.translation_warning?' · 中文翻译未完成':''}${row.export_error?' · 保存失败，可重新导出':''}</small>${row.state==='done'?`<div class="actions"><button class="secondary" data-batch-edit="${row.id}">校对</button><button class="secondary" data-batch-download="${row.id}">导出</button><button class="secondary" data-batch-text="${row.id}">纯文本</button></div>`:''}</article>`).join('');
    $('#export-batch').disabled=!batch.done;$('#new-batch').hidden=!finished;
-   for(const button of document.querySelectorAll('[data-batch-edit],[data-batch-download]'))button.onclick=async()=>{button.disabled=true;try{const id=button.dataset.batchEdit||button.dataset.batchDownload,response=await fetch(new URL(`api/jobs/${id}`,BASE)),job=await response.json();if(!response.ok)throw Error(job.detail||'读取结果失败。');if(!alive())return;if(button.dataset.batchEdit)openDocumentEditor(job.result);else await saveTranscriptDocument(job.result,transcriptExportName(job.result));}catch(error){report(error);}finally{if(button.isConnected)button.disabled=false;}};
+   for(const button of document.querySelectorAll('[data-batch-edit],[data-batch-download],[data-batch-text]'))button.onclick=async()=>{button.disabled=true;try{const id=button.dataset.batchEdit||button.dataset.batchDownload||button.dataset.batchText,response=await fetch(new URL(`api/jobs/${id}`,BASE)),job=await response.json();if(!response.ok)throw Error(job.detail||'读取结果失败。');if(!alive())return;if(button.dataset.batchEdit)openDocumentEditor(job.result);else if(button.dataset.batchText)exportPlainText(job.result);else await saveTranscriptDocument(job.result,transcriptExportName(job.result));}catch(error){report(error);}finally{if(button.isConnected)button.disabled=false;}};
    if(!finished)jobTimer=setTimeout(poll,1000);
   }catch(error){if(alive()){$('#batch-result').innerHTML=`<p class="note">${esc(error.message)}</p><button class="secondary" id="retry-batch-status">重新查看任务</button>`;$('#new-batch').hidden=false;on('#retry-batch-status','click',poll);}}
  }
@@ -918,8 +920,8 @@ async function computerTranscription(existing){
       if(job.state==='cancelled'){$('#new-asr').hidden=false;return;}
       if(job.state==='done'){
         $('#new-asr').hidden=false;
-        $('#asr-result').innerHTML=`<div class="job"><strong>${esc(job.message)}</strong>${job.result.translation_warning?'<p class="note">翻译未完成；逐字稿仍可导出。可稍后使用“补译逐字稿”。</p>':''}<p class="note">${job.result.segments.length} 个句段 · 音频 ${time(job.result.duration)}</p><button class="primary full" id="download-asr">导出逐字稿与时间轴</button><button class="secondary full section-title" id="edit-generated-document">人工校对原文、译文与假名</button>${existing?.id?'<button class="secondary full section-title" id="attach-asr">用于当前音频</button>':''}</div>`;
-        on('#edit-generated-document','click',()=>openDocumentEditor(job.result));on('#download-asr','click',()=>saveTranscriptDocument(job.result,transcriptExportName(job.result)).catch(report));
+        $('#asr-result').innerHTML=`<div class="job"><strong>${esc(job.message)}</strong>${job.result.translation_warning?'<p class="note">翻译未完成；逐字稿仍可导出。可稍后使用“补译逐字稿”。</p>':''}<p class="note">${job.result.segments.length} 个句段 · 音频 ${time(job.result.duration)}</p><button class="primary full" id="download-asr">导出逐字稿与时间轴</button>${job.result.language==='ja'?'<button class="secondary full section-title" id="download-japanese-text">导出纯日语文本</button>':''}<button class="secondary full section-title" id="edit-generated-document">人工校对原文、译文与假名</button>${existing?.id?'<button class="secondary full section-title" id="attach-asr">用于当前音频</button>':''}</div>`;
+        on('#download-japanese-text','click',()=>{try{exportPlainText(job.result);}catch(error){report(error);}});on('#edit-generated-document','click',()=>openDocumentEditor(job.result));on('#download-asr','click',()=>saveTranscriptDocument(job.result,transcriptExportName(job.result)).catch(report));
         on('#attach-asr','click',async()=>{try{await attachTranscript(existing,job.result);closeModal();await openEpisode(existing.id);}catch(e){report(e);}});
         return;
       }
