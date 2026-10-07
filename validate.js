@@ -1,4 +1,4 @@
-import {validatePlaybackLists} from './playback-list.js?v=2026.10.06.2';
+import {validatePlaybackLists} from './playback-list.js?v=2026.10.06.3';
 import {validateFolders} from './folders.js';
 const languages = ['en', 'fr', 'ja'];
 const validTime = n => Number.isFinite(n) && n >= 0 && n <= 86400;
@@ -67,7 +67,10 @@ export function validateBackup(meta, payloadBytes) {
         !Number.isSafeInteger(e.bytes) || e.bytes < (meta.format==='tingye-backup-v2'&&e.storageMode==='external'?0:1) || e.bytes > 350*1048576 ||
         e.offset + e.bytes > payloadBytes || !text(e.mime,100) ||
         !Array.isArray(e.bookmarks) || e.bookmarks.length > 10000 ||
-        e.bookmarks.some(b => !validTime(b.time) || b.time > e.duration+2 || !text(b.text,10000)))
+        e.bookmarks.some(b => !b || !validTime(b.time) || b.time > e.duration+2 || !text(b.text,10000) ||
+          (b.id!==undefined&&!text(b.id,100)) || (b.end!==undefined&&(!validTime(b.end)||b.end<b.time||b.end>e.duration+2)) ||
+          (b.note!==undefined&&!text(b.note,5000)) || (b.category!==undefined&&!text(b.category,60)) ||
+          (b.due!==undefined&&!Number.isFinite(b.due)) || (b.level!==undefined&&(!Number.isInteger(b.level)||b.level<0||b.level>5))))
       throw Error('备份中的音频资料不完整。');
     if (meta.format==='tingye-backup-v2'&&e.storageMode==='external'&&
         (e.bytes!==0 || !Number.isSafeInteger(e.audioBytes) || e.audioBytes<1 || e.audioBytes>350*1048576 ||

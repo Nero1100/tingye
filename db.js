@@ -12,6 +12,15 @@ export async function all(store){const values=await rawAll(store);if(store==='ep
 // First playback learns duration without replacing the Blob the media decoder is reading.
 export function saveDuration(id,duration){if(!id||!Number.isFinite(duration)||duration<=0)return Promise.resolve();return write('settings',{id:durationKey(id),value:duration});}
 export function write(store,value){return new Promise((resolve,reject)=>{const t=db.transaction(store,'readwrite');t.objectStore(store).put(value);t.oncomplete=resolve;t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error);});}
+export function updateBookmarks(id,change){return new Promise((resolve,reject)=>{
+ const t=db.transaction('episodes','readwrite'),store=t.objectStore('episodes');let next,failure;
+ const request=store.get(id);request.onsuccess=()=>{try{
+  const latest=request.result;if(!latest)throw Error('原音频已被移除。');
+  const bookmarks=change(latest.bookmarks||[],latest);if(bookmarks.length>10000)throw Error('书签过多，请先整理句卡。');
+  next={...latest,bookmarks};store.put(next);
+ }catch(error){failure=error;t.abort();}};
+ t.oncomplete=()=>resolve(next);t.onerror=()=>reject(failure||t.error);t.onabort=()=>reject(failure||t.error);
+});}
 export function remove(store,id){return new Promise((resolve,reject)=>{const t=db.transaction(store==='episodes'?['episodes','progress','settings']:store,'readwrite');t.objectStore(store).delete(id);if(store==='episodes'){t.objectStore('progress').delete(id);t.objectStore('settings').delete(durationKey(id));}t.oncomplete=resolve;t.onerror=()=>reject(t.error);});}
 export function saveBatch(episodes,cards,settings=[]){return new Promise((resolve,reject)=>{const t=db.transaction(['episodes','cards','settings'],'readwrite');for(const e of episodes)t.objectStore('episodes').put(e);for(const c of cards)t.objectStore('cards').put(c);for(const s of settings)t.objectStore('settings').put(s);t.oncomplete=resolve;t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error);});}
 // Read each current record in the same transaction; a conflict rolls back the whole batch.

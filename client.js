@@ -1,33 +1,34 @@
-import {plainTranscriptText,plainTranscriptName} from './plain-text.js?v=2026.10.06.2';
-import {TranscriptSync} from './transcript-sync.js?v=2026.10.06.2';
-import {syncPanel,showSyncUI,showSyncBatchUI} from './sync-ui.js?v=2026.10.06.2';
-import {packageTranscript,namedTranscript} from './cloud-transcript.js?v=2026.10.06.2';
-import {showCopyManager} from './audio-copies.js?v=2026.10.06.2';
-import {submitLocalForm} from './local-upload.js?v=2026.10.06.2';
-import {mountJobMonitor,jobProgress,terminalJob} from './job-monitor.js?v=2026.10.06.2';
-import {planTranscriptImports,phoneInterface,transcriptExportName} from './transcript-batch.js?v=2026.10.06.2';
-import {clearModelDownloads,clearBrowserTranslation} from './browser-model-cleanup.js?v=2026.10.06.2';
-import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration,replaceEpisodeTranscripts,deleteAudioCopies,applyCloudTranscript} from './db.js?v=2026.10.06.2';
-import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.06.2';
+import {bookmarkKey,bookmarkedSentence,sentenceBookmark,sentenceCards,changeSentenceBookmark} from './sentence-cards.js?v=2026.10.06.3';
+import {plainTranscriptText,plainTranscriptName} from './plain-text.js?v=2026.10.06.3';
+import {TranscriptSync} from './transcript-sync.js?v=2026.10.06.3';
+import {syncPanel,showSyncUI,showSyncBatchUI} from './sync-ui.js?v=2026.10.06.3';
+import {packageTranscript,namedTranscript} from './cloud-transcript.js?v=2026.10.06.3';
+import {showCopyManager} from './audio-copies.js?v=2026.10.06.3';
+import {submitLocalForm} from './local-upload.js?v=2026.10.06.3';
+import {mountJobMonitor,jobProgress,terminalJob} from './job-monitor.js?v=2026.10.06.3';
+import {planTranscriptImports,phoneInterface,transcriptExportName} from './transcript-batch.js?v=2026.10.06.3';
+import {clearModelDownloads,clearBrowserTranslation} from './browser-model-cleanup.js?v=2026.10.06.3';
+import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration,replaceEpisodeTranscripts,deleteAudioCopies,applyCloudTranscript,updateBookmarks} from './db.js?v=2026.10.06.3';
+import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.06.3';
 import {lexicalWords,dictionaryText} from './lexicon.js';
-import {Practice,practiceOptions} from './practice.js?v=2026.10.06.2';
+import {Practice,practiceOptions} from './practice.js?v=2026.10.06.3';
 import {palettes,applyTheme} from './theme.js';
 import {hasKanji,rubyParts,setRubyReading,prepareReadings} from './furigana.js';
-import {editedSentence,changedCards,replacementTranscript} from './transcript-edit.js?v=2026.10.06.2';
-import {splitChoices,splitSentence,mergeSentences,resegmentCards} from './segment-edit.js?v=2026.10.06.2';
-import {boundaryWords,suggestSentences} from './sentence-boundaries.js?v=2026.10.06.2';
-import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.06.2';
-import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.06.2';
-import {validatePlaybackLists,reconcilePlaybackList,selectPlaybackEpisodes,reorderPlaybackList,restorePlaybackLists,includePlaybackEpisode} from './playback-list.js?v=2026.10.06.2';
-import {bindReaderGestures} from './reader-gestures.js?v=2026.10.06.2';
+import {editedSentence,changedCards,replacementTranscript} from './transcript-edit.js?v=2026.10.06.3';
+import {splitChoices,splitSentence,mergeSentences,resegmentCards} from './segment-edit.js?v=2026.10.06.3';
+import {boundaryWords,suggestSentences} from './sentence-boundaries.js?v=2026.10.06.3';
+import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.06.3';
+import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.06.3';
+import {validatePlaybackLists,reconcilePlaybackList,selectPlaybackEpisodes,reorderPlaybackList,restorePlaybackLists,includePlaybackEpisode} from './playback-list.js?v=2026.10.06.3';
+import {bindReaderGestures} from './reader-gestures.js?v=2026.10.06.3';
 import {bindDragOrder,replaceSubsetOrder} from './drag-order.js';
 import {cardCategory,cardCategories,selectedCards,cardSentence} from './cards.js';
-import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.06.2';
-import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.06.2';
+import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.06.3';
+import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.06.3';
 import {validateFolders,folderEpisodes,folderMembership,restoreFolders,makeFolderCover} from './folders.js';
-import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.06.2';
-import {ListPosition} from './list-position.js?v=2026.10.06.2';
-import {appRoute,setAppRoute,backAppRoute,bindHomeEdgeGuard,bindRouteRestore} from './navigation.js?v=2026.10.06.2';
+import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.06.3';
+import {ListPosition} from './list-position.js?v=2026.10.06.3';
+import {appRoute,setAppRoute,backAppRoute,bindHomeEdgeGuard,bindRouteRestore} from './navigation.js?v=2026.10.06.3';
 const phone=phoneInterface(navigator.userAgent,navigator.maxTouchPoints);
 const main=document.querySelector('#main'),modal=document.querySelector('#modal');
 let audio=document.querySelector('#audio');
@@ -40,7 +41,7 @@ const libraryPositions=new ListPosition(),shuffleQueue=new ShuffleQueue();
 let playlistSheet=null;
 function rememberLibrary(){libraryPositions.remember(main,main.dataset.libraryPositionKey);}
 function reportPlayback(error){const message=playbackError(error,audio.error);if(message)toast(message);}
-let folders=validateFolders((await read('settings','audio-folders'))?.value||[]),libraryFolder='',playlistFolder=(await read('settings','playlist-scope'))?.value||'',browseIndex=null,cardCategoryFilter='',cardFolderFilter='';
+let folders=validateFolders((await read('settings','audio-folders'))?.value||[]),libraryFolder='',playlistFolder=(await read('settings','playlist-scope'))?.value||'',browseIndex=null,cardCategoryFilter='',cardFolderFilter='',cardMode=(await read('settings','review-card-kind'))?.value==='sentence'?'sentence':'word';
 if(!folders.some(f=>f.id===playlistFolder))playlistFolder='';
 let playbackLists=validatePlaybackLists((await read('settings','playback-lists'))?.value||[]);
 async function choosePlaylistFolder(id){playlistFolder=folders.some(f=>f.id===id)?id:'';shuffleQueue.reset();await write('settings',{id:'playlist-scope',value:playlistFolder});}
@@ -309,11 +310,44 @@ async function openEpisode(id,initialPosition,{replaceRoute=false,updateHistory=
 }
 
 function rubyHTML(word){return rubyParts(word).map(p=>p.reading?`<ruby>${esc(p.text)}<rt>${esc(p.reading)}</rt></ruby>`:esc(p.text)).join('');}
+function sentenceBookmarkButton(segment,index){
+ const saved=!!sentenceBookmark(episode,segment);
+ return `<button class="sentence-bookmark ${saved?'saved':''}" data-sentence-bookmark="${index}" aria-label="${saved?'取消收藏':'收藏'}第 ${index+1} 句" aria-pressed="${saved}">${icon('bookmark')}</button>`;
+}
+function bindSentenceBookmarks(){
+ document.querySelectorAll('[data-sentence-bookmark]').forEach(button=>button.onclick=()=>toggleSentenceBookmark(Number(button.dataset.sentenceBookmark)).catch(report));
+}
+function refreshSentenceBookmarks(){
+ if(!episode)return;
+ for(const button of document.querySelectorAll('[data-sentence-bookmark],#imm-bookmark')){
+  const index=button.id==='imm-bookmark'?displayedSentence():Number(button.dataset.sentenceBookmark),segment=episode.segments?.[index],saved=segment&&!!sentenceBookmark(episode,segment);
+  button.classList.toggle('saved',!!saved);button.setAttribute('aria-pressed',String(!!saved));button.setAttribute('aria-label',`${saved?'取消收藏':'收藏'}第 ${index+1} 句`);
+ }
+}
+const bookmarkBusy=new Set();
+async function toggleSentenceBookmark(index){
+ const source=episode,segment=source?.segments?.[index];if(!segment)return;
+ const key=source.id+'/'+index;if(bookmarkBusy.has(key))return;bookmarkBusy.add(key);
+ let removed=false;
+ try{
+  await updateBookmarks(source.id,(bookmarks,latest)=>{
+   const current=latest.segments?.find(s=>s.start===segment.start&&s.end===segment.end&&s.text===segment.text);
+   if(!current)throw Error('这一句已更新，请重新打开逐字稿后收藏。');
+   const saved=sentenceBookmark({...latest,bookmarks},current);removed=!!saved;
+   return saved?bookmarks.filter(b=>bookmarkedSentence(latest,b)!==current):[...bookmarks,{id:crypto.randomUUID(),time:current.start,end:current.end,text:current.text,note:'',category:'',due:Date.now(),level:0}];
+  });
+  if(episode?.id===source.id){episode=await read('episodes',source.id);refreshSentenceBookmarks();}
+  toast(removed?'已取消句子书签':'已收藏到句卡');
+ }finally{bookmarkBusy.delete(key);}
+}
+function sentenceCardHTML(card){
+ return card.words?.length&&card.words.map(w=>w.text).join('').trim()===card.text.trim()?card.words.map(rubyHTML).join(''):esc(card.text);
+}
 function wordsHTML(s,index){
   if(!s.words?.length)return esc(s.text);
   return s.words.map((w,j)=>!w.text.trim()||/^[\p{P}\p{S}]+$/u.test(w.text.trim())?rubyHTML(w):`<span class="word" role="button" tabindex="0" aria-label="${esc(w.lemma||w.text.trim())}，双击查看词卡" data-word="${index}:${j}">${rubyHTML(w)}</span>`).join('');
 }
-const icon=(name)=>{const paths={prev:'M18 5 8 12l10 7M5 5v14',next:'m6 5 10 7-10 7M19 5v14',list:'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01',sliders:'M4 7h16M4 17h16M8 4v6M16 14v6',repeat:'M5 7h13l-3-3m3 3-3 3M19 17H6l3 3m-3-3 3-3'};return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${paths[name]}" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>`;};
+const icon=(name)=>{const paths={prev:'M18 5 8 12l10 7M5 5v14',next:'m6 5 10 7-10 7M19 5v14',list:'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01',sliders:'M4 7h16M4 17h16M8 4v6M16 14v6',bookmark:'M6 3h12v18l-6-4-6 4V3',repeat:'M5 7h13l-3-3m3 3-3 3M19 17H6l3 3m-3-3 3-3'};return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${paths[name]}" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>`;};
 function transportHTML(){
  const speed=`<button data-action="speed" aria-label="播放速度" aria-haspopup="menu" aria-controls="speed-menu" aria-expanded="false"><strong>${prefs.rate}×</strong>${immersive?'':'<small>倍速</small>'}</button>`;
  const playlist=`<button data-action="playlist" aria-label="播放列表">${icon('list')}${immersive?'':'<small>播放列表</small>'}</button>`;
@@ -437,11 +471,11 @@ function practiceSettings(){
 }
 function renderPlayer(){
  if(!episode)return;$('.mini-player')?.remove();$('.player-dock')?.remove();setNav();const segments=episode.segments||[],connected=!!audioFile(episode),position=audio.getAttribute('src')?audio.currentTime:episode.progress||0;
- main.innerHTML=`<div class="player-layout"><div class="player-fixed"><div class="now-playing"><button id="back-library" aria-label="返回音频库">⌄</button><span>正在播放</span><button id="reading-settings" aria-label="阅读显示设置">${icon('sliders')}</button></div><header class="episode-heading"><div class="episode-cover folder-cover" aria-hidden="true">${folderCover(folders.find(f=>f.id===episode.collectionId))}</div><div><h1>${esc(episode.title)}</h1><button id="audio-menu" class="episode-origin">${esc(folders.find(f=>f.id===episode.collectionId)?.name||episode.folder||'我的声音')} · ${LANG[episode.language]} ›</button></div></header><section class="player-progress"><div class="player-clock"><strong id="elapsed">${time(position)}</strong><small> / ${time(episode.duration)}</small></div><div class="progress-ruler" aria-hidden="true">${Array.from({length:80},(_,i)=>`<i class="${i%5===0?'major':''}"></i>`).join('')}<div class="ruler-played">${Array.from({length:80},(_,i)=>`<i class="${i%5===0?'major':''}"></i>`).join('')}</div></div><input id="seek" type="range" min="0" max="${episode.duration||1}" step=".1" value="${position}" ${connected?'':'disabled'} aria-label="播放位置"></section>${!connected?'<button class="reconnect-link" id="reconnect-audio">选择原文件播放</button>':''}</div><section class="player-reader"><button id="reader-follow" class="reader-follow" hidden>回到播放</button><div class="reader-tools"><button id="transcript-tools" aria-label="逐字稿操作">逐字稿</button><button id="toggle-translation" class="${prefs.translation?'selected':''}">译文</button><button id="toggle-reading" class="${prefs.reading?'selected':''}">读音</button><button id="listen-mask" class="${prefs.listeningMask?'selected':''}" aria-pressed="${prefs.listeningMask}">精听</button><button id="enter-immersive">沉浸阅读 →</button></div><div class="transcript" id="transcript">${segments.length?segments.map((seg,i)=>`<article class="sentence" data-sentence="${i}"><button class="sentence-time" data-jump="${i}" aria-label="播放第 ${i+1} 句">${time(seg.start)}</button><div class="sentence-content"><button class="sentence-cover" data-mask-toggle aria-label="显示第 ${i+1} 句原文与译文" hidden><i></i><i></i><i></i></button><button class="sentence-jump" data-reader-jump="${i}" aria-label="从第 ${i+1} 句开始播放"></button><div class="source" lang="${episode.language}">${wordsHTML(seg,i)}</div><div class="translation ${seg.translation?'':'empty-translation'}" ${prefs.translation?'':'hidden'}>${esc(seg.translation||'这一句还没有中文译文')}</div></div></article>`).join(''):`<div class="empty-transcript"><p>导入逐字稿，就能跟着声音阅读。</p><button class="secondary" id="player-import">导入逐字稿</button>${backend?'<button class="secondary" id="player-transcribe">电脑转写与翻译</button>':''}</div>`}</div></section></div>`;
+ main.innerHTML=`<div class="player-layout"><div class="player-fixed"><div class="now-playing"><button id="back-library" aria-label="返回音频库">⌄</button><span>正在播放</span><button id="reading-settings" aria-label="阅读显示设置">${icon('sliders')}</button></div><header class="episode-heading"><div class="episode-cover folder-cover" aria-hidden="true">${folderCover(folders.find(f=>f.id===episode.collectionId))}</div><div><h1>${esc(episode.title)}</h1><button id="audio-menu" class="episode-origin">${esc(folders.find(f=>f.id===episode.collectionId)?.name||episode.folder||'我的声音')} · ${LANG[episode.language]} ›</button></div></header><section class="player-progress"><div class="player-clock"><strong id="elapsed">${time(position)}</strong><small> / ${time(episode.duration)}</small></div><div class="progress-ruler" aria-hidden="true">${Array.from({length:80},(_,i)=>`<i class="${i%5===0?'major':''}"></i>`).join('')}<div class="ruler-played">${Array.from({length:80},(_,i)=>`<i class="${i%5===0?'major':''}"></i>`).join('')}</div></div><input id="seek" type="range" min="0" max="${episode.duration||1}" step=".1" value="${position}" ${connected?'':'disabled'} aria-label="播放位置"></section>${!connected?'<button class="reconnect-link" id="reconnect-audio">选择原文件播放</button>':''}</div><section class="player-reader"><button id="reader-follow" class="reader-follow" hidden>回到播放</button><div class="reader-tools"><button id="transcript-tools" aria-label="逐字稿操作">逐字稿</button><button id="toggle-translation" class="${prefs.translation?'selected':''}">译文</button><button id="toggle-reading" class="${prefs.reading?'selected':''}">读音</button><button id="listen-mask" class="${prefs.listeningMask?'selected':''}" aria-pressed="${prefs.listeningMask}">精听</button><button id="enter-immersive">沉浸阅读 →</button></div><div class="transcript" id="transcript">${segments.length?segments.map((seg,i)=>`<article class="sentence" data-sentence="${i}"><div class="sentence-head"><button class="sentence-time" data-jump="${i}" aria-label="播放第 ${i+1} 句">${time(seg.start)}</button>${sentenceBookmarkButton(seg,i)}</div><div class="sentence-content"><button class="sentence-cover" data-mask-toggle aria-label="显示第 ${i+1} 句原文与译文" hidden><i></i><i></i><i></i></button><button class="sentence-jump" data-reader-jump="${i}" aria-label="从第 ${i+1} 句开始播放"></button><div class="source" lang="${episode.language}">${wordsHTML(seg,i)}</div><div class="translation ${seg.translation?'':'empty-translation'}" ${prefs.translation?'':'hidden'}>${esc(seg.translation||'这一句还没有中文译文')}</div></div></article>`).join(''):`<div class="empty-transcript"><p>导入逐字稿，就能跟着声音阅读。</p><button class="secondary" id="player-import">导入逐字稿</button>${backend?'<button class="secondary" id="player-transcribe">电脑转写与翻译</button>':''}</div>`}</div></section></div>`;
  main.scrollTo(0,0);const dock=document.createElement('div');dock.className='player-dock';dock.innerHTML=`<div class="dock-content">${transportHTML()}</div>`;document.body.append(dock);bindTransport();
  on('#back-library','click',()=>returnToParent());on('#reading-settings','click',readingSettings);on('#audio-menu','click',audioMenu);on('#transcript-tools','click',transcriptTools);on('#enter-immersive','click',toggleImmersive);on('#listen-mask','click',()=>toggleListeningMask().catch(report));on('#reconnect-audio','click',()=>reconnectAudio());on('#player-import','click',()=>importScript(episode.id));on('#player-transcribe','click',()=>computerTranscription(episode));
  for(const key of ['reading','translation'])on('#toggle-'+key,'click',async()=>{if(key==='translation')await toggleTranslation();else{prefs.reading=!prefs.reading;await savePrefs();}$('#toggle-'+key)?.classList.toggle('selected',prefs[key]);});
- updateListeningMask();
+ updateListeningMask();bindSentenceBookmarks();
  document.querySelectorAll('[data-jump]').forEach(b=>b.onclick=()=>jump(Number(b.dataset.jump),true));bindReader($('#transcript'));on('#reader-follow','click',()=>resumeFollow(true));current=-1;wordCurrent=-1;updatePlayback();updateBrowseUI();
 }
 function scrollSentenceToView(index,behavior='smooth'){
@@ -541,17 +575,17 @@ function toggleImmersive(){
  if(!episode.segments?.length){toast('请先导入逐字稿。');return;}
  immersive=true;immListening=prefs.listeningMask;revealed=false;browseIndex=null;follow=true;setImmersiveAccess(true);
  const panel=document.createElement('section');panel.className='immersive-mode';panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-label','沉浸阅读');
- panel.innerHTML=`<div class="imm-top"><div class="imm-position"><span id="imm-counter"></span><button id="imm-follow" hidden>回到播放</button></div><div class="actions"><button id="imm-smaller" aria-label="减小沉浸字号">A−</button><button id="imm-larger" aria-label="增大沉浸字号">A+</button><button id="exit-immersive" aria-label="退出沉浸阅读">×</button></div></div><div class="imm-body" id="imm-body"></div><div class="imm-bottom">${transportHTML()}</div>`;
+ panel.innerHTML=`<div class="imm-top"><div class="imm-position"><span id="imm-counter"></span><button id="imm-follow" hidden>回到播放</button></div><div class="actions"><button id="imm-bookmark" class="sentence-bookmark" aria-label="收藏当前句子" aria-pressed="false">${icon('bookmark')}</button><button id="imm-smaller" aria-label="减小沉浸字号">A−</button><button id="imm-larger" aria-label="增大沉浸字号">A+</button><button id="exit-immersive" aria-label="退出沉浸阅读">×</button></div></div><div class="imm-body" id="imm-body"></div><div class="imm-bottom">${transportHTML()}</div>`;
  $('.player-dock')?.remove();document.body.append(panel);
  panel.classList.toggle('focused-listening',immListening);
  for(const [id,step] of [['#imm-smaller',-.1],['#imm-larger',.1]])on(id,'click',async()=>{prefs.immSize=Math.round(Math.min(1.6,Math.max(.8,prefs.immSize+step))*10)/10;await savePrefs();});
- on('#exit-immersive','click',toggleImmersive);bindTransport();renderImmersiveSentence();updatePlayback();$('#exit-immersive').focus();
+ on('#imm-bookmark','click',()=>toggleSentenceBookmark(displayedSentence()).catch(report));on('#exit-immersive','click',toggleImmersive);bindTransport();renderImmersiveSentence();updatePlayback();$('#exit-immersive').focus();
  on('#imm-follow','click',()=>resumeFollow());bindReader($('#imm-body'));
 
 }
 function renderImmersiveSentence(){
  if(!immersive)return;const index=displayedSentence(),s=episode.segments[index];if(!s)return;
- $('#imm-counter').textContent=`${index+1} / ${episode.segments.length}`;
+ refreshSentenceBookmarks();$('#imm-counter').textContent=`${index+1} / ${episode.segments.length}`;
  const hideSource=!revealed&&(immListening||['source','both'].includes(prefs.mask)),hideTranslation=!revealed&&(immListening||['translation','both'].includes(prefs.mask));
  const previous=episode.segments[index-1],next=episode.segments[index+1];
  $('#imm-body').innerHTML=`${!immListening&&previous?`<button class="imm-neighbor" data-imm-neighbor="${index-1}">${esc(previous.text)}</button>`:'<div class="imm-neighbor"></div>'}<div class="imm-current" data-sentence="${index}"><button class="sentence-jump" data-reader-jump="${index}" aria-label="从第 ${index+1} 句开始播放"></button><time>${time(s.start)}</time>${hideSource?'<button class="text-cover" id="reveal-source" data-mask-toggle aria-label="显示遮盖原文"><i></i><i></i><i></i></button>':`<div class="source" lang="${episode.language}">${wordsHTML(s,index)}</div>`}${prefs.translation&&!hideTranslation?`<div class="translation ${s.translation?'':'empty-translation'}">${esc(s.translation||'这一句还没有中文译文')}</div>`:''}${hideSource?'<button class="cover-check" id="reveal-translation" data-mask-toggle>'+(prefs.translation?'显示原文与译文':'显示原文')+'</button>':hideTranslation&&s.translation&&prefs.translation?'<button class="cover-check" id="reveal-translation" data-mask-toggle>显示译文</button>':''}</div>${!immListening&&next?`<button class="imm-neighbor" data-imm-neighbor="${index+1}">${esc(next.text)}</button>`:'<div class="imm-neighbor"></div>'}`;
@@ -740,7 +774,7 @@ async function checkAudio(){
  on('#recover-audio-sound','click',()=>{closeModal();recoverSound();});
  on('#copy-audio-check','click',async()=>{try{await navigator.clipboard.writeText(reportText);toast('检查信息已复制');}catch{toast('复制未成功，可直接查看上方检查信息');}});
 }
-async function audioMenu(){openModal('管理音频',`<div class="stack">${episode.storageMode!=='external'?'<button class="secondary full" id="switch-original">改为读取原文件，移除应用副本</button>':'<button class="secondary full" id="connect-original">重新选择原音频</button>'}${!phone?`<button class="secondary full" id="edit-transcript" ${episode.segments?.length?'':'disabled'}>人工校对原文、译文与假名</button><button class="secondary full" id="undo-transcript" ${episode.transcriptUndo?'':'disabled'}>撤销上一次校对</button>`:''}<button class="secondary full" id="replace-script">${episode.segments?.length?'替换逐字稿':'导入逐字稿'}</button>${backend?'<button class="secondary full" id="retranscribe">在这台电脑重新转写</button>':''}<button class="secondary full" id="export-script" ${episode.segments?.length?'':'disabled'}>导出逐字稿与时间轴</button><button class="secondary full" id="check-audio">检查声音</button><button class="secondary full" id="export-audio">导出原音频</button><button class="secondary full" id="extract-words" ${episode.segments?.length?'':'disabled'}>提取生词</button><button class="secondary full" id="add-bookmark">在当前位置加书签</button><button class="secondary full" id="show-bookmarks">书签（${episode.bookmarks?.length||0}）</button><button class="danger full" id="delete-audio">移除这段音频</button></div>`);on('#edit-transcript','click',()=>editEpisodeSentence(Math.max(0,current)));on('#undo-transcript','click',undoTranscript);on('#switch-original','click',switchToOriginal);on('#connect-original','click',()=>reconnectAudio());on('#retranscribe','click',()=>computerTranscription(episode));on('#replace-script','click',()=>{closeModal();importScript(episode.id);});on('#export-script','click',()=>exportTranscript(episode));on('#check-audio','click',()=>checkAudio().catch(report));on('#export-audio','click',()=>{const file=audioFile(episode);if(file)download(file,episode.filename||episode.title+'.mp3');else reconnectAudio();});on('#extract-words','click',extractWords);on('#add-bookmark','click',async()=>{episode.bookmarks||=[];episode.bookmarks.push({time:audio.currentTime,text:episode.segments?.[Math.max(0,current)]?.text||time(audio.currentTime)});await write('episodes',episode);toast('已加书签');audioMenu();});on('#show-bookmarks','click',()=>{openModal('书签',episode.bookmarks?.length?`<div class="stack">${episode.bookmarks.map((b,i)=>`<button class="secondary" data-bookmark="${i}">${time(b.time)} · ${esc(b.text)}</button>`).join('')}</div>`:'<p class="note">播放时点击“加书签”，就能标记一个位置。</p>');document.querySelectorAll('[data-bookmark]').forEach(b=>b.onclick=()=>{closeModal();if(!audioFile(episode)){reconnectAudio();return;}current=-1;audio.currentTime=episode.bookmarks[Number(b.dataset.bookmark)].time;updatePlayback();});});on('#delete-audio','click',()=>{openModal('删除这段音频？','<p class="note">会移除应用中的记录、逐字稿和对应词卡；手机「文件」中的原音频不会被删除。建议先导出备份。</p><div class="actions"><button class="secondary" id="cancel-delete">保留</button><button class="danger" id="confirm-delete">确认删除</button></div>');on('#cancel-delete','click',closeModal);on('#confirm-delete','click',async()=>{const id=episode.id;cancelPractice();originalFiles.delete(id);audio.pause();episode=null;const oldURL=objectURL;objectURL=null;releaseAudio(audio,URL.revokeObjectURL,oldURL);await remove('episodes',id);for(const c of await all('cards'))if(c.episodeId===id)await remove('cards',c.id);$('.player-dock')?.remove();closeModal();navigate('library');});});}
+async function audioMenu(){openModal('管理音频',`<div class="stack">${episode.storageMode!=='external'?'<button class="secondary full" id="switch-original">改为读取原文件，移除应用副本</button>':'<button class="secondary full" id="connect-original">重新选择原音频</button>'}${!phone?`<button class="secondary full" id="edit-transcript" ${episode.segments?.length?'':'disabled'}>人工校对原文、译文与假名</button><button class="secondary full" id="undo-transcript" ${episode.transcriptUndo?'':'disabled'}>撤销上一次校对</button>`:''}<button class="secondary full" id="replace-script">${episode.segments?.length?'替换逐字稿':'导入逐字稿'}</button>${backend?'<button class="secondary full" id="retranscribe">在这台电脑重新转写</button>':''}<button class="secondary full" id="export-script" ${episode.segments?.length?'':'disabled'}>导出逐字稿与时间轴</button><button class="secondary full" id="check-audio">检查声音</button><button class="secondary full" id="export-audio">导出原音频</button><button class="secondary full" id="extract-words" ${episode.segments?.length?'':'disabled'}>提取生词</button><button class="secondary full" id="add-bookmark" ${episode.segments?.length?'':'disabled'}>${sentenceBookmark(episode,episode.segments?.[Math.max(0,current)])?'取消当前句子书签':'收藏当前句子'}</button><button class="secondary full" id="show-bookmarks">书签（${episode.bookmarks?.length||0}）</button><button class="danger full" id="delete-audio">移除这段音频</button></div>`);on('#edit-transcript','click',()=>editEpisodeSentence(Math.max(0,current)));on('#undo-transcript','click',undoTranscript);on('#switch-original','click',switchToOriginal);on('#connect-original','click',()=>reconnectAudio());on('#retranscribe','click',()=>computerTranscription(episode));on('#replace-script','click',()=>{closeModal();importScript(episode.id);});on('#export-script','click',()=>exportTranscript(episode));on('#check-audio','click',()=>checkAudio().catch(report));on('#export-audio','click',()=>{const file=audioFile(episode);if(file)download(file,episode.filename||episode.title+'.mp3');else reconnectAudio();});on('#extract-words','click',extractWords);on('#add-bookmark','click',async()=>{try{if(episode.segments?.length){await toggleSentenceBookmark(Math.max(0,current));audioMenu();}else toast('请先导入逐字稿，再收藏句子。');}catch(error){report(error);}});on('#show-bookmarks','click',()=>{openModal('书签',episode.bookmarks?.length?`<div class="stack">${episode.bookmarks.map((b,i)=>`<button class="secondary" data-bookmark="${i}">${time(b.time)} · ${esc(b.text)}</button>`).join('')}</div>`:'<p class="note">播放时点击“加书签”，就能标记一个位置。</p>');document.querySelectorAll('[data-bookmark]').forEach(b=>b.onclick=()=>{closeModal();if(!audioFile(episode)){reconnectAudio();return;}current=-1;audio.currentTime=episode.bookmarks[Number(b.dataset.bookmark)].time;updatePlayback();});});on('#delete-audio','click',()=>{openModal('删除这段音频？','<p class="note">会移除应用中的记录、逐字稿和对应词卡；手机「文件」中的原音频不会被删除。建议先导出备份。</p><div class="actions"><button class="secondary" id="cancel-delete">保留</button><button class="danger" id="confirm-delete">确认删除</button></div>');on('#cancel-delete','click',closeModal);on('#confirm-delete','click',async()=>{const id=episode.id;cancelPractice();originalFiles.delete(id);audio.pause();episode=null;const oldURL=objectURL;objectURL=null;releaseAudio(audio,URL.revokeObjectURL,oldURL);await remove('episodes',id);for(const c of await all('cards'))if(c.episodeId===id)await remove('cards',c.id);$('.player-dock')?.remove();closeModal();navigate('library');});});}
 
 
 async function extractWords(){
@@ -774,36 +808,61 @@ function miniPlayer(){
 
 async function renderCards(){
  view='cards';
- const allCards=await all('cards'),collection=await all('episodes'),categories=cardCategories(allCards);
+ const wordCards=await all('cards'),collection=await all('episodes'),allCards=cardMode==='sentence'?sentenceCards(collection):wordCards,categories=cardCategories(allCards),kind=cardMode==='sentence'?'句卡':'词卡';
  setNav();$('.player-dock')?.remove();
  if(cardCategoryFilter.startsWith('c:')&&!categories.includes(decodeURIComponent(cardCategoryFilter.slice(2))))cardCategoryFilter='';
  if(cardFolderFilter&&cardFolderFilter!=='unfiled'&&!folders.some(f=>f.id===cardFolderFilter))cardFolderFilter='';
  const cards=selectedCards(allCards,collection,{language:filter,category:cardCategoryFilter,folder:cardFolderFilter}).sort((a,b)=>a.due-b.due),due=cards.filter(c=>c.due<=Date.now()),sources=new Map(collection.map(e=>[e.id,e]));
- main.innerHTML=`<section class="intro"><h1>我的词卡</h1><p>${allCards.length?`${cards.length} 张词卡 · ${due.length} 张待复习`:'在逐字稿里点一个词，把它留下来。'}</p></section><div class="filters">${[['','全部'],...Object.entries(LANG)].map(([c,n])=>`<button class="chip ${filter===c?'active':''}" data-filter="${c}">${n}</button>`).join('')}</div>
- <div class="card-filters"><div><label for="card-category-filter">词卡分类</label><select id="card-category-filter"><option value="">全部分类</option><option value="unfiled" ${cardCategoryFilter==='unfiled'?'selected':''}>未分类</option>${categories.map(name=>{const value='c:'+encodeURIComponent(name);return `<option value="${esc(value)}" ${cardCategoryFilter===value?'selected':''}>${esc(name)}</option>`;}).join('')}</select></div><div><label for="card-folder-filter">音频文件夹</label><select id="card-folder-filter"><option value="">全部文件夹</option><option value="unfiled" ${cardFolderFilter==='unfiled'?'selected':''}>未分组音频</option>${folders.map(f=>`<option value="${esc(f.id)}" ${cardFolderFilter===f.id?'selected':''}>${esc(f.name)}</option>`).join('')}</select></div></div>
- <div class="actions">${due.length?'<button class="primary" id="start-review">开始复习</button>':''}<button class="secondary" id="dictionary-export" ${cards.length?'':'disabled'}>导出到词典</button></div>
- <div class="stack section-title">${cards.length?cards.map(c=>`<article class="card"><div class="card-meta"><small>${LANG[c.language]} · ${esc(c.category||'未分类')}</small><small>${esc(sources.get(c.episodeId)?.title||'原音频已删除')}</small></div><div class="card-word">${esc(c.lemma||c.text)} ${c.reading?`<small>${esc(c.reading)}</small>`:''}</div><p>${esc(c.note||'暂无备注')}</p><p class="card-context">${esc(c.context)}</p><div class="actions"><button class="secondary" data-card-listen="${c.id}">听原句</button><button class="secondary" data-card-edit="${c.id}">编辑</button></div></article>`).join(''):`<div class="empty"><div class="empty-icon" aria-hidden="true">▤</div><h2>${allCards.length?'这个分类还没有词卡':'还没有词卡'}</h2><p>${allCards.length?'换个分类，或在编辑词卡时填写分类名称。':'打开一段有逐字稿的音频，点想记住的词。'}</p><button class="primary" id="cards-library">查看音频</button></div>`}</div>`;
+ main.innerHTML=`<section class="intro"><h1>我的${kind}</h1><p>${allCards.length?`${cards.length} 张${kind} · ${due.length} 张待复习`:cardMode==='sentence'?'收藏想记住的句子，随时回来复习。':'在逐字稿里双击一个词，把它留下来。'}</p></section><div class="review-kind-tabs" role="group" aria-label="卡片类型"><button data-card-kind="word" aria-pressed="${cardMode==='word'}">词卡</button><button data-card-kind="sentence" aria-pressed="${cardMode==='sentence'}">句卡</button></div><div class="filters">${[['','全部'],...Object.entries(LANG)].map(([c,n])=>`<button class="chip ${filter===c?'active':''}" data-filter="${c}">${n}</button>`).join('')}</div>
+ <div class="card-filters"><div><label for="card-category-filter">${kind}分类</label><select id="card-category-filter"><option value="">全部分类</option><option value="unfiled" ${cardCategoryFilter==='unfiled'?'selected':''}>未分类</option>${categories.map(name=>{const value='c:'+encodeURIComponent(name);return `<option value="${esc(value)}" ${cardCategoryFilter===value?'selected':''}>${esc(name)}</option>`;}).join('')}</select></div><div><label for="card-folder-filter">音频文件夹</label><select id="card-folder-filter"><option value="">全部文件夹</option><option value="unfiled" ${cardFolderFilter==='unfiled'?'selected':''}>未分组音频</option>${folders.map(f=>`<option value="${esc(f.id)}" ${cardFolderFilter===f.id?'selected':''}>${esc(f.name)}</option>`).join('')}</select></div></div>
+ <div class="actions">${due.length||cardMode==='sentence'&&cards.length?`<button class="primary" id="start-review">${due.length?'开始复习':'复习全部'}</button>`:''}${cardMode==='word'?`<button class="secondary" id="dictionary-export" ${cards.length?'':'disabled'}>导出到词典</button>`:''}</div>
+ <div class="stack section-title">${cards.length?cards.map(c=>`<article class="card ${cardMode==='sentence'?'sentence-card':''}"><div class="card-meta"><small>${LANG[c.language]} · ${esc(c.category||'未分类')}</small><small>${esc(sources.get(c.episodeId)?.title||'原音频已删除')}</small></div>${cardMode==='sentence'?`<div class="sentence-card-source" lang="${c.language}">${sentenceCardHTML(c)}</div>${c.translation?`<p class="sentence-card-translation">${esc(c.translation)}</p>`:''}${c.note?`<p class="card-context">${esc(c.note)}</p>`:''}`:`<div class="card-word">${esc(c.lemma||c.text)} ${c.reading?`<small>${esc(c.reading)}</small>`:''}</div><p>${esc(c.note||'暂无备注')}</p><p class="card-context">${esc(c.context)}</p>`}<div class="actions"><button class="secondary" data-card-listen="${esc(c.id)}">听原句</button><button class="secondary" data-card-edit="${esc(c.id)}">编辑</button></div></article>`).join(''):`<div class="empty"><div class="empty-icon" aria-hidden="true">▤</div><h2>${allCards.length?'这个分类还没有'+kind:'还没有'+kind}</h2><p>${allCards.length?'换个分类，或在编辑卡片时填写分类名称。':cardMode==='sentence'?'打开逐字稿，点击句子旁的书签收藏。':'打开一段有逐字稿的音频，双击想记住的词。'}</p><button class="primary" id="cards-library">查看音频</button></div>`}</div>`;
+ document.querySelectorAll('[data-card-kind]').forEach(b=>b.onclick=async()=>{cardMode=b.dataset.cardKind;cardCategoryFilter='';await write('settings',{id:'review-card-kind',value:cardMode});await renderCards();});
  document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;renderCards().catch(report);});
  on('#card-category-filter','change',event=>{cardCategoryFilter=event.target.value;renderCards().catch(report);});
  on('#card-folder-filter','change',event=>{cardFolderFilter=event.target.value;renderCards().catch(report);});
- on('#dictionary-export','click',()=>exportDictionary(cards));on('#cards-library','click',()=>navigate('library'));on('#start-review','click',()=>reviewCards(due));
+ on('#dictionary-export','click',()=>exportDictionary(cards));on('#cards-library','click',()=>navigate('library'));on('#start-review','click',()=>reviewCards(due.length?due:cards));
  document.querySelectorAll('[data-card-listen]').forEach(b=>b.onclick=()=>listenCard(cards.find(c=>c.id===b.dataset.cardListen)).catch(report));
  document.querySelectorAll('[data-card-edit]').forEach(b=>b.onclick=()=>editCard(cards.find(c=>c.id===b.dataset.cardEdit)).catch(report));
 }
-async function listenCard(card){
+async function listenCard(card,{stayInCards=false}={}){
  const e=await read('episodes',card.episodeId);if(!e){toast('原音频已被删除');return;}
- const sentence=cardSentence(card,e.segments);if(!sentence){toast('找不到原句时间轴，请先重新导入或校对逐字稿');return;}
- await openEpisode(e.id,sentence.start);
+ const sentence=card.kind==='sentence'?bookmarkedSentence(e,(e.bookmarks||[]).find(b=>bookmarkKey(b)===card.bookmarkKey)||{time:card.start,text:card.text}):cardSentence(card,e.segments);if(!sentence){toast('找不到原句时间轴，请先重新导入或校对逐字稿');return;}
+ await openEpisode(e.id,sentence.start,{updateHistory:!stayInCards});
+ if(stayInCards){await renderCards();miniPlayer();}
  if(!audioFile(e)){await reconnectAudio(e,{start:sentence.start,end:sentence.end});return;}
  playSentenceClip(sentence);
 }
+async function saveSentenceCard(card,patch){
+ await updateBookmarks(card.episodeId,bookmarks=>changeSentenceBookmark(bookmarks,card.bookmarkKey,patch));
+ if(episode?.id===card.episodeId){episode=await read('episodes',card.episodeId);refreshSentenceBookmarks();}
+}
+async function editSentenceCard(card){
+ const cards=sentenceCards(await all('episodes'));
+ openModal('编辑句卡',`<div class="sentence-card-source" lang="${card.language}">${sentenceCardHTML(card)}</div>${card.translation?`<p class="sentence-card-translation">${esc(card.translation)}</p>`:''}<label for="edit-note">背诵笔记</label><textarea id="edit-note" rows="3" maxlength="5000">${esc(card.note)}</textarea>${categoryField(cards,card.category||'','edit-category')}<div class="actions"><button class="primary" id="update-card">保存</button><button class="secondary" id="delete-card">取消句子书签</button></div>`);
+ on('#update-card','click',async()=>{try{await saveSentenceCard(card,{note:$('#edit-note').value.trim(),category:cardCategory($('#edit-category').value)});closeModal();await renderCards();}catch(error){report(error);}});
+ on('#delete-card','click',async()=>{try{await saveSentenceCard(card,null);closeModal();await renderCards();toast('已取消句子书签');}catch(error){report(error);}});
+}
+async function reviewSentenceCards(cards,index=0){
+ if(index>=cards.length){closeModal();toast('本次句卡复习完成');await renderCards();miniPlayer();return;}
+ const saved=cards[index],source=await read('episodes',saved.episodeId),card=source&&sentenceCards([source]).find(c=>c.id===saved.id);
+ if(!card)return reviewSentenceCards(cards,index+1);
+ openModal(`句卡复习 ${index+1} / ${cards.length}`,`<small>${LANG[card.language]} · ${esc(source.title)}</small><p class="sentence-card-translation">${esc(card.translation||'先听原句，再回忆原文。')}</p><div class="sentence-card-source sentence-review-source" lang="${card.language}" id="sentence-review-source" hidden>${sentenceCardHTML(card)}</div><div class="actions"><button class="secondary" id="review-sentence-listen">听原句</button><button class="secondary" id="reveal-sentence" aria-expanded="false">显示原文</button></div><div id="sentence-review-answer" hidden>${card.note?`<p class="card-context">${esc(card.note)}</p>`:''}<div class="actions section-title"><button class="secondary" id="sentence-review-again">还不熟</button><button class="primary" id="sentence-review-known">记住了</button></div></div>`);
+ on('#review-sentence-listen','click',()=>listenCard(card,{stayInCards:true}).catch(report));
+ on('#reveal-sentence','click',()=>{const hidden=!$('#sentence-review-source').hidden;$('#sentence-review-source').hidden=hidden;$('#reveal-sentence').textContent=hidden?'显示原文':'遮盖原文';$('#reveal-sentence').setAttribute('aria-expanded',String(!hidden));$('#sentence-review-answer').hidden=false;});
+ for(const [selector,known] of [['#sentence-review-again',false],['#sentence-review-known',true]])on(selector,'click',async()=>{
+  const buttons=modal.querySelectorAll('#sentence-review-again,#sentence-review-known');buttons.forEach(b=>b.disabled=true);
+  try{const level=known?Math.min(5,card.level+1):0;await saveSentenceCard(card,{level,due:Date.now()+(known?[1,1,3,7,14,30][level]*86400000:600000)});await reviewSentenceCards(cards,index+1);}catch(error){report(error);buttons.forEach(b=>b.disabled=false);}
+ });
+}
 async function editCard(card){
+ if(card.kind==='sentence')return editSentenceCard(card);
  const cards=await all('cards');
  openModal('编辑词卡',`<h2>${esc(card.text)}</h2><label for="edit-note">我的释义或备注</label><textarea id="edit-note" rows="3">${esc(card.note)}</textarea>${categoryField(cards,card.category||'','edit-category')}<div class="actions"><button class="primary" id="update-card">保存</button><button class="danger" id="delete-card">删除词卡</button></div>`);
  on('#update-card','click',async()=>{try{await write('cards',{...card,note:$('#edit-note').value.trim(),category:cardCategory($('#edit-category').value)});closeModal();await renderCards();}catch(e){report(e);}});
  on('#delete-card','click',async()=>{try{await remove('cards',card.id);closeModal();await renderCards();}catch(e){report(e);}});
 }
-function reviewCards(cards,index=0){if(index>=cards.length){closeModal();toast('本次复习完成');renderCards();return;}const c=cards[index];openModal(`复习 ${index+1} / ${cards.length}`,`<div class="card-word">${esc(c.lemma||c.text)}</div><p class="card-context">${esc(c.context)}</p><button class="secondary full" id="reveal-card">显示我的备注</button><div id="card-answer" hidden><p>${esc(c.note||'尚未填写备注')}</p><div class="actions"><button class="secondary" id="review-again">还不熟</button><button class="primary" id="review-known">记住了</button></div></div>`);on('#reveal-card','click',()=>{$('#card-answer').hidden=false;$('#reveal-card').hidden=true;});for(const [selector,known] of [['#review-again',false],['#review-known',true]])on(selector,'click',async()=>{c.level=known?Math.min(5,(c.level||0)+1):0;c.due=Date.now()+(known?[1,1,3,7,14,30][c.level]*86400000:600000);await write('cards',c);reviewCards(cards,index+1);});}
+function reviewCards(cards,index=0){if(cards[0]?.kind==='sentence')return reviewSentenceCards(cards,index);if(index>=cards.length){closeModal();toast('本次复习完成');renderCards();return;}const c=cards[index];openModal(`复习 ${index+1} / ${cards.length}`,`<div class="card-word">${esc(c.lemma||c.text)}</div><p class="card-context">${esc(c.context)}</p><button class="secondary full" id="reveal-card">显示我的备注</button><div id="card-answer" hidden><p>${esc(c.note||'尚未填写备注')}</p><div class="actions"><button class="secondary" id="review-again">还不熟</button><button class="primary" id="review-known">记住了</button></div></div>`);on('#reveal-card','click',()=>{$('#card-answer').hidden=false;$('#reveal-card').hidden=true;});for(const [selector,known] of [['#review-again',false],['#review-known',true]])on(selector,'click',async()=>{c.level=known?Math.min(5,(c.level||0)+1):0;c.due=Date.now()+(known?[1,1,3,7,14,30][c.level]*86400000:600000);await write('cards',c);reviewCards(cards,index+1);});}
 async function manageAudioCopies(){
  await showCopyManager({load:()=>all('episodes'),open:openModal,modal,current:()=>{const serial=modalSerial;return()=>modal.open&&modalSerial===serial;},lock:()=>{modalCanClose=()=>false;return()=>{modalCanClose=null;};},remove:deleteAudioCopies,report,size,folderName,language:LANG,
   beforeDelete:ids=>episode&&ids.includes(episode.id)?saveProgress():Promise.resolve(),
