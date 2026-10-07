@@ -7,21 +7,26 @@ export const db = await new Promise((resolve,reject)=>{
 function rawRead(store,id){return new Promise((resolve,reject)=>{const r=db.transaction(store).objectStore(store).get(id);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
 function rawAll(store){return new Promise((resolve,reject)=>{const r=db.transaction(store).objectStore(store).getAll();r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
 const durationKey=id=>'track-duration/'+id;
-export async function read(store,id){const value=await rawRead(store,id);if(store==='episodes'&&value){const [p,d]=await Promise.all([rawRead('progress',id),rawRead('settings',durationKey(id))]);if(p)value.progress=p.seconds;if(Number.isFinite(d?.value)&&d.value>0)value.duration=d.value;}return value;}
-export async function all(store){const values=await rawAll(store);if(store==='episodes'){const [positions,settings]=await Promise.all([rawAll('progress'),rawAll('settings')]);const progress=new Map(positions.map(p=>[p.id,p.seconds])),durations=new Map(settings.filter(s=>s.id.startsWith('track-duration/')).map(s=>[s.id,s.value]));for(const e of values){if(progress.has(e.id))e.progress=progress.get(e.id);const duration=durations.get(durationKey(e.id));if(Number.isFinite(duration)&&duration>0)e.duration=duration;}}return values;}
+const bookmarksKey=id=>'sentence-bookmarks/'+id;
+export async function read(store,id){const value=await rawRead(store,id);if(store==='episodes'&&value){const [p,d,b]=await Promise.all([rawRead('progress',id),rawRead('settings',durationKey(id)),rawRead('settings',bookmarksKey(id))]);if(p)value.progress=p.seconds;if(Number.isFinite(d?.value)&&d.value>0)value.duration=d.value;if(Array.isArray(b?.value))value.bookmarks=b.value;}return value;}
+export async function all(store){const values=await rawAll(store);if(store==='episodes'){const [positions,settings]=await Promise.all([rawAll('progress'),rawAll('settings')]);const progress=new Map(positions.map(p=>[p.id,p.seconds])),saved=new Map(settings.map(s=>[s.id,s.value]));for(const e of values){if(progress.has(e.id))e.progress=progress.get(e.id);const duration=saved.get(durationKey(e.id));if(Number.isFinite(duration)&&duration>0)e.duration=duration;const bookmarks=saved.get(bookmarksKey(e.id));if(Array.isArray(bookmarks))e.bookmarks=bookmarks;}}return values;}
 // First playback learns duration without replacing the Blob the media decoder is reading.
 export function saveDuration(id,duration){if(!id||!Number.isFinite(duration)||duration<=0)return Promise.resolve();return write('settings',{id:durationKey(id),value:duration});}
 export function write(store,value){return new Promise((resolve,reject)=>{const t=db.transaction(store,'readwrite');t.objectStore(store).put(value);t.oncomplete=resolve;t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error);});}
 export function updateBookmarks(id,change){return new Promise((resolve,reject)=>{
- const t=db.transaction('episodes','readwrite'),store=t.objectStore('episodes');let next,failure;
+ // Never rewrite the audio Blob while its object URL is being decoded on iPhone.
+ const t=db.transaction(['episodes','settings'],'readwrite'),store=t.objectStore('episodes'),settings=t.objectStore('settings');let next,failure;
  const request=store.get(id);request.onsuccess=()=>{try{
   const latest=request.result;if(!latest)throw Error('原音频已被移除。');
-  const bookmarks=change(latest.bookmarks||[],latest);if(bookmarks.length>10000)throw Error('书签过多，请先整理句卡。');
-  next={...latest,bookmarks};store.put(next);
+  const saved=settings.get(bookmarksKey(id));saved.onsuccess=()=>{try{
+   const current=Array.isArray(saved.result?.value)?saved.result.value:latest.bookmarks||[];
+   const bookmarks=change(current,{...latest,bookmarks:current});if(bookmarks.length>10000)throw Error('书签过多，请先整理句卡。');
+   next={id,bookmarks};settings.put({id:bookmarksKey(id),value:bookmarks});
+  }catch(error){failure=error;t.abort();}};
  }catch(error){failure=error;t.abort();}};
  t.oncomplete=()=>resolve(next);t.onerror=()=>reject(failure||t.error);t.onabort=()=>reject(failure||t.error);
 });}
-export function remove(store,id){return new Promise((resolve,reject)=>{const t=db.transaction(store==='episodes'?['episodes','progress','settings']:store,'readwrite');t.objectStore(store).delete(id);if(store==='episodes'){t.objectStore('progress').delete(id);t.objectStore('settings').delete(durationKey(id));}t.oncomplete=resolve;t.onerror=()=>reject(t.error);});}
+export function remove(store,id){return new Promise((resolve,reject)=>{const t=db.transaction(store==='episodes'?['episodes','progress','settings']:store,'readwrite');t.objectStore(store).delete(id);if(store==='episodes'){t.objectStore('progress').delete(id);t.objectStore('settings').delete(durationKey(id));t.objectStore('settings').delete(bookmarksKey(id));}t.oncomplete=resolve;t.onerror=()=>reject(t.error);});}
 export function saveBatch(episodes,cards,settings=[]){return new Promise((resolve,reject)=>{const t=db.transaction(['episodes','cards','settings'],'readwrite');for(const e of episodes)t.objectStore('episodes').put(e);for(const c of cards)t.objectStore('cards').put(c);for(const s of settings)t.objectStore('settings').put(s);t.oncomplete=resolve;t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error);});}
 // Read each current record in the same transaction; a conflict rolls back the whole batch.
 export function replaceEpisodeTranscripts(patches){return new Promise((resolve,reject)=>{
@@ -67,7 +72,7 @@ export function deleteAudioCopies(items,{removeRecords=false}={}){return new Pro
     const e=request.result;
     if(!e?.audio?.size||e.audio.size!==expected.bytes||(e.audioCopyHash||'')!==expected.hash||(e.fingerprint||'')!==expected.fingerprint)throw Error('音频副本已经发生变化，请返回列表重新选择。');
     bytes+=e.audio.size;
-    if(removeRecords){store.delete(id);t.objectStore('progress').delete(id);t.objectStore('settings').delete(durationKey(id));}
+    if(removeRecords){store.delete(id);t.objectStore('progress').delete(id);t.objectStore('settings').delete(durationKey(id));t.objectStore('settings').delete(bookmarksKey(id));}
     else{const next={...e,audio:null,storageMode:'external',audioBytes:e.audio.size};delete next.audioCopyHash;delete next.audioCopyVersion;store.put(next);}
    }catch(error){failure=error;t.abort();}
   };

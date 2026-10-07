@@ -1,34 +1,35 @@
-import {bookmarkKey,bookmarkedSentence,sentenceBookmark,sentenceCards,changeSentenceBookmark} from './sentence-cards.js?v=2026.10.06.3';
-import {plainTranscriptText,plainTranscriptName} from './plain-text.js?v=2026.10.06.3';
-import {TranscriptSync} from './transcript-sync.js?v=2026.10.06.3';
-import {syncPanel,showSyncUI,showSyncBatchUI} from './sync-ui.js?v=2026.10.06.3';
-import {packageTranscript,namedTranscript} from './cloud-transcript.js?v=2026.10.06.3';
-import {showCopyManager} from './audio-copies.js?v=2026.10.06.3';
-import {submitLocalForm} from './local-upload.js?v=2026.10.06.3';
-import {mountJobMonitor,jobProgress,terminalJob} from './job-monitor.js?v=2026.10.06.3';
-import {planTranscriptImports,phoneInterface,transcriptExportName} from './transcript-batch.js?v=2026.10.06.3';
-import {clearModelDownloads,clearBrowserTranslation} from './browser-model-cleanup.js?v=2026.10.06.3';
-import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration,replaceEpisodeTranscripts,deleteAudioCopies,applyCloudTranscript,updateBookmarks} from './db.js?v=2026.10.06.3';
-import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.06.3';
+import {bindBookmarkPress} from './bookmark-press.js?v=2026.10.06.4';
+import {bookmarkKey,bookmarkedSentence,sentenceBookmark,sentenceCards,changeSentenceBookmark} from './sentence-cards.js?v=2026.10.06.4';
+import {plainTranscriptText,plainTranscriptName} from './plain-text.js?v=2026.10.06.4';
+import {TranscriptSync} from './transcript-sync.js?v=2026.10.06.4';
+import {syncPanel,showSyncUI,showSyncBatchUI} from './sync-ui.js?v=2026.10.06.4';
+import {packageTranscript,namedTranscript} from './cloud-transcript.js?v=2026.10.06.4';
+import {showCopyManager} from './audio-copies.js?v=2026.10.06.4';
+import {submitLocalForm} from './local-upload.js?v=2026.10.06.4';
+import {mountJobMonitor,jobProgress,terminalJob} from './job-monitor.js?v=2026.10.06.4';
+import {planTranscriptImports,phoneInterface,transcriptExportName} from './transcript-batch.js?v=2026.10.06.4';
+import {clearModelDownloads,clearBrowserTranslation} from './browser-model-cleanup.js?v=2026.10.06.4';
+import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration,replaceEpisodeTranscripts,deleteAudioCopies,applyCloudTranscript,updateBookmarks} from './db.js?v=2026.10.06.4';
+import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.06.4';
 import {lexicalWords,dictionaryText} from './lexicon.js';
-import {Practice,practiceOptions} from './practice.js?v=2026.10.06.3';
+import {Practice,practiceOptions} from './practice.js?v=2026.10.06.4';
 import {palettes,applyTheme} from './theme.js';
 import {hasKanji,rubyParts,setRubyReading,prepareReadings} from './furigana.js';
-import {editedSentence,changedCards,replacementTranscript} from './transcript-edit.js?v=2026.10.06.3';
-import {splitChoices,splitSentence,mergeSentences,resegmentCards} from './segment-edit.js?v=2026.10.06.3';
-import {boundaryWords,suggestSentences} from './sentence-boundaries.js?v=2026.10.06.3';
-import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.06.3';
-import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.06.3';
-import {validatePlaybackLists,reconcilePlaybackList,selectPlaybackEpisodes,reorderPlaybackList,restorePlaybackLists,includePlaybackEpisode} from './playback-list.js?v=2026.10.06.3';
-import {bindReaderGestures} from './reader-gestures.js?v=2026.10.06.3';
+import {editedSentence,changedCards,replacementTranscript} from './transcript-edit.js?v=2026.10.06.4';
+import {splitChoices,splitSentence,mergeSentences,resegmentCards} from './segment-edit.js?v=2026.10.06.4';
+import {boundaryWords,suggestSentences} from './sentence-boundaries.js?v=2026.10.06.4';
+import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.06.4';
+import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.06.4';
+import {validatePlaybackLists,reconcilePlaybackList,selectPlaybackEpisodes,reorderPlaybackList,restorePlaybackLists,includePlaybackEpisode} from './playback-list.js?v=2026.10.06.4';
+import {bindReaderGestures} from './reader-gestures.js?v=2026.10.06.4';
 import {bindDragOrder,replaceSubsetOrder} from './drag-order.js';
 import {cardCategory,cardCategories,selectedCards,cardSentence} from './cards.js';
-import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.06.3';
-import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.06.3';
+import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.06.4';
+import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.06.4';
 import {validateFolders,folderEpisodes,folderMembership,restoreFolders,makeFolderCover} from './folders.js';
-import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.06.3';
-import {ListPosition} from './list-position.js?v=2026.10.06.3';
-import {appRoute,setAppRoute,backAppRoute,bindHomeEdgeGuard,bindRouteRestore} from './navigation.js?v=2026.10.06.3';
+import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.06.4';
+import {ListPosition} from './list-position.js?v=2026.10.06.4';
+import {appRoute,setAppRoute,backAppRoute,bindHomeEdgeGuard,bindRouteRestore} from './navigation.js?v=2026.10.06.4';
 const phone=phoneInterface(navigator.userAgent,navigator.maxTouchPoints);
 const main=document.querySelector('#main'),modal=document.querySelector('#modal');
 let audio=document.querySelector('#audio');
@@ -241,7 +242,7 @@ async function reconnectAudio(e=episode,resume){
     const latest=await read('episodes',e.id);if(!latest)throw Error('这段音频已被移除。');
     const contentHash=await audioContentHash(file);if(latest.audio&&contentHash!==(latest.audioCopyHash||await audioContentHash(latest.audio)))throw Error('这不是原来的音频，请重新选择。');
     if(!canReuseAudioCopy(latest,file,contentHash))await saveAudioCopy(latest,file,hash,{write,read,fingerprint});originalFiles.delete(e.id);
-    closeModal();await openEpisode(e.id,resume?.start??e.progress);if(resume?.end!==undefined)playSentenceClip(resume);else if(resume)playFromSentence(resume.sentence);toast('音频副本已保存，重开可直接播放');
+    closeModal();if(resume?.stayInCards){if(!await loadEpisodeAudio(e.id,resume.start))return;miniPlayer();}else await openEpisode(e.id,resume?.start??e.progress);if(resume?.end!==undefined)playSentenceClip(resume);else if(resume)playFromSentence(resume.sentence);toast('音频副本已保存，重开可直接播放');
     try{await navigator.storage?.persist?.();}catch{}
   }catch(err){report(err);button.disabled=false;}});
 }
@@ -290,8 +291,8 @@ async function batchImportScripts(){
  });
 }
 
-async function openEpisode(id,initialPosition,{replaceRoute=false,updateHistory=true}={}){
-  uncoveredSentences.clear();rememberLibrary();const serial=++openSerial;resetClip();const e=await read('episodes',id);if(serial!==openSerial)return;if(!e)throw Error('找不到这段音频。');
+async function loadEpisodeAudio(id,initialPosition){
+  const serial=++openSerial;resetClip();const e=await read('episodes',id);if(serial!==openSerial)return;if(!e)throw Error('找不到这段音频。');
   await ensureEpisodeInPlaylist(e);if(serial!==openSerial)return;
   e.segments=(e.segments||[]).map(s=>prepareReadings({...s,words:lexicalWords(s,e.language)},e.language));
   const file=audioFile(e);if(!file&&Number.isFinite(initialPosition)){e.progress=initialPosition;await write('progress',{id:e.id,seconds:initialPosition});}
@@ -305,17 +306,29 @@ async function openEpisode(id,initialPosition,{replaceRoute=false,updateHistory=
     }else{audio.onloadedmetadata=null;audio.removeAttribute('src');audio.load();}
     current=-1;wordCurrent=-1;
   }else{episode=e;if(Number.isFinite(initialPosition)&&file){current=-1;audio.currentTime=initialPosition;}}
-  delete main.dataset.libraryPositionKey;view='player';follow=true;browseIndex=null;setNav();renderPlayer();if(updateHistory)setAppRoute(`audio/${id}`,replaceRoute);
   if('mediaSession'in navigator)navigator.mediaSession.metadata=new MediaMetadata({title:e.title,artist:'听页',album:LANG[e.language]});
+  return e;
+}
+async function openEpisode(id,initialPosition,{replaceRoute=false,updateHistory=true}={}){
+  uncoveredSentences.clear();rememberLibrary();if(!await loadEpisodeAudio(id,initialPosition))return;
+  delete main.dataset.libraryPositionKey;view='player';follow=true;browseIndex=null;setNav();renderPlayer();if(updateHistory)setAppRoute(`audio/${id}`,replaceRoute);
 }
 
 function rubyHTML(word){return rubyParts(word).map(p=>p.reading?`<ruby>${esc(p.text)}<rt>${esc(p.reading)}</rt></ruby>`:esc(p.text)).join('');}
 function sentenceBookmarkButton(segment,index){
  const saved=!!sentenceBookmark(episode,segment);
- return `<button class="sentence-bookmark ${saved?'saved':''}" data-sentence-bookmark="${index}" aria-label="${saved?'取消收藏':'收藏'}第 ${index+1} 句" aria-pressed="${saved}">${icon('bookmark')}</button>`;
+ return `<button class="sentence-bookmark ${saved?'saved':''}" data-sentence-bookmark="${index}" aria-label="${saved?'取消收藏':'收藏'}第 ${index+1} 句" aria-pressed="${saved}" title="短按收藏，长按复制原句" aria-keyshortcuts="Shift+Enter">${icon('bookmark')}</button>`;
 }
 function bindSentenceBookmarks(){
- document.querySelectorAll('[data-sentence-bookmark]').forEach(button=>button.onclick=()=>toggleSentenceBookmark(Number(button.dataset.sentenceBookmark)).catch(report));
+ document.querySelectorAll('[data-sentence-bookmark]').forEach(button=>bindBookmarkPress(button,{tap:()=>toggleSentenceBookmark(Number(button.dataset.sentenceBookmark)).catch(report),copy:()=>copySentence(Number(button.dataset.sentenceBookmark))}));
+}
+async function copySentence(index){
+ const text=episode?.segments?.[index]?.text?.trim();if(!text)return;
+ try{await navigator.clipboard.writeText(text);toast('已复制整句原文');return;}catch{}
+ const field=document.createElement('textarea');field.value=text;field.readOnly=true;field.style.cssText='position:fixed;left:0;bottom:0;width:1px;height:1px;opacity:.01';document.body.append(field);field.focus({preventScroll:true});field.select();
+ let copied=false;try{copied=document.execCommand('copy');}catch{}field.remove();
+ if(copied){toast('已复制整句原文');return;}
+ $('#sentence-copy')?.remove();const panel=document.createElement('div');panel.id='sentence-copy';panel.className='sentence-copy';panel.setAttribute('popover','auto');panel.innerHTML=`<div class="row between"><strong>复制原句</strong><button aria-label="关闭原句复制">×</button></div><textarea rows="4" readonly aria-label="要复制的整句原文">${esc(text)}</textarea><p class="note">在选中的原文上长按，选择“复制”。</p>`;document.body.append(panel);panel.querySelector('button').onclick=()=>panel.hidePopover();panel.addEventListener('toggle',event=>{if(event.newState==='closed')panel.remove();});panel.showPopover();panel.querySelector('textarea').focus({preventScroll:true});panel.querySelector('textarea').select();
 }
 function refreshSentenceBookmarks(){
  if(!episode)return;
@@ -330,13 +343,13 @@ async function toggleSentenceBookmark(index){
  const key=source.id+'/'+index;if(bookmarkBusy.has(key))return;bookmarkBusy.add(key);
  let removed=false;
  try{
-  await updateBookmarks(source.id,(bookmarks,latest)=>{
+  const updated=await updateBookmarks(source.id,(bookmarks,latest)=>{
    const current=latest.segments?.find(s=>s.start===segment.start&&s.end===segment.end&&s.text===segment.text);
    if(!current)throw Error('这一句已更新，请重新打开逐字稿后收藏。');
    const saved=sentenceBookmark({...latest,bookmarks},current);removed=!!saved;
    return saved?bookmarks.filter(b=>bookmarkedSentence(latest,b)!==current):[...bookmarks,{id:crypto.randomUUID(),time:current.start,end:current.end,text:current.text,note:'',category:'',due:Date.now(),level:0}];
   });
-  if(episode?.id===source.id){episode=await read('episodes',source.id);refreshSentenceBookmarks();}
+  if(episode?.id===source.id){episode.bookmarks=updated.bookmarks;refreshSentenceBookmarks();}
   toast(removed?'已取消句子书签':'已收藏到句卡');
  }finally{bookmarkBusy.delete(key);}
 }
@@ -575,11 +588,11 @@ function toggleImmersive(){
  if(!episode.segments?.length){toast('请先导入逐字稿。');return;}
  immersive=true;immListening=prefs.listeningMask;revealed=false;browseIndex=null;follow=true;setImmersiveAccess(true);
  const panel=document.createElement('section');panel.className='immersive-mode';panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-label','沉浸阅读');
- panel.innerHTML=`<div class="imm-top"><div class="imm-position"><span id="imm-counter"></span><button id="imm-follow" hidden>回到播放</button></div><div class="actions"><button id="imm-bookmark" class="sentence-bookmark" aria-label="收藏当前句子" aria-pressed="false">${icon('bookmark')}</button><button id="imm-smaller" aria-label="减小沉浸字号">A−</button><button id="imm-larger" aria-label="增大沉浸字号">A+</button><button id="exit-immersive" aria-label="退出沉浸阅读">×</button></div></div><div class="imm-body" id="imm-body"></div><div class="imm-bottom">${transportHTML()}</div>`;
+ panel.innerHTML=`<div class="imm-top"><div class="imm-position"><span id="imm-counter"></span><button id="imm-follow" hidden>回到播放</button></div><div class="actions"><button id="imm-bookmark" class="sentence-bookmark" aria-label="收藏当前句子" aria-pressed="false" title="短按收藏，长按复制原句" aria-keyshortcuts="Shift+Enter">${icon('bookmark')}</button><button id="imm-smaller" aria-label="减小沉浸字号">A−</button><button id="imm-larger" aria-label="增大沉浸字号">A+</button><button id="exit-immersive" aria-label="退出沉浸阅读">×</button></div></div><div class="imm-body" id="imm-body"></div><div class="imm-bottom">${transportHTML()}</div>`;
  $('.player-dock')?.remove();document.body.append(panel);
  panel.classList.toggle('focused-listening',immListening);
  for(const [id,step] of [['#imm-smaller',-.1],['#imm-larger',.1]])on(id,'click',async()=>{prefs.immSize=Math.round(Math.min(1.6,Math.max(.8,prefs.immSize+step))*10)/10;await savePrefs();});
- on('#imm-bookmark','click',()=>toggleSentenceBookmark(displayedSentence()).catch(report));on('#exit-immersive','click',toggleImmersive);bindTransport();renderImmersiveSentence();updatePlayback();$('#exit-immersive').focus();
+ bindBookmarkPress($('#imm-bookmark'),{tap:()=>toggleSentenceBookmark(displayedSentence()).catch(report),copy:()=>copySentence(displayedSentence())});on('#exit-immersive','click',toggleImmersive);bindTransport();renderImmersiveSentence();updatePlayback();$('#exit-immersive').focus();
  on('#imm-follow','click',()=>resumeFollow());bindReader($('#imm-body'));
 
 }
@@ -821,21 +834,20 @@ async function renderCards(){
  document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;renderCards().catch(report);});
  on('#card-category-filter','change',event=>{cardCategoryFilter=event.target.value;renderCards().catch(report);});
  on('#card-folder-filter','change',event=>{cardFolderFilter=event.target.value;renderCards().catch(report);});
- on('#dictionary-export','click',()=>exportDictionary(cards));on('#cards-library','click',()=>navigate('library'));on('#start-review','click',()=>reviewCards(due.length?due:cards));
+ on('#dictionary-export','click',()=>exportDictionary(cards));on('#cards-library','click',()=>navigate('library'));on('#start-review','click',()=>Promise.resolve(reviewCards(due.length?due:cards)).catch(report));
  document.querySelectorAll('[data-card-listen]').forEach(b=>b.onclick=()=>listenCard(cards.find(c=>c.id===b.dataset.cardListen)).catch(report));
  document.querySelectorAll('[data-card-edit]').forEach(b=>b.onclick=()=>editCard(cards.find(c=>c.id===b.dataset.cardEdit)).catch(report));
 }
-async function listenCard(card,{stayInCards=false}={}){
+async function listenCard(card){
  const e=await read('episodes',card.episodeId);if(!e){toast('原音频已被删除');return;}
  const sentence=card.kind==='sentence'?bookmarkedSentence(e,(e.bookmarks||[]).find(b=>bookmarkKey(b)===card.bookmarkKey)||{time:card.start,text:card.text}):cardSentence(card,e.segments);if(!sentence){toast('找不到原句时间轴，请先重新导入或校对逐字稿');return;}
- await openEpisode(e.id,sentence.start,{updateHistory:!stayInCards});
- if(stayInCards){await renderCards();miniPlayer();}
- if(!audioFile(e)){await reconnectAudio(e,{start:sentence.start,end:sentence.end});return;}
- playSentenceClip(sentence);
+ if(!audioFile(e)){await reconnectAudio(e,{start:sentence.start,end:sentence.end,stayInCards:true});return;}
+ if(!await loadEpisodeAudio(e.id,sentence.start))return;
+ miniPlayer();playSentenceClip(sentence);
 }
 async function saveSentenceCard(card,patch){
- await updateBookmarks(card.episodeId,bookmarks=>changeSentenceBookmark(bookmarks,card.bookmarkKey,patch));
- if(episode?.id===card.episodeId){episode=await read('episodes',card.episodeId);refreshSentenceBookmarks();}
+ const updated=await updateBookmarks(card.episodeId,bookmarks=>changeSentenceBookmark(bookmarks,card.bookmarkKey,patch));
+ if(episode?.id===card.episodeId){episode.bookmarks=updated.bookmarks;refreshSentenceBookmarks();}
 }
 async function editSentenceCard(card){
  const cards=sentenceCards(await all('episodes'));
@@ -848,7 +860,7 @@ async function reviewSentenceCards(cards,index=0){
  const saved=cards[index],source=await read('episodes',saved.episodeId),card=source&&sentenceCards([source]).find(c=>c.id===saved.id);
  if(!card)return reviewSentenceCards(cards,index+1);
  openModal(`句卡复习 ${index+1} / ${cards.length}`,`<small>${LANG[card.language]} · ${esc(source.title)}</small><p class="sentence-card-translation">${esc(card.translation||'先听原句，再回忆原文。')}</p><div class="sentence-card-source sentence-review-source" lang="${card.language}" id="sentence-review-source" hidden>${sentenceCardHTML(card)}</div><div class="actions"><button class="secondary" id="review-sentence-listen">听原句</button><button class="secondary" id="reveal-sentence" aria-expanded="false">显示原文</button></div><div id="sentence-review-answer" hidden>${card.note?`<p class="card-context">${esc(card.note)}</p>`:''}<div class="actions section-title"><button class="secondary" id="sentence-review-again">还不熟</button><button class="primary" id="sentence-review-known">记住了</button></div></div>`);
- on('#review-sentence-listen','click',()=>listenCard(card,{stayInCards:true}).catch(report));
+ on('#review-sentence-listen','click',()=>listenCard(card).catch(report));
  on('#reveal-sentence','click',()=>{const hidden=!$('#sentence-review-source').hidden;$('#sentence-review-source').hidden=hidden;$('#reveal-sentence').textContent=hidden?'显示原文':'遮盖原文';$('#reveal-sentence').setAttribute('aria-expanded',String(!hidden));$('#sentence-review-answer').hidden=false;});
  for(const [selector,known] of [['#sentence-review-again',false],['#sentence-review-known',true]])on(selector,'click',async()=>{
   const buttons=modal.querySelectorAll('#sentence-review-again,#sentence-review-known');buttons.forEach(b=>b.disabled=true);
