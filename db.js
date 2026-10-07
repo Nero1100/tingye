@@ -13,6 +13,16 @@ export async function all(store){const values=await rawAll(store);if(store==='ep
 // First playback learns duration without replacing the Blob the media decoder is reading.
 export function saveDuration(id,duration){if(!id||!Number.isFinite(duration)||duration<=0)return Promise.resolve();return write('settings',{id:durationKey(id),value:duration});}
 export function write(store,value){return new Promise((resolve,reject)=>{const t=db.transaction(store,'readwrite');t.objectStore(store).put(value);t.oncomplete=resolve;t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error);});}
+// A refreshed enclosure/title must not replace an already revised transcript or progress.
+export function upsertPodcastEpisode(record){return new Promise((resolve,reject)=>{
+ const t=db.transaction('episodes','readwrite'),store=t.objectStore('episodes');let saved,failure;
+ const request=store.get(record.id);request.onsuccess=()=>{try{
+  const old=request.result;
+  if(old&&(old.storageMode!=='stream'||old.podcast?.showId!==record.podcast.showId||old.podcast?.guid!==record.podcast.guid))throw Error('单集记录发生冲突，请重新打开节目。');
+  saved=old?{...old,title:record.title,folder:record.folder,podcast:record.podcast,mime:record.mime,duration:old.duration||record.duration}:record;store.put(saved);
+ }catch(error){failure=error;t.abort();}};
+ t.oncomplete=()=>resolve(saved);t.onerror=()=>reject(failure||t.error);t.onabort=()=>reject(failure||t.error);
+});}
 export function updateBookmarks(id,change){return new Promise((resolve,reject)=>{
  // Never rewrite the audio Blob while its object URL is being decoded on iPhone.
  const t=db.transaction(['episodes','settings'],'readwrite'),store=t.objectStore('episodes'),settings=t.objectStore('settings');let next,failure;

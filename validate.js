@@ -1,5 +1,6 @@
-import {validatePlaybackLists} from './playback-list.js?v=2026.10.06.6';
+import {validatePlaybackLists} from './playback-list.js?v=2026.10.07.1';
 import {validateFolders} from './folders.js';
+import {streamURL,isPodcastScope,podcastSubscriptions} from './podcasts.js?v=2026.10.07.1';
 const languages = ['en', 'fr', 'ja'];
 const validTime = n => Number.isFinite(n) && n >= 0 && n <= 86400;
 const text = (s, max) => typeof s === 'string' && s.length <= max;
@@ -53,18 +54,19 @@ export function validatePreferences(value) {
 }
 export function validateBackup(meta, payloadBytes) {
   if (!['tingye-backup-v1','tingye-backup-v2'].includes(meta?.format) || !Array.isArray(meta.episodes) ||
-      !Array.isArray(meta.cards) || meta.episodes.length > 1000 || meta.cards.length > 100000)
+      !Array.isArray(meta.cards) || meta.episodes.length > 5000 || meta.episodes.filter(e=>e?.storageMode!=='stream').length>1000 || meta.cards.length > 100000)
     throw Error('备份格式不正确。');
   const folders=validateFolders(meta.folders||[]),folderIds=new Set(folders.map(f=>f.id));
+  if(meta.podcastSubscriptions!==undefined&&(!Array.isArray(meta.podcastSubscriptions)||JSON.stringify(meta.podcastSubscriptions)!==JSON.stringify(podcastSubscriptions(meta.podcastSubscriptions))))throw Error('备份中的播客订阅不正确。');
   let offset = 0;
   const ids = new Map();
   for (const e of meta.episodes) {
-    if (meta.format==='tingye-backup-v1'&&e.storageMode==='external')
+    if (meta.format==='tingye-backup-v1'&&['external','stream'].includes(e.storageMode))
       throw Error('旧版备份不支持原文件记录。');
     if (!text(e.id,100) || ids.has(e.id) || !text(e.title,500) || !text(e.filename,500) ||
         (e.collectionId!==undefined&&(typeof e.collectionId!=='string'||e.collectionId.length>100||e.collectionId&&!folderIds.has(e.collectionId))) || (e.order!==undefined&&(!Number.isSafeInteger(e.order)||e.order<0)) || (e.folder!==undefined&&!text(e.folder,500)) || !Number.isFinite(e.created) || !validTime(e.duration) || !validTime(e.progress) ||
         e.progress > e.duration + 2 || !Number.isSafeInteger(e.offset) || e.offset !== offset ||
-        !Number.isSafeInteger(e.bytes) || e.bytes < (meta.format==='tingye-backup-v2'&&e.storageMode==='external'?0:1) || e.bytes > 350*1048576 ||
+        !Number.isSafeInteger(e.bytes) || e.bytes < (meta.format==='tingye-backup-v2'&&['external','stream'].includes(e.storageMode)?0:1) || e.bytes > 350*1048576 ||
         e.offset + e.bytes > payloadBytes || !text(e.mime,100) ||
         !Array.isArray(e.bookmarks) || e.bookmarks.length > 10000 ||
         e.bookmarks.some(b => !b || !validTime(b.time) || b.time > e.duration+2 || !text(b.text,10000) ||
@@ -77,10 +79,11 @@ export function validateBackup(meta, payloadBytes) {
         (e.bytes!==0 || !Number.isSafeInteger(e.audioBytes) || e.audioBytes<1 || e.audioBytes>350*1048576 ||
          e.fingerprint!==undefined&&!/^[a-f0-9]{64}$/.test(e.fingerprint)))
       throw Error('备份中的原文件记录不正确。');
+    if(e.storageMode==='stream'&&(e.bytes!==0||e.audioBytes!==0||!streamURL(e)||!e.podcast.guid||!text(e.podcast.guid,2000)||!Number.isFinite(e.podcast.published)||!text(e.podcast.description,2500)))throw Error('备份中的播客资料不正确。');
     ids.set(e.id,e); offset += e.bytes;
     validateTranscript({format:'tingye-transcript-v1',version:1,language:e.language,duration:e.duration,segments:e.segments});
   }
-  for(const state of validatePlaybackLists(meta.playbackLists||[]))if(state.scope&&!folderIds.has(state.scope)||[...state.ids,...state.excluded].some(id=>!ids.has(id)))throw Error('备份中的播放列表不完整。');
+  for(const state of validatePlaybackLists(meta.playbackLists||[]))if(state.scope&&!folderIds.has(state.scope)&&!isPodcastScope(state.scope)||[...state.ids,...state.excluded].some(id=>!ids.has(id)))throw Error('备份中的播放列表不完整。');
   for (const c of meta.cards) {
     const e = ids.get(c.episodeId);
     if (!e || !languages.includes(c.language) || !text(c.text,512) || !text(c.reading,512) ||
