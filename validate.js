@@ -1,4 +1,4 @@
-import {validatePlaybackLists} from './playback-list.js?v=2026.10.06.4';
+import {validatePlaybackLists} from './playback-list.js?v=2026.10.06.5';
 import {validateFolders} from './folders.js';
 const languages = ['en', 'fr', 'ja'];
 const validTime = n => Number.isFinite(n) && n >= 0 && n <= 86400;
@@ -70,6 +70,7 @@ export function validateBackup(meta, payloadBytes) {
         e.bookmarks.some(b => !b || !validTime(b.time) || b.time > e.duration+2 || !text(b.text,10000) ||
           (b.id!==undefined&&!text(b.id,100)) || (b.end!==undefined&&(!validTime(b.end)||b.end<b.time||b.end>e.duration+2)) ||
           (b.note!==undefined&&!text(b.note,5000)) || (b.category!==undefined&&!text(b.category,60)) ||
+          (b.translationOverride!==undefined&&!text(b.translationOverride,10000)) ||
           (b.due!==undefined&&!Number.isFinite(b.due)) || (b.level!==undefined&&(!Number.isInteger(b.level)||b.level<0||b.level>5))))
       throw Error('备份中的音频资料不完整。');
     if (meta.format==='tingye-backup-v2'&&e.storageMode==='external'&&
