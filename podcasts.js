@@ -1,4 +1,4 @@
-// RSS metadata is kept locally. Audio always goes straight to the media element.
+// RSS metadata stays local. Audio streams unless the user downloads a single episode.
 export const PODCASTS=Object.freeze([
  {id:'shun',name:'Japanese with Shun',author:'Shun',feed:'https://feeds.redcircle.com/e8ab057c-683d-4375-a197-2dcc42d4f851',cover:'https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/8a/8e/3e/8a8e3e9f-6810-1658-a4aa-a16bcef05960/mza_7363683509923378665.jpg/600x600bb.jpg'},
  {id:'noriko',name:'Learn Japanese with Noriko',author:'Noriko',feed:'https://anchor.fm/s/1380f800/podcast/rss',cover:'https://is1-ssl.mzstatic.com/image/thumb/Podcasts124/v4/f3/8b/3f/f38b3fa6-249f-6f29-89b9-4bf767736265/mza_16587768291611260861.jpg/600x600bb.jpg'}
@@ -40,7 +40,7 @@ export async function parsePodcastFeed(xml,showId){
   const published=Date.parse(text(item,'pubDate'));
   episodes.push({id:await podcastEpisodeId(showId,guid),guid,url,title:(text(item,'title')||'未命名单集').slice(0,500),
    description:plainDescription(text(item,'description')||text(item,'summary')),published:Number.isFinite(published)?published:0,
-   duration:podcastDuration(text(item,'duration')),mime:(enclosure.getAttribute('type')||'audio/mpeg').slice(0,100)});
+   duration:podcastDuration(text(item,'duration')),bytes:Math.max(0,Number(enclosure.getAttribute('length'))||0),mime:(enclosure.getAttribute('type')||'audio/mpeg').slice(0,100)});
  }
  if(!episodes.length)throw Error('这个节目暂时没有可播放的单集。');
  return {format:'tingye-podcast-feed-v1',showId,updated:Date.now(),episodes:episodes.sort((a,b)=>b.published-a.published)};
@@ -49,7 +49,7 @@ export function validPodcastCache(value,showId){
  return value?.format==='tingye-podcast-feed-v1'&&value.showId===showId&&podcastShow(showId)&&Number.isFinite(value.updated)&&
   Array.isArray(value.episodes)&&value.episodes.length<=2000&&value.episodes.every(e=>e&&typeof e.id==='string'&&e.id.length<=100&&
    typeof e.guid==='string'&&!!e.guid&&e.guid.length<=2000&&!!mediaURL(e.url)&&typeof e.title==='string'&&e.title.length<=500&&
-   typeof e.description==='string'&&e.description.length<=2500&&Number.isFinite(e.published)&&Number.isFinite(e.duration)&&e.duration>=0&&e.duration<=86400&&typeof e.mime==='string'&&e.mime.length<=100);
+   typeof e.description==='string'&&e.description.length<=2500&&Number.isFinite(e.published)&&Number.isFinite(e.duration)&&e.duration>=0&&e.duration<=86400&&(e.bytes===undefined||Number.isFinite(e.bytes)&&e.bytes>=0)&&typeof e.mime==='string'&&e.mime.length<=100);
 }
 export async function fetchPodcastFeed(showId,{fetcher=fetch,signal}={}){
  const show=podcastShow(showId);if(!show)throw Error('请选择一个节目。');
@@ -67,7 +67,7 @@ export function podcastRecord(showId,item,{id=item.id,order=0,created=Date.now()
  const show=podcastShow(showId);if(!show||!mediaURL(item.url))throw Error('这集暂时无法播放。');
  return {id,title:item.title,filename:item.title.replace(/[<>:"/\\|?*\u0000-\u001f]/g,'_').slice(0,480)+'.mp3',language:'ja',
   order,created,duration:item.duration,progress:0,segments:[],bookmarks:[],collectionId:'',folder:show.name,
-  storageMode:'stream',audio:null,audioBytes:0,mime:item.mime,podcast:{showId,guid:item.guid,url:item.url,published:item.published,description:item.description}};
+  storageMode:'stream',audio:null,audioBytes:0,mime:item.mime,podcast:{showId,guid:item.guid,url:item.url,bytes:item.bytes||0,published:item.published,description:item.description}};
 }
 export function podcastItems(cache,{query='',sort='newest'}={}){
  const needle=query.trim().toLocaleLowerCase();return [...(cache?.episodes||[])].filter(e=>!needle||e.title.toLocaleLowerCase().includes(needle)||e.description.toLocaleLowerCase().includes(needle))
