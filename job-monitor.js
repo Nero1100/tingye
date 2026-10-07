@@ -21,6 +21,6 @@ export function mountJobMonitor(modal,resultId,canCancel,onCancel){
   finish(){control.hidden=true;},
   retry(){options.hidden=false;control.hidden=true;},
   cancelling(){options.hidden=true;control.hidden=false;button.disabled=true;button.textContent='取消中…';control.querySelector('span').textContent='正在停止当前步骤，已完成的稿件保留。';},
-  upload(percent){result.innerHTML=`<div class="job"><strong>正在提交音频给电脑工具</strong><progress max="100" ${percent===null?'':`value="${percent}"`}></progress><p class="note">${percent===null?'正在上传…':percent===100?'上传完成，正在准备任务…':`上传 ${percent}%`}</p></div>`;}
+  upload(percent,label='音频'){result.innerHTML=`<div class="job"><strong>正在提交${esc(label)}给电脑工具</strong><progress max="100" ${percent===null?'':`value="${percent}"`}></progress><p class="note">${percent===null?'正在上传…':percent===100?'上传完成，正在准备任务…':`上传 ${percent}%`}</p></div>`;}
  };
 }

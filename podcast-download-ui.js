@@ -1,4 +1,4 @@
-import {downloadLimits,cleanupCandidates} from './podcast-offline.js?v=2026.10.07.4';
+import {downloadLimits,cleanupCandidates} from './podcast-offline.js?v=2026.10.07.5';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function downloadLabel(info){
  if(!info)return '下载';if(info.status==='ready')return '已下载';if(info.status==='queued')return '等待 · 取消';if(info.status==='cancelling')return '正在取消';if(info.status==='interrupted')return '重新下载';
