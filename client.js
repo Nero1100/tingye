@@ -1,35 +1,35 @@
-import {bindBookmarkPress} from './bookmark-press.js?v=2026.10.06.5';
-import {bookmarkKey,bookmarkedSentence,sentenceBookmark,sentenceCards,changeSentenceBookmark} from './sentence-cards.js?v=2026.10.06.5';
-import {plainTranscriptText,plainTranscriptName} from './plain-text.js?v=2026.10.06.5';
-import {TranscriptSync} from './transcript-sync.js?v=2026.10.06.5';
-import {syncPanel,showSyncUI,showSyncBatchUI} from './sync-ui.js?v=2026.10.06.5';
-import {packageTranscript,namedTranscript} from './cloud-transcript.js?v=2026.10.06.5';
-import {showCopyManager} from './audio-copies.js?v=2026.10.06.5';
-import {submitLocalForm} from './local-upload.js?v=2026.10.06.5';
-import {mountJobMonitor,jobProgress,terminalJob} from './job-monitor.js?v=2026.10.06.5';
-import {planTranscriptImports,phoneInterface,transcriptExportName} from './transcript-batch.js?v=2026.10.06.5';
-import {clearModelDownloads,clearBrowserTranslation} from './browser-model-cleanup.js?v=2026.10.06.5';
-import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration,replaceEpisodeTranscripts,deleteAudioCopies,applyCloudTranscript,updateBookmarks} from './db.js?v=2026.10.06.5';
-import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.06.5';
+import {bindBookmarkPress} from './bookmark-press.js?v=2026.10.06.6';
+import {bookmarkKey,bookmarkedSentence,sentenceBookmark,sentenceCards,changeSentenceBookmark} from './sentence-cards.js?v=2026.10.06.6';
+import {plainTranscriptText,plainTranscriptName} from './plain-text.js?v=2026.10.06.6';
+import {TranscriptSync} from './transcript-sync.js?v=2026.10.06.6';
+import {syncPanel,showSyncUI,showSyncBatchUI} from './sync-ui.js?v=2026.10.06.6';
+import {packageTranscript,namedTranscript} from './cloud-transcript.js?v=2026.10.06.6';
+import {showCopyManager} from './audio-copies.js?v=2026.10.06.6';
+import {submitLocalForm} from './local-upload.js?v=2026.10.06.6';
+import {mountJobMonitor,jobProgress,terminalJob} from './job-monitor.js?v=2026.10.06.6';
+import {planTranscriptImports,phoneInterface,transcriptExportName} from './transcript-batch.js?v=2026.10.06.6';
+import {clearModelDownloads,clearBrowserTranslation} from './browser-model-cleanup.js?v=2026.10.06.6';
+import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration,replaceEpisodeTranscripts,deleteAudioCopies,applyCloudTranscript,updateBookmarks} from './db.js?v=2026.10.06.6';
+import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.06.6';
 import {lexicalWords,dictionaryText} from './lexicon.js';
-import {Practice,practiceOptions} from './practice.js?v=2026.10.06.5';
+import {Practice,practiceOptions} from './practice.js?v=2026.10.06.6';
 import {palettes,applyTheme} from './theme.js';
 import {hasKanji,rubyParts,setRubyReading,prepareReadings} from './furigana.js';
-import {editedSentence,changedCards,replacementTranscript} from './transcript-edit.js?v=2026.10.06.5';
-import {splitChoices,splitSentence,mergeSentences,resegmentCards} from './segment-edit.js?v=2026.10.06.5';
-import {boundaryWords,suggestSentences} from './sentence-boundaries.js?v=2026.10.06.5';
-import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.06.5';
-import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.06.5';
-import {validatePlaybackLists,reconcilePlaybackList,selectPlaybackEpisodes,reorderPlaybackList,restorePlaybackLists,includePlaybackEpisode} from './playback-list.js?v=2026.10.06.5';
-import {bindReaderGestures} from './reader-gestures.js?v=2026.10.06.5';
+import {editedSentence,changedCards,replacementTranscript} from './transcript-edit.js?v=2026.10.06.6';
+import {splitChoices,splitSentence,mergeSentences,resegmentCards} from './segment-edit.js?v=2026.10.06.6';
+import {boundaryWords,suggestSentences} from './sentence-boundaries.js?v=2026.10.06.6';
+import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.06.6';
+import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.06.6';
+import {validatePlaybackLists,reconcilePlaybackList,selectPlaybackEpisodes,reorderPlaybackList,restorePlaybackLists,includePlaybackEpisode} from './playback-list.js?v=2026.10.06.6';
+import {bindReaderGestures} from './reader-gestures.js?v=2026.10.06.6';
 import {bindDragOrder,replaceSubsetOrder} from './drag-order.js';
 import {cardCategory,cardCategories,selectedCards,cardSentence} from './cards.js';
-import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.06.5';
-import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.06.5';
+import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.06.6';
+import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.06.6';
 import {validateFolders,folderEpisodes,folderMembership,restoreFolders,makeFolderCover} from './folders.js';
-import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.06.5';
-import {ListPosition} from './list-position.js?v=2026.10.06.5';
-import {appRoute,setAppRoute,backAppRoute,bindHomeEdgeGuard,bindRouteRestore} from './navigation.js?v=2026.10.06.5';
+import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.06.6';
+import {ListPosition} from './list-position.js?v=2026.10.06.6';
+import {appRoute,setAppRoute,backAppRoute,bindHomeEdgeGuard,bindRouteRestore} from './navigation.js?v=2026.10.06.6';
 const phone=phoneInterface(navigator.userAgent,navigator.maxTouchPoints);
 const main=document.querySelector('#main'),modal=document.querySelector('#modal');
 let audio=document.querySelector('#audio');
@@ -112,6 +112,17 @@ modal.addEventListener('cancel',event=>{if(playlistSheet){event.preventDefault()
 function setNav(){closeSpeedMenu();document.body.classList.toggle('player-open',view==='player');document.querySelectorAll('[data-nav]').forEach(b=>b.classList.toggle('active',b.dataset.nav===view));}
 function download(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
 function exportPlainText(document){download(new Blob([plainTranscriptText(document)],{type:'text/plain;charset=utf-8'}),plainTranscriptName(document));}
+async function showPlainJapaneseText(id){
+ const source=await read('episodes',id);if(!source)throw Error('原音频已被移除。');
+ if(source.language!=='ja')throw Error('请选择日语音频。');
+ const text=plainTranscriptText(source);
+ openModal('纯日语文本',`<p class="note">${esc(source.title)} · 只包含日语原文，无时间轴、译文和假名。</p><label for="plain-japanese-text">日语原文</label><textarea id="plain-japanese-text" class="plain-transcript-text" lang="ja" rows="10" readonly spellcheck="false">${esc(text)}</textarea><div class="actions plain-transcript-actions"><button class="primary full" id="copy-plain-japanese">全选复制</button></div><p class="note" id="plain-japanese-copy-status" role="status" hidden></p>`);
+ on('#copy-plain-japanese','click',async()=>{
+  const field=$('#plain-japanese-text');field.focus({preventScroll:true});field.select();field.setSelectionRange(0,field.value.length);
+  let copied=false;try{await navigator.clipboard.writeText(field.value);copied=true;}catch{try{copied=document.execCommand('copy');}catch{}}
+  if(field.isConnected){const status=$('#plain-japanese-copy-status');status.hidden=false;status.textContent=copied?'已复制全部日语原文':'已全选，请长按文本并选择“复制”';}
+ });
+}
 async function exportTranscript(e){try{await saveTranscriptDocument(transcriptData(e),transcriptExportName(transcriptData(e)));}catch(error){report(error);}}
 async function exportRequest(path,body){
  const response=await fetch(new URL(path,BASE),body===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
@@ -629,10 +640,11 @@ async function showWord(si,wi){
 
 function transcriptTools(){
  const has=!!episode.segments?.length;
- openModal('逐字稿',`<p class="note">${has?`${episode.segments.length} 句 · 可在电脑校对并试听。`:'导入后可以在电脑修改原文、译文、假名和断句。'}</p><div class="stack"><button class="primary full" id="transcript-edit-current" ${has?'':'disabled'}>修改与调整断句</button>${backend&&has?'<button class="secondary full" id="transcript-computer-translate">在电脑重新生成中文</button>':''}<button class="secondary full" id="transcript-replace">${has?'替换逐字稿':'导入逐字稿'}</button><button class="secondary full" id="transcript-export" ${has?'':'disabled'}>导出修订逐字稿</button><button class="secondary full" id="transcript-undo" ${episode.transcriptUndo?'':'disabled'}>撤销上一次校对</button></div>`);
+ openModal('逐字稿',`<p class="note">${has?`${episode.segments.length} 句 · 可在电脑校对并试听。`:'导入后可以在电脑修改原文、译文、假名和断句。'}</p><div class="stack"><button class="primary full" id="transcript-edit-current" ${has?'':'disabled'}>修改与调整断句</button>${backend&&has?'<button class="secondary full" id="transcript-computer-translate">在电脑重新生成中文</button>':''}<button class="secondary full" id="transcript-replace">${has?'替换逐字稿':'导入逐字稿'}</button><button class="secondary full" id="transcript-export" ${has?'':'disabled'}>导出修订逐字稿</button>${episode.language==='ja'?`<button class="secondary full" id="transcript-plain-japanese" ${has?'':'disabled'}>导出纯日语文本</button>`:''}<button class="secondary full" id="transcript-undo" ${episode.transcriptUndo?'':'disabled'}>撤销上一次校对</button></div>`);
  on('#transcript-edit-current','click',()=>editEpisodeSentence(Math.max(0,displayedSentence())));
  on('#transcript-computer-translate','click',()=>translateScript(false,transcriptData(episode)));
  on('#transcript-replace','click',()=>importScript(episode.id));on('#transcript-export','click',()=>exportTranscript(episode));on('#transcript-undo','click',undoTranscript);
+ on('#transcript-plain-japanese','click',()=>showPlainJapaneseText(episode.id).catch(report));
 }
 function previewSentenceSuggestions(document,index,persist,session){
  try{
@@ -863,7 +875,7 @@ async function editSentenceCard(card){
  const cards=sentenceCards(await all('episodes'));
  card=cards.find(saved=>saved.id===card.id);if(!card){toast('这张句卡已被移除，请重新打开句卡。');await renderCards();return;}
  let followSource=!card.translationEdited;
- openModal('编辑句卡',`<div class="sentence-card-source" lang="${card.language}">${sentenceCardHTML(card)}</div><label for="edit-sentence-translation">中文译文</label><textarea id="edit-sentence-translation" rows="3" maxlength="10000" placeholder="填写这张句卡的中文译文">${esc(card.translation)}</textarea><div class="actions"><small class="note" id="sentence-translation-status"></small><button class="secondary" id="restore-sentence-translation">恢复逐字稿译文</button></div><label for="edit-note">背诵笔记</label><textarea id="edit-note" rows="3" maxlength="5000">${esc(card.note)}</textarea>${categoryField(cards,card.category||'','edit-category')}<div class="actions"><button class="primary" id="update-card">保存</button><button class="secondary" id="delete-card">取消句子书签</button></div>`);
+ openModal('编辑句卡',`<div class="sentence-card-source" lang="${card.language}">${sentenceCardHTML(card)}</div><label for="edit-sentence-translation">中文译文</label><textarea id="edit-sentence-translation" rows="3" maxlength="10000" placeholder="填写这张句卡的中文译文">${esc(card.translation)}</textarea><div class="actions"><small class="note" id="sentence-translation-status"></small><button class="secondary" id="restore-sentence-translation">恢复逐字稿译文</button></div><label for="edit-note">背诵笔记</label><textarea id="edit-note" rows="3" maxlength="5000">${esc(card.note)}</textarea>${categoryField(cards,card.category||'','edit-category')}<div class="actions sentence-card-editor-actions"><button class="primary" id="update-card">保存</button><button class="secondary" id="delete-card">取消句子书签</button></div>`);
  const translationStatus=()=>{$('#sentence-translation-status').textContent=followSource?'随逐字稿更新':'手动译文 · 仅用于这张句卡';$('#restore-sentence-translation').disabled=followSource;};translationStatus();
  on('#edit-sentence-translation','input',()=>{followSource=$('#edit-sentence-translation').value.trim()===card.sourceTranslation;translationStatus();});
  on('#restore-sentence-translation','click',()=>{$('#edit-sentence-translation').value=card.sourceTranslation;followSource=true;translationStatus();});
