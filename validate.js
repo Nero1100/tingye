@@ -1,6 +1,7 @@
-import {validatePlaybackLists} from './playback-list.js?v=2026.10.07.1';
+import {validatePlaybackLists} from './playback-list.js?v=2026.10.07.2';
 import {validateFolders} from './folders.js';
-import {streamURL,isPodcastScope,podcastSubscriptions} from './podcasts.js?v=2026.10.07.1';
+import {validateFavorites,FAVORITES_SCOPE} from './favorites.js?v=2026.10.07.2';
+import {streamURL,isPodcastScope,podcastSubscriptions} from './podcasts.js?v=2026.10.07.2';
 const languages = ['en', 'fr', 'ja'];
 const validTime = n => Number.isFinite(n) && n >= 0 && n <= 86400;
 const text = (s, max) => typeof s === 'string' && s.length <= max;
@@ -83,7 +84,8 @@ export function validateBackup(meta, payloadBytes) {
     ids.set(e.id,e); offset += e.bytes;
     validateTranscript({format:'tingye-transcript-v1',version:1,language:e.language,duration:e.duration,segments:e.segments});
   }
-  for(const state of validatePlaybackLists(meta.playbackLists||[]))if(state.scope&&!folderIds.has(state.scope)&&!isPodcastScope(state.scope)||[...state.ids,...state.excluded].some(id=>!ids.has(id)))throw Error('备份中的播放列表不完整。');
+  if(validateFavorites(meta.favorites||[]).some(id=>!ids.has(id)))throw Error('备份中的喜欢列表不完整。');
+  for(const state of validatePlaybackLists(meta.playbackLists||[]))if(state.scope&&state.scope!==FAVORITES_SCOPE&&!folderIds.has(state.scope)&&!isPodcastScope(state.scope)||[...state.ids,...state.excluded].some(id=>!ids.has(id)))throw Error('备份中的播放列表不完整。');
   for (const c of meta.cards) {
     const e = ids.get(c.episodeId);
     if (!e || !languages.includes(c.language) || !text(c.text,512) || !text(c.reading,512) ||

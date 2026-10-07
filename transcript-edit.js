@@ -1,5 +1,5 @@
 import {prepareReadings} from './furigana.js';
-import {validateTranscript} from './validate.js?v=2026.10.07.1';
+import {validateTranscript} from './validate.js?v=2026.10.07.2';
 export function replacementTranscript(episode,data){
   validateTranscript(data);
   const bytes=episode.audio?.size||episode.audioBytes||0;

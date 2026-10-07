@@ -1,6 +1,6 @@
 const validId=id=>typeof id==='string'&&id.length>0&&id.length<=100;
 export function validatePlaybackLists(value=[]){
- if(!Array.isArray(value)||value.length>103)throw Error('播放列表资料不正确。');
+ if(!Array.isArray(value)||value.length>104)throw Error('播放列表资料不正确。');
  const scopes=new Set();
  for(const state of value){
   if(!state||typeof state.scope!=='string'||state.scope.length>100||scopes.has(state.scope)||

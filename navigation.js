@@ -5,6 +5,7 @@ export function appRoute(hash){
  if(value.startsWith('folder/')&&value.length>7)return {view:'library',id:value.slice(7),hash:value};
  if(value.startsWith('podcast/')&&['shun','noriko'].includes(value.slice(8)))return {view:'library',podcasts:true,showId:value.slice(8),hash:value};
  if(value==='podcasts')return {view:'library',podcasts:true,hash:value};
+ if(value==='favorites')return {view:'library',favorites:true,hash:value};
  const view=['cards','settings'].includes(value)?value:'library';
  return {view,hash:view};
 }

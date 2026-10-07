@@ -163,3 +163,9 @@ body{background:var(--bg)}
 .podcast-now-description{font-size:.86rem;line-height:1.8;color:var(--muted);white-space:pre-line;text-align:left;overflow-wrap:anywhere}
 .podcast-player .reader-tools{margin-bottom:6px}
 .podcast-player .transcript{padding-bottom:20px}
+.episode-heading-info{flex:1;min-width:0}.episode-heading .episode-cover{flex:none}
+.episode-like{display:grid;place-items:center;min-width:44px;width:44px;min-height:44px;color:var(--muted);flex:none;touch-action:manipulation}
+.episode-like svg{width:23px;height:23px}.episode-like.liked{color:var(--accent)}.episode-like.liked svg{fill:currentColor}
+.podcast-episode-actions{display:flex;flex-direction:column;align-items:center;flex:none;gap:2px}
+.favorite-tools{display:flex;align-items:center;gap:12px;margin-top:22px}.favorite-tools input{min-width:0;flex:1;margin:0;font-size:.85rem;padding:12px;border-radius:12px}.favorite-tools button{flex:none;min-height:44px;font-size:.82rem;padding:10px 16px}
+.favorite-row{display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}.favorite-open{display:flex;align-items:center;gap:13px;flex:1;min-width:0;text-align:left;padding:20px 0}.favorite-open strong{font-size:.95rem;font-weight:500;line-height:1.5;overflow-wrap:anywhere;display:block}.favorite-open small{display:block;font-size:.73rem;line-height:1.6;color:var(--muted);margin-top:6px}.favorite-cover{width:48px;height:48px;flex:none;background:var(--soft);color:var(--muted);display:grid;place-items:center;border-radius:6px;overflow:hidden}.favorite-cover img{width:100%;height:100%;object-fit:cover}.favorite-cover svg{width:22px;height:22px}

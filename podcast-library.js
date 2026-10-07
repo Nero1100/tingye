@@ -1,11 +1,12 @@
-import {PODCASTS,podcastShow,podcastItems,podcastCacheKey,SUBSCRIPTIONS,podcastSubscriptions,validPodcastCache,fetchPodcastFeed} from './podcasts.js?v=2026.10.07.1';
+import {PODCASTS,podcastShow,podcastItems,podcastCacheKey,SUBSCRIPTIONS,podcastSubscriptions,validPodcastCache,fetchPodcastFeed} from './podcasts.js?v=2026.10.07.2';
+import {heartIcon} from './favorites.js?v=2026.10.07.2';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const date=value=>value?new Date(value).toLocaleDateString('zh-CN',{year:'numeric',month:'numeric',day:'numeric'}):'';
 const duration=seconds=>seconds?Math.ceil(seconds/60)+' 分钟':'播客';
-export const audioTabs=mode=>`<div class="audio-tabs" role="group" aria-label="音频来源"><button data-audio-tab="local" class="${mode==='local'?'selected':''}" aria-pressed="${mode==='local'}">我的音频</button><button data-audio-tab="podcasts" class="${mode==='podcasts'?'selected':''}" aria-pressed="${mode==='podcasts'}">播客</button></div>`;
+export const audioTabs=mode=>`<div class="audio-tabs" role="group" aria-label="音频来源">${[['local','我的音频'],['podcasts','播客'],['favorites','喜欢']].map(([id,label])=>`<button data-audio-tab="${id}" class="${mode===id?'selected':''}" aria-pressed="${mode===id}">${label}</button>`).join('')}</div>`;
 export class PodcastLibrary{
- constructor({main,read,write,remove,collection,openShow,back,play,enqueue,isActive,positions,report,toast,fetchFeed=fetchPodcastFeed,online=()=>navigator.onLine!==false}){
-  Object.assign(this,{main,read,write,remove,collection,openShow,back,play,enqueue,isActive,positions,report,toast,fetchFeed,online});
+ constructor({main,read,write,remove,collection,openShow,back,play,enqueue,isActive,positions,report,toast,isFavorite=()=>false,favorite,fetchFeed=fetchPodcastFeed,online=()=>navigator.onLine!==false}){
+  Object.assign(this,{main,read,write,remove,collection,openShow,back,play,enqueue,isActive,positions,report,toast,isFavorite,favorite,fetchFeed,online});
   this.caches=new Map();this.inflight=new Map();this.errors=new Map();this.queries=new Map();this.sorts=new Map();this.limits=new Map();this.showId='';this.renderSerial=0;
  }
  async load(){this.subscriptions=podcastSubscriptions((await this.read('settings',SUBSCRIPTIONS))?.value);
@@ -37,10 +38,16 @@ export class PodcastLibrary{
   const cache=this.caches.get(showId),items=podcastItems(cache,{query:this.queries.get(showId),sort:this.sorts.get(showId)}),limit=this.limits.get(showId)||50;
   const played=new Map((this.records||[]).filter(e=>e.podcast?.showId===showId).map(e=>[e.podcast.guid,e]));
   this.main.querySelector('#podcast-list-count').textContent=cache?`${items.length} 集${this.queries.get(showId)?'匹配搜索':''}`:'';
-  container.innerHTML=items.length?items.slice(0,limit).map(item=>{const record=played.get(item.guid);return `<div class="podcast-episode"><button class="podcast-episode-open" data-podcast-play="${item.id}" data-episode="${item.id}" aria-label="播放 ${esc(item.title)}"><span class="podcast-episode-title">${esc(item.title)}</span><small>${date(item.published)} · ${duration(record?.duration||item.duration)}${record?.progress>0?' · 已听 '+Math.floor(record.progress/60)+':'+String(Math.floor(record.progress)%60).padStart(2,'0'):''}</small><span class="podcast-description">${esc(item.description.replace(/\s+/g,' '))}</span>${record?.progress>0?`<span class="progress-line"><span style="width:${Math.min(100,record.progress/Math.max(record.duration,1)*100)}%"></span></span>`:''}</button><button class="podcast-queue-add" data-podcast-queue="${item.id}" aria-label="加入播放列表 ${esc(item.title)}">＋</button></div>`;}).join('')+(items.length>limit?'<button class="secondary podcast-more" id="podcast-more">显示更多单集</button>':''):`<div class="empty"><p>${cache?'没有匹配的单集':this.subscriptions.includes(showId)?'正在读取节目列表；连接未完成时可点刷新重试。':'点击订阅，即可读取节目单集。'}</p></div>`;
+  container.innerHTML=items.length?items.slice(0,limit).map(item=>{const record=played.get(item.guid);return `<div class="podcast-episode"><button class="podcast-episode-open" data-podcast-play="${item.id}" data-episode="${item.id}" aria-label="播放 ${esc(item.title)}"><span class="podcast-episode-title">${esc(item.title)}</span><small>${date(item.published)} · ${duration(record?.duration||item.duration)}${record?.progress>0?' · 已听 '+Math.floor(record.progress/60)+':'+String(Math.floor(record.progress)%60).padStart(2,'0'):''}</small><span class="podcast-description">${esc(item.description.replace(/\s+/g,' '))}</span>${record?.progress>0?`<span class="progress-line"><span style="width:${Math.min(100,record.progress/Math.max(record.duration,1)*100)}%"></span></span>`:''}</button><div class="podcast-episode-actions"><button class="episode-like ${this.isFavorite(record?.id||item.id)?'liked':''}" data-podcast-favorite="${item.id}" aria-label="${this.isFavorite(record?.id||item.id)?'取消喜欢':'喜欢'} ${esc(item.title)}" aria-pressed="${this.isFavorite(record?.id||item.id)}">${heartIcon}</button><button class="podcast-queue-add" data-podcast-queue="${item.id}" aria-label="加入播放列表 ${esc(item.title)}">＋</button></div></div>`;}).join('')+(items.length>limit?'<button class="secondary podcast-more" id="podcast-more">显示更多单集</button>':''):`<div class="empty"><p>${cache?'没有匹配的单集':this.subscriptions.includes(showId)?'正在读取节目列表；连接未完成时可点刷新重试。':'点击订阅，即可读取节目单集。'}</p></div>`;
   this.main.querySelectorAll('[data-podcast-play],[data-podcast-queue]').forEach(button=>button.onclick=async()=>{
    const item=cache.episodes.find(e=>e.id===(button.dataset.podcastPlay||button.dataset.podcastQueue));if(!item)return;
    button.disabled=true;try{if(button.dataset.podcastPlay)await this.play(showId,item);else{await this.enqueue(showId,item);this.toast('已加入播放列表');}}
+   catch(error){this.report(error);}finally{if(button.isConnected)button.disabled=false;}
+  });
+  this.main.querySelectorAll('[data-podcast-favorite]').forEach(button=>button.onclick=async()=>{
+   const item=cache.episodes.find(e=>e.id===button.dataset.podcastFavorite);if(!item)return;
+   const record=played.get(item.guid),liked=!this.isFavorite(record?.id||item.id);button.disabled=true;
+   try{await this.favorite(showId,item,liked);button.classList.toggle('liked',liked);button.setAttribute('aria-pressed',String(liked));button.setAttribute('aria-label',(liked?'取消喜欢 ':'喜欢 ')+item.title);}
    catch(error){this.report(error);}finally{if(button.isConnected)button.disabled=false;}
   });
   const more=this.main.querySelector('#podcast-more');if(more)more.onclick=()=>{const top=this.main.scrollTop;this.limits.set(showId,limit+50);this.rows();this.main.scrollTop=top;};

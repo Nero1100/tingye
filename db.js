@@ -1,4 +1,5 @@
 import {applyTranscriptPatch,transcriptFingerprint,transcriptName} from './transcript-batch.js';
+import {FAVORITES,changeFavorite} from './favorites.js?v=2026.10.07.2';
 export const db = await new Promise((resolve,reject)=>{
   const request=indexedDB.open('tingye',2);
   request.onupgradeneeded=()=>{for(const name of ['episodes','cards','settings','progress'])if(!request.result.objectStoreNames.contains(name))request.result.createObjectStore(name,{keyPath:'id'});};
@@ -33,6 +34,15 @@ export function updateBookmarks(id,change){return new Promise((resolve,reject)=>
    const bookmarks=change(current,{...latest,bookmarks:current});if(bookmarks.length>10000)throw Error('书签过多，请先整理句卡。');
    next={id,bookmarks};settings.put({id:bookmarksKey(id),value:bookmarks});
   }catch(error){failure=error;t.abort();}};
+ }catch(error){failure=error;t.abort();}};
+ t.oncomplete=()=>resolve(next);t.onerror=()=>reject(failure||t.error);t.onabort=()=>reject(failure||t.error);
+});}
+export function setEpisodeFavorite(id,liked){return new Promise((resolve,reject)=>{
+ // Saving a heart never replaces the audio Blob being decoded on iPhone.
+ const t=db.transaction(['episodes','settings'],'readwrite'),settings=t.objectStore('settings');let next,failure;
+ const request=t.objectStore('episodes').get(id);request.onsuccess=()=>{try{
+  if(!request.result)throw Error('这段音频已被移除。');
+  const saved=settings.get(FAVORITES);saved.onsuccess=()=>{try{next=changeFavorite(saved.result?.value||[],id,liked);settings.put({id:FAVORITES,value:next});}catch(error){failure=error;t.abort();}};
  }catch(error){failure=error;t.abort();}};
  t.oncomplete=()=>resolve(next);t.onerror=()=>reject(failure||t.error);t.onabort=()=>reject(failure||t.error);
 });}
