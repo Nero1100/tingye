@@ -1,6 +1,6 @@
-import {PODCASTS,podcastShow,podcastItems,podcastCacheKey,SUBSCRIPTIONS,podcastSubscriptions,validPodcastCache,fetchPodcastFeed} from './podcasts.js?v=2026.10.07.6';
-import {downloadLabel} from './podcast-download-ui.js?v=2026.10.07.6';
-import {heartIcon} from './favorites.js?v=2026.10.07.6';
+import {PODCASTS,podcastShow,podcastItems,podcastCacheKey,SUBSCRIPTIONS,podcastSubscriptions,validPodcastCache,fetchPodcastFeed} from './podcasts.js?v=2026.10.07.7';
+import {downloadLabel} from './podcast-download-ui.js?v=2026.10.07.7';
+import {heartIcon} from './favorites.js?v=2026.10.07.7';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const date=value=>value?new Date(value).toLocaleDateString('zh-CN',{year:'numeric',month:'numeric',day:'numeric'}):'';
 const duration=seconds=>seconds?Math.ceil(seconds/60)+' 分钟':'播客';
