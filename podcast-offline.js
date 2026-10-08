@@ -1,5 +1,5 @@
-import './podcast-cache.js?v=2026.10.07.7';
-import {streamURL,podcastCacheKey,validPodcastCache,fetchPodcastFeed} from './podcasts.js?v=2026.10.07.7';
+import './podcast-cache.js?v=2026.10.08.2';
+import {streamURL,podcastCacheKey,validPodcastCache,fetchPodcastFeed} from './podcasts.js?v=2026.10.08.2';
 export const DOWNLOAD_LIMIT='podcast-download-limit-v1',DOWNLOAD_PREFIX='podcast-download/',MiB=1048576,MAX_AUDIO=350*MiB;
 export const downloadLimits=[256,512,1024,2048,4096].map(n=>n*MiB);
 export const validatedLimit=value=>downloadLimits.includes(value)?value:1024*MiB;
