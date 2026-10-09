@@ -1,5 +1,5 @@
-import {mountJobMonitor,jobProgress,terminalJob} from './job-monitor.js?v=2026.10.08.2';
-import {validateTranscript} from './validate.js?v=2026.10.08.2';
+import {mountJobMonitor,jobProgress,terminalJob} from './job-monitor.js?v=2026.10.08.3';
+import {validateTranscript} from './validate.js?v=2026.10.08.3';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const MODES=[['original','日语 / 原文字幕'],['chinese','中文字幕'],['bilingual','原文＋中文双语字幕']];
 const OPTIONS=MODES.map(([id,label])=>`<option value="${id}">${label}</option>`).join('');
