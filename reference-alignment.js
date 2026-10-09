@@ -1,5 +1,5 @@
-import {mountJobMonitor,jobProgress,terminalJob} from './job-monitor.js?v=2026.10.08.3';
-import {validateTranscript} from './validate.js?v=2026.10.08.3';
+import {mountJobMonitor,jobProgress,terminalJob} from './job-monitor.js?v=2026.10.08.4';
+import {validateTranscript} from './validate.js?v=2026.10.08.4';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const KEY='reference-alignment-job';
 const stamp=t=>`${Math.floor(t/60)}:${(t%60).toFixed(2).padStart(5,'0')}`;

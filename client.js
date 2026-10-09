@@ -1,45 +1,46 @@
-import {showVideoSubtitles} from './video-subtitles.js?v=2026.10.08.3';
-import {showReferenceAlignment} from './reference-alignment.js?v=2026.10.08.3';
-import {PODCASTS,podcastShow,podcastScope,isPodcastScope,streamURL,podcastRecord,SUBSCRIPTIONS,podcastSubscriptions} from './podcasts.js?v=2026.10.08.3';
-import {FAVORITES,FAVORITES_SCOPE,validateFavorites,favoriteEpisodes,restoreFavorites,heartIcon} from './favorites.js?v=2026.10.08.3';
-import {PodcastCovers} from './podcast-covers.js?v=2026.10.08.3';
-import {PodcastOffline} from './podcast-offline.js?v=2026.10.08.3';
-import {downloadLabel,showOfflineManager} from './podcast-download-ui.js?v=2026.10.08.3';
-import {MediaControls} from './media-controls.js?v=2026.10.08.3';
-import {PodcastLibrary,audioTabs} from './podcast-library.js?v=2026.10.08.3';
-import {bindBookmarkPress} from './bookmark-press.js?v=2026.10.08.3';
-import {bookmarkKey,bookmarkedSentence,sentenceBookmark,sentenceCards,changeSentenceBookmark} from './sentence-cards.js?v=2026.10.08.3';
-import {plainTranscriptText,plainTranscriptName} from './plain-text.js?v=2026.10.08.3';
-import {TranscriptSync} from './transcript-sync.js?v=2026.10.08.3';
-import {syncPanel,showSyncUI,showSyncBatchUI} from './sync-ui.js?v=2026.10.08.3';
-import {packageTranscript,namedTranscript} from './cloud-transcript.js?v=2026.10.08.3';
-import {showCopyManager} from './audio-copies.js?v=2026.10.08.3';
-import {submitLocalForm} from './local-upload.js?v=2026.10.08.3';
-import {mountJobMonitor,jobProgress,terminalJob} from './job-monitor.js?v=2026.10.08.3';
-import {planTranscriptImports,phoneInterface,transcriptExportName} from './transcript-batch.js?v=2026.10.08.3';
-import {clearModelDownloads,clearBrowserTranslation} from './browser-model-cleanup.js?v=2026.10.08.3';
-import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration,replaceEpisodeTranscripts,deleteAudioCopies,applyCloudTranscript,updateBookmarks,upsertPodcastEpisode,setEpisodeFavorite} from './db.js?v=2026.10.08.3';
-import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.08.3';
+import {markTranscriptDraft} from './transcript-revisions.js';
+import {showVideoSubtitles} from './video-subtitles.js?v=2026.10.08.4';
+import {showReferenceAlignment} from './reference-alignment.js?v=2026.10.08.4';
+import {PODCASTS,podcastShow,podcastScope,isPodcastScope,streamURL,podcastRecord,SUBSCRIPTIONS,podcastSubscriptions} from './podcasts.js?v=2026.10.08.4';
+import {FAVORITES,FAVORITES_SCOPE,validateFavorites,favoriteEpisodes,restoreFavorites,heartIcon} from './favorites.js?v=2026.10.08.4';
+import {PodcastCovers} from './podcast-covers.js?v=2026.10.08.4';
+import {PodcastOffline} from './podcast-offline.js?v=2026.10.08.4';
+import {downloadLabel,showOfflineManager} from './podcast-download-ui.js?v=2026.10.08.4';
+import {MediaControls} from './media-controls.js?v=2026.10.08.4';
+import {PodcastLibrary,audioTabs} from './podcast-library.js?v=2026.10.08.4';
+import {bindBookmarkPress} from './bookmark-press.js?v=2026.10.08.4';
+import {bookmarkKey,bookmarkedSentence,sentenceBookmark,sentenceCards,changeSentenceBookmark} from './sentence-cards.js?v=2026.10.08.4';
+import {plainTranscriptText,plainTranscriptName} from './plain-text.js?v=2026.10.08.4';
+import {TranscriptSync} from './transcript-sync.js?v=2026.10.08.4';
+import {syncPanel,showSyncUI,showSyncBatchUI} from './sync-ui.js?v=2026.10.08.4';
+import {packageTranscript,namedTranscript} from './cloud-transcript.js?v=2026.10.08.4';
+import {showCopyManager} from './audio-copies.js?v=2026.10.08.4';
+import {submitLocalForm} from './local-upload.js?v=2026.10.08.4';
+import {mountJobMonitor,jobProgress,terminalJob} from './job-monitor.js?v=2026.10.08.4';
+import {planTranscriptImports,phoneInterface,transcriptExportName} from './transcript-batch.js?v=2026.10.08.4';
+import {clearModelDownloads,clearBrowserTranslation} from './browser-model-cleanup.js?v=2026.10.08.4';
+import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration,replaceEpisodeTranscripts,deleteAudioCopies,applyCloudTranscript,acknowledgeTranscriptPublication,updateBookmarks,upsertPodcastEpisode,setEpisodeFavorite} from './db.js?v=2026.10.08.4';
+import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.08.4';
 import {lexicalWords,dictionaryText} from './lexicon.js';
-import {initialWordSelection,selectedWord,adjustWordSelection,learningCandidates} from './word-selection.js?v=2026.10.08.3';
-import {Practice,practiceOptions} from './practice.js?v=2026.10.08.3';
+import {initialWordSelection,selectedWord,adjustWordSelection,learningCandidates} from './word-selection.js?v=2026.10.08.4';
+import {Practice,practiceOptions} from './practice.js?v=2026.10.08.4';
 import {palettes,applyTheme} from './theme.js';
 import {hasKanji,rubyParts,setRubyReading,prepareReadings} from './furigana.js';
-import {editedSentence,changedCards,replacementTranscript} from './transcript-edit.js?v=2026.10.08.3';
-import {splitChoices,splitSentence,mergeSentences,resegmentCards} from './segment-edit.js?v=2026.10.08.3';
-import {boundaryWords,suggestSentences} from './sentence-boundaries.js?v=2026.10.08.3';
-import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.08.3';
-import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.08.3';
-import {validatePlaybackLists,reconcilePlaybackList,selectPlaybackEpisodes,reorderPlaybackList,restorePlaybackLists,includePlaybackEpisode} from './playback-list.js?v=2026.10.08.3';
-import {bindReaderGestures} from './reader-gestures.js?v=2026.10.08.3';
+import {editedSentence,changedCards,replacementTranscript} from './transcript-edit.js?v=2026.10.08.4';
+import {splitChoices,splitSentence,mergeSentences,resegmentCards} from './segment-edit.js?v=2026.10.08.4';
+import {boundaryWords,suggestSentences} from './sentence-boundaries.js?v=2026.10.08.4';
+import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.08.4';
+import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.08.4';
+import {validatePlaybackLists,reconcilePlaybackList,selectPlaybackEpisodes,reorderPlaybackList,restorePlaybackLists,includePlaybackEpisode} from './playback-list.js?v=2026.10.08.4';
+import {bindReaderGestures} from './reader-gestures.js?v=2026.10.08.4';
 import {bindDragOrder,replaceSubsetOrder} from './drag-order.js';
 import {cardCategory,cardCategories,selectedCards,cardSentence} from './cards.js';
-import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.08.3';
-import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.08.3';
+import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.08.4';
+import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.08.4';
 import {validateFolders,folderEpisodes,folderMembership,restoreFolders,makeFolderCover} from './folders.js';
-import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.08.3';
-import {ListPosition} from './list-position.js?v=2026.10.08.3';
-import {appRoute,setAppRoute,backAppRoute,bindHomeEdgeGuard,bindRouteRestore} from './navigation.js?v=2026.10.08.3';
+import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.08.4';
+import {ListPosition} from './list-position.js?v=2026.10.08.4';
+import {appRoute,setAppRoute,backAppRoute,bindHomeEdgeGuard,bindRouteRestore} from './navigation.js?v=2026.10.08.4';
 const phone=phoneInterface(navigator.userAgent,navigator.maxTouchPoints);
 const main=document.querySelector('#main'),modal=document.querySelector('#modal');
 let audio=document.querySelector('#audio');
@@ -105,14 +106,15 @@ function updateMediaMetadata(e){
  mediaControls?.setMetadata({title:e.title,artist:show?.author||'听页',album:show?.name||LANG[e.language],artwork:artwork.length?artwork:[{src:new URL('icons/icon-512.png',BASE).href,sizes:'512x512',type:'image/png'}]});
 }
 const transcriptSync=new TranscriptSync({read,write,all,
- canWrite:()=>backend&&backendVersion>=10&&!phone,
+ canWrite:()=>true,
+ published:async(id,link)=>{await acknowledgeTranscriptPublication(id,link);if(episode?.id===id)episode=await read('episodes',id);},
  canApply:(id,{manual=false}={})=>(!modal.open||manual||!!modal.querySelector('#sync-catalog-list'))&&(episode?.id!==id||audio.paused&&!practice.enabled&&clipEnd===null),
  apply:async(id,document,link,options)=>{await applyCloudTranscript(id,document,link,options);
   if(episode?.id===id){episode=await read('episodes',id);current=-1;wordCurrent=-1;browseIndex=null;uncoveredSentences.clear();if(view==='player'){if(immersive)renderImmersiveSentence();else renderPlayer();}}
   else if(view==='library'&&!modal.open){rememberLibrary();await renderLibrary();}
   if(view==='cards'&&cardMode==='sentence'&&!modal.open)await refreshSentenceCardViews(id);
  },
- changed:()=>{const summary=$('#sync-summary');if(summary)summary.textContent=transcriptSync.error||(!transcriptSync.config?'尚未连接共享书库':!transcriptSync.user?'登录后自动接收电脑修订':!transcriptSync.role?'正在检查账号权限':transcriptSync.running?'正在同步…':transcriptSync.pending.length?`本机已保存 · ${transcriptSync.pending.length} 份等待同步`:'已连接 · 同名逐字稿自动更新');},notify:toast});
+ changed:()=>{const summary=$('#sync-summary');if(summary)summary.textContent=transcriptSync.error||(!transcriptSync.config?'尚未连接共享书库':!transcriptSync.user?'登录后同步共享逐字稿':!transcriptSync.role?'正在检查账号权限':transcriptSync.running?'正在同步…':transcriptSync.pending.length?`本机已保存 · ${transcriptSync.pending.length} 份等待同步`:'已连接 · 同名逐字稿自动更新');},notify:toast});
 function syncContext(){return {sync:transcriptSync,open:openModal,modal,all,read,write,on,close:closeModal,lock:busy=>modalCanClose=busy?()=>false:null,report,toast,phone};}
 async function openTranscriptSync(){await showSyncUI(syncContext());}
 async function openSyncBatch(){await showSyncBatchUI(syncContext());}
@@ -727,7 +729,7 @@ async function showWord(si,wi){
  saved=findSaved(w);
  const context=()=>s.words.map(token=>token.text).join('').trim()===s.text.trim()?s.words.map((token,i)=>`${i===range.first?'<mark>':''}${esc(token.text)}${i===range.last?'</mark>':''}`).join(''):esc(s.text);
  const adjustControls=source.language==='ja'?`<details class="word-selection"><summary>调整选词范围</summary><div class="word-range-controls"><button class="secondary" data-word-range="first:-1">← 向前扩选</button><button class="secondary" data-word-range="last:1">向后扩选 →</button><button class="secondary" data-word-range="first:1">收回开头</button><button class="secondary" data-word-range="last:-1">收回结尾</button></div><button class="word-range-reset" id="reset-word-range">恢复最初选词</button></details>`:'';
- openModal(w.text,`<p class="word-reading"></p><div class="word-actions"><button class="primary" id="save-word">${saved?'更新词卡':'＋ 词卡'}</button></div><div class="playlist-rows word-sheet-body">${adjustControls}<section class="word-definition"><label for="word-note">释义 · 我的笔记</label><textarea id="word-note" rows="2" maxlength="5000" placeholder="补充中文释义，随词卡保存">${esc(saved?.note||'')}</textarea></section><section class="word-origin"><div class="word-section-title"><span>在这句里</span><small>${esc(source.title)}</small></div><p class="word-origin-source" lang="${source.language}">${context()}</p>${s.translation?`<p class="word-origin-translation">${esc(s.translation)}</p>${s.translationPending?'<small class="note">译文待更新</small>':''}`:''}<button class="secondary" id="listen-word">▶ 听原句</button></section><section class="word-category">${categoryField(cards,saved?.category||'')}</section>${!phone?'<button class="word-edit" id="edit-word-reading">修改原文与假名</button>':''}</div>`);
+ openModal(w.text,`<p class="word-reading"></p><div class="word-actions"><button class="primary" id="save-word">${saved?'更新词卡':'＋ 词卡'}</button></div><div class="playlist-rows word-sheet-body">${adjustControls}<section class="word-definition"><label for="word-note">释义 · 我的笔记</label><textarea id="word-note" rows="2" maxlength="5000" placeholder="补充中文释义，随词卡保存">${esc(saved?.note||'')}</textarea></section><section class="word-origin"><div class="word-section-title"><span>在这句里</span><small>${esc(source.title)}</small></div><p class="word-origin-source" lang="${source.language}">${context()}</p>${s.translation?`<p class="word-origin-translation">${esc(s.translation)}</p>${s.translationPending?'<small class="note">译文待更新</small>':''}`:''}<button class="secondary" id="listen-word">▶ 听原句</button></section><section class="word-category">${categoryField(cards,saved?.category||'')}</section>${episode?.id===source.id?'<button class="word-edit" id="edit-word-reading">修改原文与假名</button>':''}</div>`);
  modal.classList.add('playlist-sheet','word-sheet');$('.dialog-head').insertAdjacentHTML('beforebegin','<button class="sheet-grip" aria-label="向下滑动收起词卡"><span></span></button>');playlistSheet=bindPlaylistSheet(modal,closeModal);
  function refreshSelection(){
   $('.word-sheet .dialog-head h2').textContent=w.text;$('.word-reading').textContent=[w.reading,w.lemma!==w.text?w.lemma:''].filter(Boolean).join(' · ');
@@ -756,7 +758,7 @@ async function showWord(si,wi){
 
 function transcriptTools(){
  const has=!!episode.segments?.length;
- openModal('逐字稿',`<p class="note">${has?`${episode.segments.length} 句 · 可在电脑校对并试听。`:'导入后可以在电脑修改原文、译文、假名和断句。'}</p><div class="stack"><button class="primary full" id="transcript-edit-current" ${has?'':'disabled'}>修改与调整断句</button>${backend&&has?'<button class="secondary full" id="transcript-computer-translate">在电脑重新生成中文</button>':''}<button class="secondary full" id="transcript-replace">${has?'替换逐字稿':'导入逐字稿'}</button><button class="secondary full" id="transcript-export" ${has?'':'disabled'}>导出修订逐字稿</button>${episode.language==='ja'?`<button class="secondary full" id="transcript-plain-japanese" ${has?'':'disabled'}>导出纯日语文本</button>`:''}<button class="secondary full" id="transcript-undo" ${episode.transcriptUndo?'':'disabled'}>撤销上一次校对</button></div>`);
+ openModal('逐字稿',`<p class="note">${has?`${episode.segments.length} 句 · 可直接校对并试听。`:'导入后可以修改原文、译文、假名和断句。'}</p><div class="stack"><button class="primary full" id="transcript-edit-current" ${has?'':'disabled'}>修改与调整断句</button>${backend&&has?'<button class="secondary full" id="transcript-computer-translate">在电脑重新生成中文</button>':''}<button class="secondary full" id="transcript-replace">${has?'替换逐字稿':'导入逐字稿'}</button><button class="secondary full" id="transcript-export" ${has?'':'disabled'}>导出修订逐字稿</button>${episode.language==='ja'?`<button class="secondary full" id="transcript-plain-japanese" ${has?'':'disabled'}>导出纯日语文本</button>`:''}<button class="secondary full" id="transcript-undo" ${episode.transcriptUndo?'':'disabled'}>撤销上一次校对</button></div>`);
  on('#transcript-edit-current','click',()=>editEpisodeSentence(Math.max(0,displayedSentence())));
  on('#transcript-computer-translate','click',()=>translateScript(false,transcriptData(episode)));
  on('#transcript-replace','click',()=>importScript(episode.id));on('#transcript-export','click',()=>exportTranscript(episode));on('#transcript-undo','click',undoTranscript);
@@ -776,31 +778,40 @@ function previewSentenceSuggestions(document,index,persist,session){
  }catch(error){report(error);}
 }
 function transcriptData(e){return {format:'tingye-transcript-v1',version:1,title:e.title,language:e.language,duration:e.duration,audio:{filename:e.filename||e.audio?.filename||'',bytes:audioSize(e)||e.audio?.bytes||0},segments:e.segments||[]};}
+function localRevisionMessage(){
+ return transcriptSync.role==='editor'?'保存后自动同步到共享书库，其他设备收到修订。':transcriptSync.role==='reader'?'当前账号只有接收权限，修改仅保存在本机。':'修改保存在本机；登录发布账号后再保存即可同步。';
+}
+async function synchronizeEpisodeRevision(e){
+ try{
+  const draft=e.transcriptDraft,queued=await transcriptSync.enqueue(transcriptData(e),{episodeId:e.id,id:draft?.scope===transcriptSync.scope?draft.id:null,baseHash:draft?.scope===transcriptSync.scope?draft.baseHash:null});
+  const status=$('#editor-local-status');if(status)status.textContent=queued.queued?'本机已保存 · 已加入同步队列，可在设置查看结果':localRevisionMessage();
+  return queued;
+ }catch(error){const message='本机已保存 · 同步尚未完成：'+error.message;const status=$('#editor-local-status');if(status)status.textContent=message;toast(message);return {queued:false};}
+}
 async function editEpisodeSentence(index=0){
-  if(phone){await importScript(episode?.id);return;}
   const id=episode?.id;if(!id)return;
   const document=transcriptData(episode);
   const persist=async(before,after,index)=>{
-    const e=await read('episodes',id);if(!e)throw Error('音频记录已移除。');
+    let e=await read('episodes',id);if(!e)throw Error('音频记录已移除。');
     const existing=prepareReadings({...e.segments[index],words:lexicalWords(e.segments[index],e.language)},e.language);
     if(JSON.stringify(existing)!==JSON.stringify(before))throw Error('这一句已在另一个窗口修改，请关闭校对后重新打开。');
     const previous=structuredClone(e.segments),related=changedCards(await all('cards'),id,before,after);
     e.segments[index]=after;e.transcriptUndo={segments:previous,cards:[],changedAt:Date.now()};
     // Keep only readings/context in the undo record: review notes and scheduling remain independent.
     const currentCards=await all('cards');e.transcriptUndo.cards=related.map(c=>{const old=currentCards.find(o=>o.id===c.id);return{id:old.id,reading:old.reading,context:old.context};});
-    await saveBatch([e],related,[]);if(episode?.id===id){episode=e;current=-1;wordCurrent=-1;browseIndex=null;follow=true;if(immersive)renderImmersiveSentence();else if(view==='player')renderPlayer();}
+    e=await markTranscriptDraft(e,transcriptData(e),transcriptSync.scope);await saveBatch([e],related,[]);if(!backend||phone)await synchronizeEpisodeRevision(e);if(episode?.id===id){episode=e;current=-1;wordCurrent=-1;browseIndex=null;follow=true;if(immersive)renderImmersiveSentence();else if(view==='player')renderPlayer();}
   };
-  persist.resegment=async(before,next)=>{const e=await read('episodes',id);if(!e)throw Error('音频记录已移除。');const existing=e.segments.map(seg=>prepareReadings({...seg,words:lexicalWords(seg,e.language)},e.language));if(JSON.stringify(existing)!==JSON.stringify(before))throw Error('逐字稿已在另一个窗口修改，请重新打开校对。');const cards=await all('cards'),related=resegmentCards(cards,id,before,next);e.transcriptUndo={segments:structuredClone(e.segments),cards:related.map(c=>{const old=cards.find(v=>v.id===c.id);return{id:old.id,reading:old.reading,context:old.context};}),changedAt:Date.now()};e.segments=next;await saveBatch([e],related,[]);if(episode?.id===id){episode=e;current=-1;wordCurrent=-1;browseIndex=null;follow=true;if(immersive)renderImmersiveSentence();else if(view==='player')renderPlayer();}};
+  persist.resegment=async(before,next)=>{let e=await read('episodes',id);if(!e)throw Error('音频记录已移除。');const existing=e.segments.map(seg=>prepareReadings({...seg,words:lexicalWords(seg,e.language)},e.language));if(JSON.stringify(existing)!==JSON.stringify(before))throw Error('逐字稿已在另一个窗口修改，请重新打开校对。');const cards=await all('cards'),related=resegmentCards(cards,id,before,next);e.transcriptUndo={segments:structuredClone(e.segments),cards:related.map(c=>{const old=cards.find(v=>v.id===c.id);return{id:old.id,reading:old.reading,context:old.context};}),changedAt:Date.now()};e.segments=next;e=await markTranscriptDraft(e,transcriptData(e),transcriptSync.scope);await saveBatch([e],related,[]);if(!backend||phone)await synchronizeEpisodeRevision(e);if(episode?.id===id){episode=e;current=-1;wordCurrent=-1;browseIndex=null;follow=true;if(immersive)renderImmersiveSentence();else if(view==='player')renderPlayer();}};
   persist.preview=range=>{if(episode?.id!==id||!audioAvailable(episode)){toast('请先连接这段音频，再试听。');return;}playSentenceClip(range);};
   const savedBinding=(await read('settings','document-binding/'+id))?.value;
-  openDocumentEditor(document,index,persist,{modified:false,exported:true,binding:savedBinding,onBound:binding=>write('settings',{id:'document-binding/'+id,value:binding})});
+  openDocumentEditor(document,index,persist,{modified:false,exported:true,episodeId:id,baseHash:episode.cloudTranscript?.scope===transcriptSync.scope?episode.cloudTranscript.hash:null,binding:savedBinding,onBound:binding=>write('settings',{id:'document-binding/'+id,value:binding})});
 }
 async function undoTranscript(){
-  try{const e=await read('episodes',episode.id),revision=e.transcriptUndo;if(!revision)throw Error('没有可撤销的校对。');
+  try{let e=await read('episodes',episode.id);const revision=e.transcriptUndo;if(!revision)throw Error('没有可撤销的校对。');
     validateTranscript({...transcriptData(e),segments:revision.segments});
     e.segments=revision.segments;delete e.transcriptUndo;
     const cards=(await all('cards')).filter(c=>c.episodeId===e.id&&revision.cards?.some(v=>v.id===c.id&&typeof v.reading==='string'&&v.reading.length<=512&&typeof v.context==='string'&&v.context.length<=10000)).map(c=>{const v=revision.cards.find(v=>v.id===c.id);return{...c,reading:v.reading,context:v.context};});
-    resetClip();audio.pause();await saveBatch([e],cards,[]);episode=e;current=-1;wordCurrent=-1;browseIndex=null;follow=true;modalCanClose=null;closeModal();if(immersive)renderImmersiveSentence();else renderPlayer();toast('已撤销上一次校对');
+    resetClip();audio.pause();e=await markTranscriptDraft(e,transcriptData(e),transcriptSync.scope);await saveBatch([e],cards,[]);if(!backend||phone)await synchronizeEpisodeRevision(e);episode=e;current=-1;wordCurrent=-1;browseIndex=null;follow=true;modalCanClose=null;closeModal();if(immersive)renderImmersiveSentence();else renderPlayer();toast('已撤销上一次校对');
   }catch(error){report(error);}
 }
 function editDocumentFile(){
@@ -819,13 +830,13 @@ function openDocumentEditor(document,index=0,persist=null,session={modified:fals
   document.segments=document.segments.map(s=>prepareReadings({...s,words:lexicalWords(s,document.language)},document.language));
   let draft=structuredClone(document.segments[index]),dirty=false;
   openModal(`校对逐字稿 · ${index+1} / ${document.segments.length}`,`<label for="editor-sentence">选择句子</label><select id="editor-sentence">${document.segments.map((s,i)=>`<option value="${i}" ${index===i?'selected':''}>${i+1} · ${time(s.start)} · ${esc(s.text.slice(0,45))}</option>`).join('')}</select>
-    <p class="note">${directSave?'保存会覆盖已关联的电脑文件，并保留上一版；登录共享书库后自动同步。':persist?'保存后更新本机逐字稿，可在“逐字稿”菜单撤销上一次校对。':'修订先保留在这个窗口中；完成后点击“导出修订文件”。'}句子时间轴 ${time(draft.start)}—${time(draft.end)}。原文变化后，新增词的位置会估算。</p>
+    <p class="note">${directSave?'保存会覆盖已关联的电脑文件，并保留上一版；登录共享书库后自动同步。':persist?'保存后更新本机逐字稿，可撤销上一次校对。'+localRevisionMessage():'修订先保留在这个窗口中；完成后点击“导出修订文件”。'}句子时间轴 ${time(draft.start)}—${time(draft.end)}。原文变化后，新增词的位置会估算。</p>
     ${persist?'<div class="editor-listen"><button class="secondary" id="editor-listen">听这一句</button><button class="secondary" id="editor-stop">暂停试听</button></div>':''}<label for="editor-source">原文</label><textarea id="editor-source" rows="3" maxlength="10000" spellcheck="false" lang="${document.language}">${esc(draft.text)}</textarea>
     <button class="secondary full" id="rebuild-editor-words">按修改后的原文更新词语</button>
     <div class="actions boundary-actions"><button class="secondary" id="auto-editor-segments">自动分句</button><button class="secondary" id="split-editor-sentence">拆分这一句</button><button class="secondary" id="merge-editor-next" ${index===document.segments.length-1?'disabled':''}>与下一句合并</button></div>
     ${backend?'<button class="secondary full" id="editor-computer-translate">在电脑重新生成中文</button>':''}<p class="note">${draft.translationPending?'原文或断句已改变，这一句的译文需要更新。':'可在电脑生成对应译文，或直接人工校对。'}</p><label for="editor-translation">中文译文</label><textarea id="editor-translation" rows="3" maxlength="10000">${esc(draft.translation||'')}</textarea>
     ${document.language==='ja'?'<h3 class="editor-heading">假名标注</h3><p class="note">只给汉字部分填读音，可留空取消标注。例如「話し」的「話」填「はな」；名词「話」填「はなし」。</p><div id="ruby-editor-fields"></div><div class="editor-preview source" lang="ja" id="ruby-editor-preview"></div>':''}
-    <div class="editor-footer"><button class="primary full" id="save-editor-sentence">${directSave?'保存这一句到原文件':persist?'保存这一句':'保留这一句的修订'}</button><div class="actions"><button class="secondary" id="editor-previous" ${index===0?'disabled':''}>上一句</button><button class="secondary" id="editor-next" ${index===document.segments.length-1?'disabled':''}>保存并下一句</button><button class="secondary" id="export-editor-file">${directSave?'另存副本':'导出修订文件'}</button>${document.language==='ja'?'<button class="secondary" id="export-editor-text">导出纯日语文本</button>':''}</div>${session.videoSubtitles?'<button class="primary full section-title" id="return-video-subtitles">返回字幕导出</button>':''}${directSave?`<button class="primary full section-title" id="save-editor-file">保存原文件 · 自动同步</button><p class="note" id="editor-save-status" role="status">${esc(session.binding?.path||'第一次保存请选择目标文件，之后直接覆盖保存。')}</p><button class="secondary full" id="restore-editor-file" ${session.binding?.has_backup?'':'disabled'}>恢复文件的上一版</button>`:''}</div>`);
+    <div class="editor-footer"><button class="primary full" id="save-editor-sentence">${directSave?'保存这一句到原文件':persist?'保存这一句':'保留这一句的修订'}</button><div class="actions"><button class="secondary" id="editor-previous" ${index===0?'disabled':''}>上一句</button><button class="secondary" id="editor-next" ${index===document.segments.length-1?'disabled':''}>保存并下一句</button><button class="secondary" id="export-editor-file">${directSave?'另存副本':phone?'导出逐字稿':'导出修订文件'}</button>${document.language==='ja'?'<button class="secondary" id="export-editor-text">纯日语文本</button>':''}</div>${persist&&!directSave?'<p class="note" id="editor-local-status" role="status"></p>':''}${session.videoSubtitles?'<button class="primary full section-title" id="return-video-subtitles">返回字幕导出</button>':''}${directSave?`<button class="primary full section-title" id="save-editor-file">保存原文件 · 自动同步</button><p class="note" id="editor-save-status" role="status">${esc(session.binding?.path||'第一次保存请选择目标文件，之后直接覆盖保存。')}</p><button class="secondary full" id="restore-editor-file" ${session.binding?.has_backup?'':'disabled'}>恢复文件的上一版</button>`:''}</div>`);
   modal.classList.add('transcript-editor');
   on('#return-video-subtitles','click',async()=>{if(await save(false,false))await session.videoSubtitles(document);});
   if(session.referenceAlignment){if($('#editor-computer-translate'))$('#editor-computer-translate').hidden=true;$('.editor-footer').insertAdjacentHTML('beforeend','<button class="primary full section-title" id="return-reference-alignment">返回原稿对齐试听</button>');on('#return-reference-alignment','click',async()=>{if(await save(false,false))await session.referenceAlignment(document);});}
@@ -884,7 +895,7 @@ function openDocumentEditor(document,index=0,persist=null,session={modified:fals
       const result=await exportRequest('api/document/save',{id:session.binding.id,expected:session.binding.expected,transcript:document});
       session.binding=result;session.exported=true;await session.onBound?.(result);
       $('#editor-save-status').textContent='本机已保存：'+result.path;
-      try{const queued=await transcriptSync.enqueue(document,{baseHash:await session.baseHash});
+      try{const local=session.episodeId?await read('episodes',session.episodeId):null,draft=local?.transcriptDraft;const queued=await transcriptSync.enqueue(document,{baseHash:draft?.baseHash??await session.baseHash,id:draft?.scope===transcriptSync.scope?draft.id:null,episodeId:session.episodeId});if(queued.queued)session.baseHash=packageTranscript(structuredClone(document)).then(packet=>packet.hash);
         $('#editor-save-status').textContent=queued.queued?'本机已保存 · 正在同步（可在设置查看结果）':'本机已保存 · '+(transcriptSync.config?'登录发布账号后，可同步本次修订':'连接共享书库后，可同步本次修订');
       }catch(error){$('#editor-save-status').textContent='本机已保存 · 同步尚未完成：'+error.message;}
       toast('已保存原文件，上一次修订可恢复');return true;
@@ -919,7 +930,7 @@ async function checkAudio(){
  on('#recover-audio-sound','click',()=>{closeModal();recoverSound().catch(report);});
  on('#copy-audio-check','click',async()=>{try{await navigator.clipboard.writeText(reportText);toast('检查信息已复制');}catch{toast('复制未成功，可直接查看上方检查信息');}});
 }
-async function audioMenu(){if(streamURL(episode)){podcastAudioMenu();return;}openModal('管理音频',`<div class="stack">${episode.storageMode!=='external'?'<button class="secondary full" id="switch-original">改为读取原文件，移除应用副本</button>':'<button class="secondary full" id="connect-original">重新选择原音频</button>'}${!phone?`<button class="secondary full" id="edit-transcript" ${episode.segments?.length?'':'disabled'}>人工校对原文、译文与假名</button><button class="secondary full" id="undo-transcript" ${episode.transcriptUndo?'':'disabled'}>撤销上一次校对</button>`:''}<button class="secondary full" id="replace-script">${episode.segments?.length?'替换逐字稿':'导入逐字稿'}</button>${backend?'<button class="secondary full" id="retranscribe">在这台电脑重新转写</button>':''}<button class="secondary full" id="export-script" ${episode.segments?.length?'':'disabled'}>导出逐字稿与时间轴</button><button class="secondary full" id="check-audio">检查声音</button><button class="secondary full" id="export-audio">导出原音频</button><button class="secondary full" id="extract-words" ${episode.segments?.length?'':'disabled'}>提取生词</button><button class="secondary full" id="add-bookmark" ${episode.segments?.length?'':'disabled'}>${sentenceBookmark(episode,episode.segments?.[Math.max(0,current)])?'取消当前句子书签':'收藏当前句子'}</button><button class="secondary full" id="show-bookmarks">书签（${episode.bookmarks?.length||0}）</button><button class="danger full" id="delete-audio">移除这段音频</button></div>`);on('#edit-transcript','click',()=>editEpisodeSentence(Math.max(0,current)));on('#undo-transcript','click',undoTranscript);on('#switch-original','click',switchToOriginal);on('#connect-original','click',()=>reconnectAudio());on('#retranscribe','click',()=>computerTranscription(episode));on('#replace-script','click',()=>{closeModal();importScript(episode.id);});on('#export-script','click',()=>exportTranscript(episode));on('#check-audio','click',()=>checkAudio().catch(report));on('#export-audio','click',()=>{const file=audioFile(episode);if(file)download(file,episode.filename||episode.title+'.mp3');else reconnectAudio();});on('#extract-words','click',extractWords);on('#add-bookmark','click',async()=>{try{if(episode.segments?.length){await toggleSentenceBookmark(Math.max(0,current));audioMenu();}else toast('请先导入逐字稿，再收藏句子。');}catch(error){report(error);}});on('#show-bookmarks','click',()=>{openModal('书签',episode.bookmarks?.length?`<div class="stack">${episode.bookmarks.map((b,i)=>`<button class="secondary" data-bookmark="${i}">${time(b.time)} · ${esc(b.text)}</button>`).join('')}</div>`:'<p class="note">播放时点击“加书签”，就能标记一个位置。</p>');document.querySelectorAll('[data-bookmark]').forEach(b=>b.onclick=()=>{closeModal();if(!audioAvailable(episode)){reconnectAudio();return;}current=-1;audio.currentTime=episode.bookmarks[Number(b.dataset.bookmark)].time;updatePlayback();});});on('#delete-audio','click',()=>{openModal('删除这段音频？','<p class="note">会移除应用中的记录、逐字稿和对应词卡；手机「文件」中的原音频不会被删除。建议先导出备份。</p><div class="actions"><button class="secondary" id="cancel-delete">保留</button><button class="danger" id="confirm-delete">确认删除</button></div>');on('#cancel-delete','click',closeModal);on('#confirm-delete','click',async()=>{const id=episode.id;cancelPractice();originalFiles.delete(id);audio.pause();episode=null;const oldURL=objectURL;objectURL=null;releaseAudio(audio,URL.revokeObjectURL,oldURL);await remove('episodes',id);for(const c of await all('cards'))if(c.episodeId===id)await remove('cards',c.id);$('.player-dock')?.remove();closeModal();navigate('library');});});}
+async function audioMenu(){if(streamURL(episode)){podcastAudioMenu();return;}openModal('管理音频',`<div class="stack">${episode.storageMode!=='external'?'<button class="secondary full" id="switch-original">改为读取原文件，移除应用副本</button>':'<button class="secondary full" id="connect-original">重新选择原音频</button>'}${`<button class="secondary full" id="edit-transcript" ${episode.segments?.length?'':'disabled'}>人工校对原文、译文与假名</button><button class="secondary full" id="undo-transcript" ${episode.transcriptUndo?'':'disabled'}>撤销上一次校对</button>`}<button class="secondary full" id="replace-script">${episode.segments?.length?'替换逐字稿':'导入逐字稿'}</button>${backend?'<button class="secondary full" id="retranscribe">在这台电脑重新转写</button>':''}<button class="secondary full" id="export-script" ${episode.segments?.length?'':'disabled'}>导出逐字稿与时间轴</button><button class="secondary full" id="check-audio">检查声音</button><button class="secondary full" id="export-audio">导出原音频</button><button class="secondary full" id="extract-words" ${episode.segments?.length?'':'disabled'}>提取生词</button><button class="secondary full" id="add-bookmark" ${episode.segments?.length?'':'disabled'}>${sentenceBookmark(episode,episode.segments?.[Math.max(0,current)])?'取消当前句子书签':'收藏当前句子'}</button><button class="secondary full" id="show-bookmarks">书签（${episode.bookmarks?.length||0}）</button><button class="danger full" id="delete-audio">移除这段音频</button></div>`);on('#edit-transcript','click',()=>editEpisodeSentence(Math.max(0,current)));on('#undo-transcript','click',undoTranscript);on('#switch-original','click',switchToOriginal);on('#connect-original','click',()=>reconnectAudio());on('#retranscribe','click',()=>computerTranscription(episode));on('#replace-script','click',()=>{closeModal();importScript(episode.id);});on('#export-script','click',()=>exportTranscript(episode));on('#check-audio','click',()=>checkAudio().catch(report));on('#export-audio','click',()=>{const file=audioFile(episode);if(file)download(file,episode.filename||episode.title+'.mp3');else reconnectAudio();});on('#extract-words','click',extractWords);on('#add-bookmark','click',async()=>{try{if(episode.segments?.length){await toggleSentenceBookmark(Math.max(0,current));audioMenu();}else toast('请先导入逐字稿，再收藏句子。');}catch(error){report(error);}});on('#show-bookmarks','click',()=>{openModal('书签',episode.bookmarks?.length?`<div class="stack">${episode.bookmarks.map((b,i)=>`<button class="secondary" data-bookmark="${i}">${time(b.time)} · ${esc(b.text)}</button>`).join('')}</div>`:'<p class="note">播放时点击“加书签”，就能标记一个位置。</p>');document.querySelectorAll('[data-bookmark]').forEach(b=>b.onclick=()=>{closeModal();if(!audioAvailable(episode)){reconnectAudio();return;}current=-1;audio.currentTime=episode.bookmarks[Number(b.dataset.bookmark)].time;updatePlayback();});});on('#delete-audio','click',()=>{openModal('删除这段音频？','<p class="note">会移除应用中的记录、逐字稿和对应词卡；手机「文件」中的原音频不会被删除。建议先导出备份。</p><div class="actions"><button class="secondary" id="cancel-delete">保留</button><button class="danger" id="confirm-delete">确认删除</button></div>');on('#cancel-delete','click',closeModal);on('#confirm-delete','click',async()=>{const id=episode.id;cancelPractice();originalFiles.delete(id);audio.pause();episode=null;const oldURL=objectURL;objectURL=null;releaseAudio(audio,URL.revokeObjectURL,oldURL);await remove('episodes',id);for(const c of await all('cards'))if(c.episodeId===id)await remove('cards',c.id);$('.player-dock')?.remove();closeModal();navigate('library');});});}
 
 
 function podcastAudioMenu(){

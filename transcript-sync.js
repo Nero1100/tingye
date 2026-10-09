@@ -1,5 +1,6 @@
 import {cloudConfig} from './cloud-config.js';
 import {packageTranscript,sha256,unpackTranscript,validateManifest,matchingEpisode,publicTranscript} from './cloud-transcript.js';
+import {draftBlocksUpdate} from './transcript-revisions.js';
 
 export function syncMessage(error){
  const code=error?.code||'';
@@ -18,8 +19,8 @@ function connection(input){
   authDomain:config.projectId+'.firebaseapp.com'}};
 }
 export class TranscriptSync {
- constructor({read,write,all,apply,canWrite,canApply,changed,notify}){
-  Object.assign(this,{read,write,all,apply,canWrite,canApply,changed,notify});
+ constructor({read,write,all,apply,canWrite,canApply,published,changed,notify}){
+  Object.assign(this,{read,write,all,apply,canWrite,canApply,published,changed,notify});
   this.config=null;this.user=null;this.role='';this.items=[];this.pending=[];this.error='';this.running=false;this.generation=0;this.flushPromise=null;this.receivePromise=null;
  }
  get scope(){return this.config?this.config.firebase.projectId+':'+this.config.space:'';}
@@ -59,17 +60,20 @@ export class TranscriptSync {
    await this.flush();
   }catch(error){if(generation===this.generation){if(error.code?.includes('permission-denied')||error.message?.includes('尚未获准'))this.role='';this.error=syncMessage(error);this.update();}}
  }
- async enqueue(document,{baseHash=null,id=null}={}){
+ async enqueue(document,{baseHash=null,id=null,episodeId=null}={}){
   if(!this.ready||this.role!=='editor'||!this.canWrite())return {queued:false};
+  const generation=this.generation,key=this.key;
   const packet=await packageTranscript(document);if(!packet.matchKey)throw Error('逐字稿缺少原音频文件名，不能自动同步。');
   id=id||'t-'+await sha256(packet.document.language+'\n'+packet.matchKey);
-  const existing=this.pending.find(p=>p.id===id),known=(await this.read('settings','sync-published/'+this.key+'/'+id))?.value;
-  const entry={id,document:packet.document,hash:packet.hash,baseHash:existing?existing.baseHash:known?.hash??baseHash??null,created:Date.now()};
+  const known=(await this.read('settings','sync-published/'+key+'/'+id))?.value;
+  if(generation!==this.generation||key!==this.key)throw Error('账号已切换，本机修订保留，请重新登录后保存。');
+  const existing=this.pending.find(p=>p.id===id);
+  const entry={id,document:packet.document,hash:packet.hash,baseHash:existing?existing.baseHash:baseHash??known?.hash??null,created:Date.now(),...(episodeId?{episodeId}:{})};
   this.pending=[...this.pending.filter(p=>p.id!==id),entry];await this.storePending();this.update();this.flush().catch(()=>{});return {queued:true,id};
  }
  async storePending(){await this.write('settings',{id:'sync-outbox/'+this.key,value:this.pending});}
  async enqueueBatch(rows,progress=()=>{}){
-  if(!this.ready||this.role!=='editor'||!this.canWrite())throw Error('请在电脑工具中登录发布账号。');
+  if(!this.ready||this.role!=='editor'||!this.canWrite())throw Error('请先登录有发布权限的账号。');
   const generation=this.generation,key=this.key,entries=[];
   for(const [index,row] of rows.entries()){
    const packet=await packageTranscript(row.document);
@@ -93,6 +97,7 @@ export class TranscriptSync {
     if(generation!==this.generation||key!==this.key)break;
     try{await this.publish(entry,generation);if(generation!==this.generation)break;
      await this.write('settings',{id:'sync-published/'+key+'/'+entry.id,value:{hash:entry.hash}});
+     if(entry.episodeId)await this.published?.(entry.episodeId,{scope:this.scope,id:entry.id,hash:entry.hash,revision:'r-'+entry.hash.slice(0,32)});
      this.pending=this.pending.filter(p=>p.id!==entry.id||p.hash!==entry.hash).map(p=>p.id===entry.id?{...p,baseHash:entry.hash}:p);await this.storePending();this.error='';this.notify?.('逐字稿已同步');
     }catch(error){if(generation===this.generation){this.error=syncMessage(error);this.pending=this.pending.map(p=>p.id===entry.id&&p.hash===entry.hash?{...p,error:this.error}:p);await this.storePending();this.update();}if(error.code!=='sync/conflict')break;}
    }
@@ -140,6 +145,7 @@ export class TranscriptSync {
     if(!e||match.needsConfirmation||e.cloudTranscript?.hash===item.hash||!this.canApply(e.id))continue;
     // A writer's pending local revision must never be overwritten by its own listener.
     if(this.pending.some(p=>p.id===item.id))continue;
+    if(draftBlocksUpdate(e,item.hash))continue;
     try{const document=await this.load(item);if(generation!==this.generation||!this.canApply(e.id))continue;
      await this.apply(e.id,document,{scope,id:item.id,hash:item.hash,revision:item.revision},{initial:!match.bound,expected:match.expected});this.update();
     }catch(error){if(generation===this.generation){this.error=syncMessage(error);this.update();}}
@@ -148,9 +154,12 @@ export class TranscriptSync {
  }
  async associate(item,episodeId){
   if(!this.ready)throw Error('请先登录共享书库。');if(!this.canApply(episodeId,{manual:true}))throw Error('请暂停播放后再关联。');
-  const generation=this.generation,scope=this.scope,document=await this.load(item);if(generation!==this.generation)throw Error('账号已切换，请重新关联。');
+  const generation=this.generation,scope=this.scope;await this.flushPromise;
+  if(generation!==this.generation)throw Error('账号已切换，请重新关联。');
+  item=this.items.find(row=>row.id===item.id)||item;const document=await this.load(item);if(generation!==this.generation)throw Error('账号已切换，请重新关联。');
   if(!this.canApply(episodeId,{manual:true}))throw Error('音频正在播放，请暂停后再关联。');
-  await this.apply(episodeId,document,{scope,id:item.id,hash:item.hash,revision:item.revision},{initial:true,confirmed:true});this.update();
+  await this.apply(episodeId,document,{scope,id:item.id,hash:item.hash,revision:item.revision},{initial:true,confirmed:true});
+  this.pending=this.pending.filter(row=>row.id!==item.id);await this.storePending();this.update();
  }
  async refresh(){if(this.user&&!this.stop){await this.authChanged(this.user);return;}if(!this.ready)return;await this.flush();await this.drain();}
 }

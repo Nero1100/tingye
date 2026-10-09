@@ -1,5 +1,6 @@
 import {applyTranscriptPatch,transcriptFingerprint,transcriptName} from './transcript-batch.js';
-import {FAVORITES,changeFavorite} from './favorites.js?v=2026.10.08.3';
+import {draftBlocksUpdate,acknowledgeTranscriptDraft} from './transcript-revisions.js';
+import {FAVORITES,changeFavorite} from './favorites.js?v=2026.10.08.4';
 export const db = await new Promise((resolve,reject)=>{
   const request=indexedDB.open('tingye',2);
   request.onupgradeneeded=()=>{for(const name of ['episodes','cards','settings','progress'])if(!request.result.objectStoreNames.contains(name))request.result.createObjectStore(name,{keyPath:'id'});};
@@ -73,13 +74,21 @@ export function applyCloudTranscript(id,document,link,{initial=false,confirmed=f
     if(!initial&&(e.cloudTranscript?.scope!==link.scope||e.cloudTranscript?.id!==link.id))throw Error('音频关联已改变，原稿保留。');
     if(initial&&!confirmed&&(e.cloudTranscript||!expected||transcriptFingerprint(e)!==expected||transcriptName(e.filename)!==transcriptName(document.audio?.filename)))throw Error('音频或逐字稿已改变，请重新匹配。');
     if(e.language!==document.language||e.duration&&Math.abs(e.duration-document.duration)>Math.max(2,document.duration*.005))throw Error('语言或音频时长不同，请选择对应音频。');
+    if(!confirmed&&draftBlocksUpdate(e,link.hash))throw Error('本机有尚未同步的修订，已保留；可在共享书库选择使用共享稿。');
     const next={...e,segments:structuredClone(document.segments),duration:e.duration||document.duration,cloudTranscript:{...link}};
-    delete next.transcriptUndo;store.put(next);
+    delete next.transcriptDraft;
+    if(confirmed&&e.transcriptDraft)next.transcriptUndo={segments:structuredClone(e.segments),cards:[],changedAt:Date.now()};else if(!e.transcriptDraft)delete next.transcriptUndo;
+    store.put(next);
    }catch(error){failure=error;transaction.abort();}
   };
   transaction.oncomplete=()=>resolve(id);transaction.onerror=()=>reject(failure||transaction.error);transaction.onabort=()=>reject(failure||transaction.error);
  });
 }
+export function acknowledgeTranscriptPublication(id,link){return new Promise((resolve,reject)=>{
+ const t=db.transaction('episodes','readwrite'),store=t.objectStore('episodes'),r=store.get(id);
+ r.onsuccess=()=>{if(r.result){const next=acknowledgeTranscriptDraft(r.result,link);if(next!==r.result)store.put(next);}};
+ t.oncomplete=resolve;t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error);
+});}
 // Delete only selected audio bytes, atomically, using the latest learning records.
 export function deleteAudioCopies(items,{removeRecords=false}={}){return new Promise((resolve,reject)=>{
  const selected=new Map(items.map(e=>[e.id,e]));
