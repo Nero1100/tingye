@@ -1,5 +1,5 @@
-import {mountJobMonitor,jobProgress,terminalJob} from './job-monitor.js?v=2026.10.10.2';
-import {validateTranscript} from './validate.js?v=2026.10.10.2';
+import {mountJobMonitor,jobProgress,terminalJob} from './job-monitor.js?v=2026.10.10.3';
+import {validateTranscript} from './validate.js?v=2026.10.10.3';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const MODES=[['original','日语 / 原文字幕'],['chinese','中文字幕'],['bilingual','原文＋中文双语字幕']];
 const OPTIONS=MODES.map(([id,label])=>`<option value="${id}">${label}</option>`).join('');
@@ -11,16 +11,18 @@ export function recognitionReviewSummary(document){
  return `<details class="section-title"><summary>需试听校对：${rows.length} 处</summary><p class="note">以下小段未能由 MOSS 正常完成。未检测到人声的部分没有生成字幕；备用识别的句子需要校对。这些位置会保留在逐字稿 JSON 中。</p>${rows.slice(0,200).map(row=>`<p class="note">${stamp(row.start)}—${stamp(row.end)} · ${row.reason==='no_speech'?'未检测到人声，请试听核对':'已用本机 Whisper small 识别，请校对'}</p>`).join('')}${rows.length>200?'<p class="note">完整位置请查看逐字稿 JSON。</p>':''}</details>`;
 }
 
-export async function showVideoSubtitles(ctx,initialDocument=null){
+export async function showVideoSubtitles(ctx,initialDocument=null,taskId=null){
  const {modal,open,on,request,report,toast,download,read,write,remove,submit,base}=ctx;
  if(ctx.version<11){open('生成字幕','<p class="note">请打开最新版“听页电脑转写.exe”，再使用字幕生成功能。原有电脑任务可以继续处理。</p>');return;}
- const pending=(await read('settings',KEY))?.value;
+ const stored=(await read('settings',KEY))?.value;
+ const pending=taskId&&stored?.id!==taskId?{id:taskId,mode:'original'}:stored;
  open('生成字幕',`<p class="note">粘贴视频网址，或选择电脑上的视频、音频文件，生成 SRT / VTT 字幕。网站要求登录或验证时，可以选择本地视频。</p><label for="video-source">字幕来源</label><select id="video-source"><option value="url">视频网址</option><option value="file">本地视频</option>${ctx.version>=16?'<option value="audio">本地音频</option>':''}<option value="transcript">已有 / 修订后的逐字稿</option></select><div id="video-url-group"><label for="video-url">视频页面或直链</label><input id="video-url" type="url" placeholder="https://…" autocomplete="off" spellcheck="false"></div><div id="video-file-group" hidden><label for="video-file">选择视频文件</label><input id="video-file" type="file" accept="video/*,.mp4,.mov,.mkv,.webm,.m4v,.avi,.ts,.flv"></div><div id="audio-file-group" hidden><label for="subtitle-audio-file">选择音频文件</label><input id="subtitle-audio-file" type="file" accept="audio/*,.mp3,.m4a,.wav,.flac,.ogg,.opus,.aac"><p class="note">支持 MP3、M4A、WAV、FLAC、OGG、OPUS、AAC。字幕使用原音频文件名。</p></div><div id="video-transcript-group" hidden><label for="video-transcript">选择逐字稿 JSON</label><input id="video-transcript" type="file" accept=".json,application/json"></div><div id="video-asr-options"><label for="video-language">音频语言</label><select id="video-language"><option value="ja">日语 · MOSS</option><option value="en">英语</option><option value="fr">法语</option></select><label for="video-mode">生成内容</label><select id="video-mode">${OPTIONS}</select><div id="video-translation-options" hidden><label for="video-engine">中文翻译方式</label><select id="video-engine"><option value="quality">高质量 · 结合上下文</option><option value="fast">快速 · 逐句翻译</option></select><label for="video-glossary">人名和术语（可选）</label><textarea id="video-glossary" rows="2" maxlength="5000" placeholder="一行一条，例如：Noriko = Noriko"></textarea></div><p class="note">网址处理需要联网；本地文件与已准备好的模型可以离线使用。单个文件最多 2 GB、6 小时。可查看每一步进度并取消。</p></div>${ctx.version>=15?'<p class="note">日语字幕逐段保存识别进度，失败的小段会自动拆短重试。未完成任务可继续，暂存音频仅在本机保留七天。</p>':''}<button class="primary full section-title" id="start-video">开始生成字幕</button><div id="video-result" role="status"></div><button class="secondary full section-title" id="new-video" hidden>处理另一个文件</button>`);
  const root=modal.querySelector('#video-result'),alive=()=>modal.open&&modal.querySelector('#video-result')===root;
  const $=selector=>modal.querySelector(selector);
  let id=pending?.id||null,timer=null,upload=null,cancelled=false,currentDocument=initialDocument||pending?.document||null,pendingMode=pending?.mode||'original';
  const monitor=mountJobMonitor(modal,'video-result',true,async()=>{
-  cancelled=true;await request(`api/jobs/${id}/cancel`,{});monitor.cancelling();
+  cancelled=true;const response=await request(`api/jobs/${id}/cancel`,{});
+  if(response.state==='cancelled')monitor.finish();else monitor.cancelling();
   if(upload)upload.abort();else{clearTimeout(timer);await poll();}
  });
  on('#video-source','change',()=>{
@@ -29,7 +31,7 @@ export async function showVideoSubtitles(ctx,initialDocument=null){
   $('#start-video').textContent=type==='transcript'?'读取逐字稿并导出字幕':'开始生成字幕';
  });
  on('#video-mode','change',()=>$('#video-translation-options').hidden=$('#video-mode').value==='original');
- on('#new-video','click',async()=>{clearTimeout(timer);await remove('settings',KEY);await showVideoSubtitles(ctx);});
+ on('#new-video','click',async()=>{clearTimeout(timer);const url=new URL(location.href);if(url.searchParams.has('subtitleJob')){url.searchParams.delete('subtitleJob');history.replaceState(history.state,'',url);}await remove('settings',KEY);await showVideoSubtitles(ctx);});
  async function showResult(document,mode='original'){
   if(!alive())return;
   validateTranscript(document);currentDocument=document;monitor.start();monitor.finish();$('#new-video').hidden=false;
