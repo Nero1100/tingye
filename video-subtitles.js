@@ -1,9 +1,15 @@
-import {mountJobMonitor,jobProgress,terminalJob} from './job-monitor.js?v=2026.10.10.1';
-import {validateTranscript} from './validate.js?v=2026.10.10.1';
+import {mountJobMonitor,jobProgress,terminalJob} from './job-monitor.js?v=2026.10.10.2';
+import {validateTranscript} from './validate.js?v=2026.10.10.2';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const MODES=[['original','日语 / 原文字幕'],['chinese','中文字幕'],['bilingual','原文＋中文双语字幕']];
 const OPTIONS=MODES.map(([id,label])=>`<option value="${id}">${label}</option>`).join('');
 const KEY='video-subtitle-job';
+export function recognitionReviewSummary(document){
+ const rows=Array.isArray(document.recognition_reviews)?document.recognition_reviews.filter(row=>row&&Number.isFinite(row.start)&&Number.isFinite(row.end)&&row.start>=0&&row.end>row.start&&row.end<=document.duration+.01&&['no_speech','backup_asr'].includes(row.reason)):[];
+ if(!rows.length)return '';
+ const stamp=time=>`${Math.floor(time/60)}:${String(Math.floor(time%60)).padStart(2,'0')}`;
+ return `<details class="section-title"><summary>需试听校对：${rows.length} 处</summary><p class="note">以下小段未能由 MOSS 正常完成。未检测到人声的部分没有生成字幕；备用识别的句子需要校对。这些位置会保留在逐字稿 JSON 中。</p>${rows.slice(0,200).map(row=>`<p class="note">${stamp(row.start)}—${stamp(row.end)} · ${row.reason==='no_speech'?'未检测到人声，请试听核对':'已用本机 Whisper small 识别，请校对'}</p>`).join('')}${rows.length>200?'<p class="note">完整位置请查看逐字稿 JSON。</p>':''}</details>`;
+}
 
 export async function showVideoSubtitles(ctx,initialDocument=null){
  const {modal,open,on,request,report,toast,download,read,write,remove,submit,base}=ctx;
@@ -28,6 +34,7 @@ export async function showVideoSubtitles(ctx,initialDocument=null){
   if(!alive())return;
   validateTranscript(document);currentDocument=document;monitor.start();monitor.finish();$('#new-video').hidden=false;
   root.innerHTML=`<strong>${esc(document.title||'字幕')} · ${document.segments.length} 句</strong>${document.translation_warning?'<p class="note">中文翻译未完成，可以先导出原文字幕。中文与双语字幕需要完整译文。</p>':''}<label for="subtitle-mode">字幕内容</label><select id="subtitle-mode">${OPTIONS}</select><label for="subtitle-format">字幕格式</label><select id="subtitle-format"><option value="srt">SRT · 通用字幕文件</option><option value="vtt">WebVTT · 网页字幕文件</option></select><details class="section-title"><summary>调整时间</summary><label for="subtitle-offset">整体偏移（秒，正数延后，负数提前）</label><input id="subtitle-offset" type="number" min="-600" max="600" step="0.1" value="0"></details><label for="subtitle-preview">字幕预览</label><textarea id="subtitle-preview" rows="7" readonly spellcheck="false"></textarea><p class="note" id="subtitle-export-status"></p><button class="primary full" id="export-video-subtitle">导出字幕文件</button><div class="stack section-title"><button class="secondary full" id="edit-video-transcript">校对原文与译文</button><button class="secondary full" id="save-video-transcript">保存逐字稿 JSON</button><button class="secondary full" id="video-export-location">字幕保存位置</button></div><p class="note">已设置保存文件夹时，字幕会直接保存到那里；否则由浏览器下载。修订后的逐字稿也可以从这个入口重新生成字幕。</p>`;
+  root.insertAdjacentHTML('afterbegin',recognitionReviewSummary(document));
   $('#subtitle-mode').value=mode;
   let previewSerial=0,selectedMode=mode;
   const payload=()=>({transcript:currentDocument,mode:$('#subtitle-mode').value,format:$('#subtitle-format').value,offset:Number($('#subtitle-offset').value)});

@@ -7,8 +7,9 @@ export function jobProgress(job){
  const alignment=job.alignment_chunks_total?`已对齐 ${job.alignment_chunks_completed||0} / ${job.alignment_chunks_total} 个原稿片段`:'';
  const phase=job.state==='waiting'?'等待识别模型空闲':job.state==='cancelling'?'正在停止识别进程':'当前步骤正在运行';
  const tokens=job.generated_tokens?`第 ${job.chunk_number||1} 段 · 已生成 ${job.generated_tokens} 个识别标记`:'';
+ const reviews=job.recognition_review_count?`已标记 ${job.recognition_review_count} 处供完成后试听校对`:'';
  const details=job.state==='translating'?sentences:alignment||audio;
- return `<div class="job-phase"><strong>${esc(job.message||'等待处理')}</strong><progress max="100" ${job.progress_indeterminate?'':`value="${job.progress||0}"`}></progress><p class="note">${job.progress||0}%${job.progress_indeterminate?' · '+phase:''}${job.elapsed?` · 已用时 ${clock(job.elapsed)}`:''}</p>${details?`<p class="note">${esc(details)}</p>`:''}${tokens?`<p class="note">${esc(tokens)}</p>`:''}</div>`;
+ return `<div class="job-phase"><strong>${esc(job.message||'等待处理')}</strong><progress max="100" ${job.progress_indeterminate?'':`value="${job.progress||0}"`}></progress><p class="note">${job.progress||0}%${job.progress_indeterminate?' · '+phase:''}${job.elapsed?` · 已用时 ${clock(job.elapsed)}`:''}</p>${details?`<p class="note">${esc(details)}</p>`:''}${tokens?`<p class="note">${esc(tokens)}</p>`:''}${reviews?`<p class="note">${esc(reviews)}</p>`:''}</div>`;
 }
 export function mountJobMonitor(modal,resultId,canCancel,onCancel){
  const result=modal.querySelector('#'+resultId),head=modal.querySelector('.dialog-head'),options=document.createElement('div');
