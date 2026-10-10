@@ -1,14 +1,15 @@
-import {mountJobMonitor,jobProgress,terminalJob} from './job-monitor.js?v=2026.10.10.3';
-import {validateTranscript} from './validate.js?v=2026.10.10.3';
+import {mountJobMonitor,jobProgress,terminalJob} from './job-monitor.js?v=2026.10.10.4';
+import {validateTranscript} from './validate.js?v=2026.10.10.4';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const MODES=[['original','日语 / 原文字幕'],['chinese','中文字幕'],['bilingual','原文＋中文双语字幕']];
 const OPTIONS=MODES.map(([id,label])=>`<option value="${id}">${label}</option>`).join('');
 const KEY='video-subtitle-job';
 export function recognitionReviewSummary(document){
- const rows=Array.isArray(document.recognition_reviews)?document.recognition_reviews.filter(row=>row&&Number.isFinite(row.start)&&Number.isFinite(row.end)&&row.start>=0&&row.end>row.start&&row.end<=document.duration+.01&&['no_speech','backup_asr'].includes(row.reason)):[];
+ const rows=Array.isArray(document.recognition_reviews)?document.recognition_reviews.filter(row=>row&&Number.isFinite(row.start)&&Number.isFinite(row.end)&&row.start>=0&&row.end>row.start&&row.end<=document.duration+.01&&['no_speech','backup_asr','unrecognized_speech'].includes(row.reason)):[];
  if(!rows.length)return '';
  const stamp=time=>`${Math.floor(time/60)}:${String(Math.floor(time%60)).padStart(2,'0')}`;
- return `<details class="section-title"><summary>需试听校对：${rows.length} 处</summary><p class="note">以下小段未能由 MOSS 正常完成。未检测到人声的部分没有生成字幕；备用识别的句子需要校对。这些位置会保留在逐字稿 JSON 中。</p>${rows.slice(0,200).map(row=>`<p class="note">${stamp(row.start)}—${stamp(row.end)} · ${row.reason==='no_speech'?'未检测到人声，请试听核对':'已用本机 Whisper small 识别，请校对'}</p>`).join('')}${rows.length>200?'<p class="note">完整位置请查看逐字稿 JSON。</p>':''}</details>`;
+ const labels={no_speech:'未检测到人声，请试听核对',backup_asr:'已用本机 Whisper small 识别，请校对',unrecognized_speech:'识别不清，未生成字幕，请试听并补写'};
+ return `<details class="section-title"><summary>需试听校对：${rows.length} 处</summary><p class="note">以下小段未能由 MOSS 正常完成。未检测到人声或仍识别不清的部分没有生成字幕；备用识别的句子需要校对。这些位置会保留在逐字稿 JSON 中。</p>${rows.slice(0,200).map(row=>`<p class="note">${stamp(row.start)}—${stamp(row.end)} · ${labels[row.reason]}</p>`).join('')}${rows.length>200?'<p class="note">完整位置请查看逐字稿 JSON。</p>':''}</details>`;
 }
 
 export async function showVideoSubtitles(ctx,initialDocument=null,taskId=null){
