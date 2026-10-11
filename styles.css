@@ -175,3 +175,36 @@ body{background:var(--bg)}
 @media(max-width:360px){.offline-dialog[open]{padding:18px}.offline-manager .copy-filters select{width:105px}.offline-summary strong{font-size:1.15rem}.offline-manager .copy-footer{gap:8px}}@media(max-height:600px){.offline-dialog[open]{overflow:auto;height:auto}.offline-manager{overflow:visible;flex:none}.offline-manager .copy-list{flex:none;max-height:32dvh;min-height:100px}}
 
 @media(max-width:600px){.transcript-editor .editor-footer .actions{grid-template-columns:1fr 1fr}.transcript-editor #export-editor-file{grid-column:auto}.transcript-editor .editor-footer button{padding:10px 12px;min-height:44px;font-size:.88rem}.transcript-editor .editor-footer{gap:8px}}
+
+/* Reading controls stay beside their toolbar anchor without interrupting playback. */
+.reading-display{position:fixed;inset:auto;margin:0;padding:0;width:clamp(270px,68vw,310px);max-width:calc(100vw - 24px);border:1px solid var(--border);border-radius:26px;background:var(--surface);color:var(--text);box-shadow:0 8px 28px #00000014;overflow:visible}
+.reading-display::before{content:"";position:absolute;top:-9px;left:calc(var(--reading-arrow) - 8px);width:16px;height:16px;transform:rotate(45deg);border-top:1px solid var(--border);border-left:1px solid var(--border);border-radius:3px 0 0;background:var(--surface);pointer-events:none}
+.reading-content{padding:20px;max-height:var(--reading-maxheight);overflow-y:auto;overscroll-behavior:contain;border-radius:inherit;scrollbar-width:thin}
+.reading-section-title{display:flex;align-items:center;gap:12px;font-size:.9rem;font-weight:500;line-height:1.5;margin:15px 0 10px}
+.reading-section-title:first-child{margin-top:0;margin-bottom:9px}
+.reading-section-title::after{content:"";flex:1;border-top:1px solid var(--border)}
+.reading-option-row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:51px;font-size:.94rem}
+.reading-option-row>span{flex:none}
+.reading-size-row{border-bottom:1px solid var(--border)}
+.reading-segments{display:flex;width:147px;flex:none;border:1px solid var(--border);border-radius:99px;overflow:hidden}
+.reading-segments button{flex:1;min-width:0;min-height:36px;padding:7px 8px;font-size:.8rem;white-space:nowrap;border-radius:0}
+.reading-segments button[aria-checked=true]{background:var(--text);color:var(--surface)}
+.reading-segments button:focus-visible{outline-offset:-4px;outline-width:2px}
+.reading-font-row .reading-segments{width:119px}
+.reading-color-row{font-size:.94rem;margin:12px 0 16px}
+.reading-colors{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:4px}
+.reading-colors button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:58px;padding:7px 0 0;border-radius:8px}
+.reading-swatch{display:block;width:22px;height:22px;border-radius:50%;background:var(--text)}
+.reading-swatch.vermilion{background:#9b4626}.reading-swatch.pine{background:#42613a}.reading-swatch.blue{background:#2e5b70}.reading-swatch.ochre{background:#805d17}
+[data-theme=dark] .reading-swatch.vermilion{background:#efad91}[data-theme=dark] .reading-swatch.pine{background:#b0d09e}[data-theme=dark] .reading-swatch.blue{background:#a2cce0}[data-theme=dark] .reading-swatch.ochre{background:#e7ca87}
+.reading-colors button[aria-checked=true] .reading-swatch{outline:1.5px solid var(--text);outline-offset:3px}
+.reading-colors small{font-size:.75rem;line-height:1.3;color:var(--muted)}
+.reading-extras{margin-top:10px;padding-top:12px;border-top:1px solid var(--border)}
+.reading-follow-control{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0;font-size:.8rem;font-weight:400;min-height:32px}
+.reading-follow-control input{appearance:none;flex:none;width:34px;height:22px;border:1px solid var(--border);border-radius:99px;background:var(--soft);margin:0;position:relative;cursor:pointer}
+.reading-follow-control input::before{content:"";position:absolute;width:16px;height:16px;top:2px;left:2px;border-radius:50%;background:var(--surface);box-shadow:0 1px 3px #0002}
+.reading-follow-control input:checked{background:var(--text);border-color:var(--text)}
+.reading-follow-control input:checked::before{left:14px}
+.reading-actions{display:flex;gap:8px;margin-top:10px}
+.reading-actions button{flex:1;min-height:38px;padding:8px 6px;border:1px solid var(--border);border-radius:99px;font-size:.78rem;white-space:nowrap}
+@media(max-width:360px){.reading-content{padding:18px}.reading-option-row{font-size:.88rem;gap:8px}.reading-segments{width:143px}}

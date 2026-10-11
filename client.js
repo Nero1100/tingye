@@ -1,46 +1,47 @@
+import {openReadingDisplay} from './reading-display.js?v=2026.10.10.5';
 import {markTranscriptDraft} from './transcript-revisions.js';
-import {showVideoSubtitles} from './video-subtitles.js?v=2026.10.10.4';
-import {showReferenceAlignment} from './reference-alignment.js?v=2026.10.10.4';
-import {PODCASTS,podcastShow,podcastScope,isPodcastScope,streamURL,podcastRecord,SUBSCRIPTIONS,podcastSubscriptions} from './podcasts.js?v=2026.10.10.4';
-import {FAVORITES,FAVORITES_SCOPE,validateFavorites,favoriteEpisodes,restoreFavorites,heartIcon} from './favorites.js?v=2026.10.10.4';
-import {PodcastCovers} from './podcast-covers.js?v=2026.10.10.4';
-import {PodcastOffline} from './podcast-offline.js?v=2026.10.10.4';
-import {downloadLabel,showOfflineManager} from './podcast-download-ui.js?v=2026.10.10.4';
-import {MediaControls} from './media-controls.js?v=2026.10.10.4';
-import {PodcastLibrary,audioTabs} from './podcast-library.js?v=2026.10.10.4';
-import {bindBookmarkPress} from './bookmark-press.js?v=2026.10.10.4';
-import {bookmarkKey,bookmarkedSentence,sentenceBookmark,sentenceCards,changeSentenceBookmark} from './sentence-cards.js?v=2026.10.10.4';
-import {plainTranscriptText,plainTranscriptName} from './plain-text.js?v=2026.10.10.4';
-import {TranscriptSync} from './transcript-sync.js?v=2026.10.10.4';
-import {syncPanel,showSyncUI,showSyncBatchUI} from './sync-ui.js?v=2026.10.10.4';
-import {packageTranscript,namedTranscript} from './cloud-transcript.js?v=2026.10.10.4';
-import {showCopyManager} from './audio-copies.js?v=2026.10.10.4';
-import {submitLocalForm} from './local-upload.js?v=2026.10.10.4';
-import {mountJobMonitor,jobProgress,terminalJob} from './job-monitor.js?v=2026.10.10.4';
-import {planTranscriptImports,phoneInterface,transcriptExportName} from './transcript-batch.js?v=2026.10.10.4';
-import {clearModelDownloads,clearBrowserTranslation} from './browser-model-cleanup.js?v=2026.10.10.4';
-import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration,replaceEpisodeTranscripts,deleteAudioCopies,applyCloudTranscript,acknowledgeTranscriptPublication,updateBookmarks,upsertPodcastEpisode,setEpisodeFavorite} from './db.js?v=2026.10.10.4';
-import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.10.4';
+import {showVideoSubtitles} from './video-subtitles.js?v=2026.10.10.5';
+import {showReferenceAlignment} from './reference-alignment.js?v=2026.10.10.5';
+import {PODCASTS,podcastShow,podcastScope,isPodcastScope,streamURL,podcastRecord,SUBSCRIPTIONS,podcastSubscriptions} from './podcasts.js?v=2026.10.10.5';
+import {FAVORITES,FAVORITES_SCOPE,validateFavorites,favoriteEpisodes,restoreFavorites,heartIcon} from './favorites.js?v=2026.10.10.5';
+import {PodcastCovers} from './podcast-covers.js?v=2026.10.10.5';
+import {PodcastOffline} from './podcast-offline.js?v=2026.10.10.5';
+import {downloadLabel,showOfflineManager} from './podcast-download-ui.js?v=2026.10.10.5';
+import {MediaControls} from './media-controls.js?v=2026.10.10.5';
+import {PodcastLibrary,audioTabs} from './podcast-library.js?v=2026.10.10.5';
+import {bindBookmarkPress} from './bookmark-press.js?v=2026.10.10.5';
+import {bookmarkKey,bookmarkedSentence,sentenceBookmark,sentenceCards,changeSentenceBookmark} from './sentence-cards.js?v=2026.10.10.5';
+import {plainTranscriptText,plainTranscriptName} from './plain-text.js?v=2026.10.10.5';
+import {TranscriptSync} from './transcript-sync.js?v=2026.10.10.5';
+import {syncPanel,showSyncUI,showSyncBatchUI} from './sync-ui.js?v=2026.10.10.5';
+import {packageTranscript,namedTranscript} from './cloud-transcript.js?v=2026.10.10.5';
+import {showCopyManager} from './audio-copies.js?v=2026.10.10.5';
+import {submitLocalForm} from './local-upload.js?v=2026.10.10.5';
+import {mountJobMonitor,jobProgress,terminalJob} from './job-monitor.js?v=2026.10.10.5';
+import {planTranscriptImports,phoneInterface,transcriptExportName} from './transcript-batch.js?v=2026.10.10.5';
+import {clearModelDownloads,clearBrowserTranslation} from './browser-model-cleanup.js?v=2026.10.10.5';
+import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration,replaceEpisodeTranscripts,deleteAudioCopies,applyCloudTranscript,acknowledgeTranscriptPublication,updateBookmarks,upsertPodcastEpisode,setEpisodeFavorite} from './db.js?v=2026.10.10.5';
+import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.10.5';
 import {lexicalWords,dictionaryText} from './lexicon.js';
-import {initialWordSelection,selectedWord,adjustWordSelection,learningCandidates} from './word-selection.js?v=2026.10.10.4';
-import {Practice,practiceOptions} from './practice.js?v=2026.10.10.4';
+import {initialWordSelection,selectedWord,adjustWordSelection,learningCandidates} from './word-selection.js?v=2026.10.10.5';
+import {Practice,practiceOptions} from './practice.js?v=2026.10.10.5';
 import {palettes,applyTheme} from './theme.js';
 import {hasKanji,rubyParts,setRubyReading,prepareReadings} from './furigana.js';
-import {editedSentence,changedCards,replacementTranscript} from './transcript-edit.js?v=2026.10.10.4';
-import {splitChoices,splitSentence,mergeSentences,resegmentCards} from './segment-edit.js?v=2026.10.10.4';
-import {boundaryWords,suggestSentences} from './sentence-boundaries.js?v=2026.10.10.4';
-import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.10.4';
-import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.10.4';
-import {validatePlaybackLists,reconcilePlaybackList,selectPlaybackEpisodes,reorderPlaybackList,restorePlaybackLists,includePlaybackEpisode} from './playback-list.js?v=2026.10.10.4';
-import {bindReaderGestures} from './reader-gestures.js?v=2026.10.10.4';
+import {editedSentence,changedCards,replacementTranscript} from './transcript-edit.js?v=2026.10.10.5';
+import {splitChoices,splitSentence,mergeSentences,resegmentCards} from './segment-edit.js?v=2026.10.10.5';
+import {boundaryWords,suggestSentences} from './sentence-boundaries.js?v=2026.10.10.5';
+import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.10.5';
+import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.10.5';
+import {validatePlaybackLists,reconcilePlaybackList,selectPlaybackEpisodes,reorderPlaybackList,restorePlaybackLists,includePlaybackEpisode} from './playback-list.js?v=2026.10.10.5';
+import {bindReaderGestures} from './reader-gestures.js?v=2026.10.10.5';
 import {bindDragOrder,replaceSubsetOrder} from './drag-order.js';
 import {cardCategory,cardCategories,selectedCards,cardSentence} from './cards.js';
-import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.10.4';
-import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.10.4';
+import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.10.5';
+import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.10.5';
 import {validateFolders,folderEpisodes,folderMembership,restoreFolders,makeFolderCover} from './folders.js';
-import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.10.4';
-import {ListPosition} from './list-position.js?v=2026.10.10.4';
-import {appRoute,setAppRoute,backAppRoute,bindHomeEdgeGuard,bindRouteRestore} from './navigation.js?v=2026.10.10.4';
+import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.10.5';
+import {ListPosition} from './list-position.js?v=2026.10.10.5';
+import {appRoute,setAppRoute,backAppRoute,bindHomeEdgeGuard,bindRouteRestore} from './navigation.js?v=2026.10.10.5';
 const phone=phoneInterface(navigator.userAgent,navigator.maxTouchPoints);
 const main=document.querySelector('#main'),modal=document.querySelector('#modal');
 let audio=document.querySelector('#audio');
@@ -50,7 +51,7 @@ let episode=null,objectURL=null,view='library',filter='',current=-1,wordCurrent=
 const originalFiles=new Map(),uncoveredSentences=new Set();
 let openSerial=0,audioUnbind=()=>{},audioGeneration=0,playbackMime='',playbackSource='',libraryMode='local',podcastShowId='';
 const libraryPositions=new ListPosition(),shuffleQueue=new ShuffleQueue();
-let playlistSheet=null,libraryRenderSerial=0,mediaControls=null,downloadManagerDispose=null;
+let readingDisplay=null,playlistSheet=null,libraryRenderSerial=0,mediaControls=null,downloadManagerDispose=null;
 let favoriteIds=validateFavorites((await read('settings',FAVORITES))?.value||[]),favoriteQuery='';
 function rememberLibrary(){libraryPositions.remember(main,main.dataset.libraryPositionKey);}
 function reportPlayback(error){if(streamURL(episode)&&navigator.onLine===false&&!podcastOffline.ready(episode.id)){toast('这集尚未下载，请联网后播放或下载。');return;}const message=streamURL(episode)&&((error?.name==='NotSupportedError')||audio.error)?'播客连接暂时不可用，请检查网络后重试。':playbackError(error,audio.error);if(message)toast(message);}
@@ -131,9 +132,9 @@ async function toggleListeningMask(){
 }
 function resetClip(){cancelPractice();if(clipEnd!==null)audio.pause();clipEnd=null;}
 function closeModal(){if(modalCanClose&&!modalCanClose())return;downloadManagerDispose?.();downloadManagerDispose=null;playlistSheet?.dispose();playlistSheet=null;modalCanClose=null;modal.classList.remove('transcript-editor','word-sheet','practice-sheet','processing-dialog','copy-manager','offline-dialog');if(immersive){main.inert=true;if($('.immersive-mode'))$('.immersive-mode').inert=false;}resetClip();modalSerial++;modal.close();clearInterval(jobTimer);jobTimer=null;queueMicrotask(()=>transcriptSync.drain().catch(error=>console.warn(error.message)));}
-function openModal(title,body){downloadManagerDispose?.();downloadManagerDispose=null;closeSpeedMenu();playlistSheet?.dispose();playlistSheet=null;modalCanClose=null;modal.classList.remove('transcript-editor','word-sheet','practice-sheet','processing-dialog','copy-manager','offline-dialog');if(immersive&&$('.immersive-mode'))$('.immersive-mode').inert=true;resetClip();modalSerial++;clearInterval(jobTimer);jobTimer=null;modal.innerHTML=`<div class="dialog-head"><h2>${esc(title)}</h2><button id="close-modal" aria-label="关闭">×</button></div>${body}`;if(!modal.open)modal.showModal();on('#close-modal','click',()=>{if(playlistSheet)playlistSheet.dismiss();else closeModal();});}
+function openModal(title,body){closeReadingDisplay();downloadManagerDispose?.();downloadManagerDispose=null;closeSpeedMenu();playlistSheet?.dispose();playlistSheet=null;modalCanClose=null;modal.classList.remove('transcript-editor','word-sheet','practice-sheet','processing-dialog','copy-manager','offline-dialog');if(immersive&&$('.immersive-mode'))$('.immersive-mode').inert=true;resetClip();modalSerial++;clearInterval(jobTimer);jobTimer=null;modal.innerHTML=`<div class="dialog-head"><h2>${esc(title)}</h2><button id="close-modal" aria-label="关闭">×</button></div>${body}`;if(!modal.open)modal.showModal();on('#close-modal','click',()=>{if(playlistSheet)playlistSheet.dismiss();else closeModal();});}
 modal.addEventListener('cancel',event=>{downloadManagerDispose?.();downloadManagerDispose=null;if(playlistSheet){event.preventDefault();return;}if(modalCanClose&&!modalCanClose()){event.preventDefault();return;}modalCanClose=null;modal.classList.remove('transcript-editor','word-sheet','practice-sheet','processing-dialog','copy-manager','offline-dialog');if(immersive)main.inert=true;if(immersive&&$('.immersive-mode'))$('.immersive-mode').inert=false;resetClip();modalSerial++;clearInterval(jobTimer);jobTimer=null;});
-function setNav(){closeSpeedMenu();document.body.classList.toggle('player-open',view==='player');document.querySelectorAll('[data-nav]').forEach(b=>b.classList.toggle('active',b.dataset.nav===view));}
+function setNav(){closeReadingDisplay();closeSpeedMenu();document.body.classList.toggle('player-open',view==='player');document.querySelectorAll('[data-nav]').forEach(b=>b.classList.toggle('active',b.dataset.nav===view));}
 function download(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
 function exportPlainText(document){download(new Blob([plainTranscriptText(document)],{type:'text/plain;charset=utf-8'}),plainTranscriptName(document));}
 async function showPlainJapaneseText(id){
@@ -530,6 +531,7 @@ async function choosePlaylistEpisodes(){
 }
 function closeSpeedMenu(){const menu=$('#speed-menu');if(menu){menu.release?.();if(menu.matches(':popover-open'))menu.hidePopover();menu.remove();}}
 function speedSettings(anchor){
+ closeReadingDisplay();
  if($('#speed-menu')){closeSpeedMenu();return;}
  const menu=document.createElement('div'),controller=new AbortController(),events={signal:controller.signal};
  menu.id='speed-menu';menu.className='speed-menu';menu.setAttribute('popover','manual');menu.setAttribute('role','menu');menu.setAttribute('aria-label','播放速度');
@@ -570,9 +572,17 @@ async function toggleTranslation(){
  if(prefs.translation&&!episode.segments[Math.max(0,current)]?.translation)toast('这一句还没有译文，其他句子的译文可以正常显示');
  if(immListening)toast(prefs.translation?'译文已开启；精听遮挡点开后显示':'译文已关闭');
 }
+function closeReadingDisplay(){const display=readingDisplay;readingDisplay=null;display?.close();}
 function readingSettings(){
- openModal('阅读显示',`<div class="reading-options"><h3>字号</h3>${[['sourceSize','原文'],['translationSize','中文']].map(([key,label])=>`<label>${label}</label><div class="segmented">${[[1,'标准'],[1.15,'舒适'],[1.3,'大']].map(([v,n])=>`<button data-reading-pref="${key}" data-value="${v}" class="${prefs[key]===v?'selected':''}">${n}</button>`).join('')}</div>`).join('')}<h3>字色</h3>${[['sourceColor','原文'],['translationColor','译文']].map(([key,label])=>`<label>${label}</label><div class="ink-options">${[['ink','墨','#27261f'],['vermilion','朱','#9b4626'],['pine','松','#42613a'],['blue','靛','#2e5b70'],['ochre','芥','#805d17']].map(([v,n,c])=>`<button data-reading-pref="${key}" data-value="${v}" class="${prefs[key]===v?'selected':''}" aria-label="${label}字色${n}"><i style="background:${c}"></i><small>${n}</small></button>`).join('')}</div>`).join('')}<h3>日语字体</h3>${[['font','正文'],['immFont','沉浸']].map(([key,label])=>`<label>${label}</label><div class="segmented">${[['mincho','明朝'],['gothic','黑体']].map(([v,n])=>`<button data-reading-pref="${key}" data-value="${v}" class="${prefs[key]===v?'selected':''}">${n}</button>`).join('')}</div>`).join('')}<label class="checkbox-line"><input id="reading-follow" type="checkbox" ${follow?'checked':''}>播放时跟随当前句</label><div class="actions"><button class="secondary" id="reader-practice">精听设置</button><button class="secondary" id="reader-manage">管理与校对</button></div></div>`);
- document.querySelectorAll('[data-reading-pref]').forEach(b=>b.onclick=async()=>{const key=b.dataset.readingPref;prefs[key]=key.endsWith('Size')?Number(b.dataset.value):b.dataset.value;await savePrefs();readingSettings();});on('#reading-follow','change',e=>{if(e.target.checked)resumeFollow();else{follow=false;updateBrowseUI();}});on('#reader-practice','click',practiceSettings);on('#reader-manage','click',audioMenu);
+ if(readingDisplay){closeReadingDisplay();return;}
+ closeSpeedMenu();
+ readingDisplay=openReadingDisplay({
+  anchor:$('#reading-settings'),prefs,follow,
+  onPreference:async(key,value)=>{prefs[key]=value;await savePrefs();},
+  onFollow:checked=>{if(checked)resumeFollow();else{follow=false;updateBrowseUI();}},
+  onPractice:practiceSettings,onManage:audioMenu,
+  onClose:()=>{readingDisplay=null;},report
+ });
 }
 function practiceSettings(){
  audio.pause();cancelPractice();
@@ -693,6 +703,7 @@ async function recoverSound(){
 }
 function setImmersiveAccess(active){document.body.style.overflow=active?'hidden':'';main.inert=active;const header=document.querySelector('.app-header');if(header)header.inert=active;document.querySelector('nav').inert=active;}
 function toggleImmersive(){
+ closeReadingDisplay();
  closeSpeedMenu();
  if(immersive){immersive=false;immListening=false;browseIndex=null;follow=true;setImmersiveAccess(false);$('.immersive-mode')?.remove();renderPlayer();return;}
  if(!episode.segments?.length){toast('请先导入逐字稿。');return;}
