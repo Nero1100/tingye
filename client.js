@@ -1,52 +1,54 @@
-import {openReadingDisplay} from './reading-display.js?v=2026.10.10.5';
+import {categoryField as categoryPickerField,bindCategoryField,rememberedCategory} from './category-picker.js?v=2026.10.11.1';
+import {openReadingDisplay} from './reading-display.js?v=2026.10.11.1';
 import {markTranscriptDraft} from './transcript-revisions.js';
-import {showVideoSubtitles} from './video-subtitles.js?v=2026.10.10.5';
-import {showReferenceAlignment} from './reference-alignment.js?v=2026.10.10.5';
-import {PODCASTS,podcastShow,podcastScope,isPodcastScope,streamURL,podcastRecord,SUBSCRIPTIONS,podcastSubscriptions} from './podcasts.js?v=2026.10.10.5';
-import {FAVORITES,FAVORITES_SCOPE,validateFavorites,favoriteEpisodes,restoreFavorites,heartIcon} from './favorites.js?v=2026.10.10.5';
-import {PodcastCovers} from './podcast-covers.js?v=2026.10.10.5';
-import {PodcastOffline} from './podcast-offline.js?v=2026.10.10.5';
-import {downloadLabel,showOfflineManager} from './podcast-download-ui.js?v=2026.10.10.5';
-import {MediaControls} from './media-controls.js?v=2026.10.10.5';
-import {PodcastLibrary,audioTabs} from './podcast-library.js?v=2026.10.10.5';
-import {bindBookmarkPress} from './bookmark-press.js?v=2026.10.10.5';
-import {bookmarkKey,bookmarkedSentence,sentenceBookmark,sentenceCards,changeSentenceBookmark} from './sentence-cards.js?v=2026.10.10.5';
-import {plainTranscriptText,plainTranscriptName} from './plain-text.js?v=2026.10.10.5';
-import {TranscriptSync} from './transcript-sync.js?v=2026.10.10.5';
-import {syncPanel,showSyncUI,showSyncBatchUI} from './sync-ui.js?v=2026.10.10.5';
-import {packageTranscript,namedTranscript} from './cloud-transcript.js?v=2026.10.10.5';
-import {showCopyManager} from './audio-copies.js?v=2026.10.10.5';
-import {submitLocalForm} from './local-upload.js?v=2026.10.10.5';
-import {mountJobMonitor,jobProgress,terminalJob} from './job-monitor.js?v=2026.10.10.5';
-import {planTranscriptImports,phoneInterface,transcriptExportName} from './transcript-batch.js?v=2026.10.10.5';
-import {clearModelDownloads,clearBrowserTranslation} from './browser-model-cleanup.js?v=2026.10.10.5';
-import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration,replaceEpisodeTranscripts,deleteAudioCopies,applyCloudTranscript,acknowledgeTranscriptPublication,updateBookmarks,upsertPodcastEpisode,setEpisodeFavorite} from './db.js?v=2026.10.10.5';
-import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.10.5';
+import {showVideoSubtitles} from './video-subtitles.js?v=2026.10.11.1';
+import {showReferenceAlignment} from './reference-alignment.js?v=2026.10.11.1';
+import {PODCASTS,podcastShow,podcastScope,isPodcastScope,streamURL,podcastRecord,SUBSCRIPTIONS,podcastSubscriptions} from './podcasts.js?v=2026.10.11.1';
+import {FAVORITES,FAVORITES_SCOPE,validateFavorites,favoriteEpisodes,restoreFavorites,heartIcon} from './favorites.js?v=2026.10.11.1';
+import {PodcastCovers} from './podcast-covers.js?v=2026.10.11.1';
+import {PodcastOffline} from './podcast-offline.js?v=2026.10.11.1';
+import {downloadLabel,showOfflineManager} from './podcast-download-ui.js?v=2026.10.11.1';
+import {MediaControls} from './media-controls.js?v=2026.10.11.1';
+import {PodcastLibrary,audioTabs} from './podcast-library.js?v=2026.10.11.1';
+import {bindBookmarkPress} from './bookmark-press.js?v=2026.10.11.1';
+import {bookmarkKey,bookmarkedSentence,sentenceBookmark,sentenceCards,changeSentenceBookmark} from './sentence-cards.js?v=2026.10.11.1';
+import {plainTranscriptText,plainTranscriptName} from './plain-text.js?v=2026.10.11.1';
+import {TranscriptSync} from './transcript-sync.js?v=2026.10.11.1';
+import {syncPanel,showSyncUI,showSyncBatchUI} from './sync-ui.js?v=2026.10.11.1';
+import {packageTranscript,namedTranscript} from './cloud-transcript.js?v=2026.10.11.1';
+import {showCopyManager} from './audio-copies.js?v=2026.10.11.1';
+import {submitLocalForm} from './local-upload.js?v=2026.10.11.1';
+import {mountJobMonitor,jobProgress,terminalJob} from './job-monitor.js?v=2026.10.11.1';
+import {planTranscriptImports,phoneInterface,transcriptExportName} from './transcript-batch.js?v=2026.10.11.1';
+import {clearModelDownloads,clearBrowserTranslation} from './browser-model-cleanup.js?v=2026.10.11.1';
+import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration,replaceEpisodeTranscripts,deleteAudioCopies,applyCloudTranscript,acknowledgeTranscriptPublication,updateBookmarks,upsertPodcastEpisode,setEpisodeFavorite} from './db.js?v=2026.10.11.1';
+import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.11.1';
 import {lexicalWords,dictionaryText} from './lexicon.js';
-import {initialWordSelection,selectedWord,adjustWordSelection,learningCandidates} from './word-selection.js?v=2026.10.10.5';
-import {Practice,practiceOptions} from './practice.js?v=2026.10.10.5';
+import {initialWordSelection,selectedWord,adjustWordSelection,learningCandidates} from './word-selection.js?v=2026.10.11.1';
+import {Practice,practiceOptions} from './practice.js?v=2026.10.11.1';
 import {palettes,applyTheme} from './theme.js';
 import {hasKanji,rubyParts,setRubyReading,prepareReadings} from './furigana.js';
-import {editedSentence,changedCards,replacementTranscript} from './transcript-edit.js?v=2026.10.10.5';
-import {splitChoices,splitSentence,mergeSentences,resegmentCards} from './segment-edit.js?v=2026.10.10.5';
-import {boundaryWords,suggestSentences} from './sentence-boundaries.js?v=2026.10.10.5';
-import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.10.5';
-import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.10.5';
-import {validatePlaybackLists,reconcilePlaybackList,selectPlaybackEpisodes,reorderPlaybackList,restorePlaybackLists,includePlaybackEpisode} from './playback-list.js?v=2026.10.10.5';
-import {bindReaderGestures} from './reader-gestures.js?v=2026.10.10.5';
+import {editedSentence,changedCards,replacementTranscript} from './transcript-edit.js?v=2026.10.11.1';
+import {splitChoices,splitSentence,mergeSentences,resegmentCards} from './segment-edit.js?v=2026.10.11.1';
+import {boundaryWords,suggestSentences} from './sentence-boundaries.js?v=2026.10.11.1';
+import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.11.1';
+import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.11.1';
+import {validatePlaybackLists,reconcilePlaybackList,selectPlaybackEpisodes,reorderPlaybackList,restorePlaybackLists,includePlaybackEpisode} from './playback-list.js?v=2026.10.11.1';
+import {bindReaderGestures} from './reader-gestures.js?v=2026.10.11.1';
 import {bindDragOrder,replaceSubsetOrder} from './drag-order.js';
 import {cardCategory,cardCategories,selectedCards,cardSentence} from './cards.js';
-import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.10.5';
-import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.10.5';
+import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.11.1';
+import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.11.1';
 import {validateFolders,folderEpisodes,folderMembership,restoreFolders,makeFolderCover} from './folders.js';
-import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.10.5';
-import {ListPosition} from './list-position.js?v=2026.10.10.5';
-import {appRoute,setAppRoute,backAppRoute,bindHomeEdgeGuard,bindRouteRestore} from './navigation.js?v=2026.10.10.5';
+import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.11.1';
+import {ListPosition} from './list-position.js?v=2026.10.11.1';
+import {appRoute,setAppRoute,backAppRoute,bindHomeEdgeGuard,bindRouteRestore} from './navigation.js?v=2026.10.11.1';
 const phone=phoneInterface(navigator.userAgent,navigator.maxTouchPoints);
 const main=document.querySelector('#main'),modal=document.querySelector('#modal');
 let audio=document.querySelector('#audio');
 const LANG={en:'英语',fr:'法语',ja:'日语'},GOTHIC='"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif',MINCHO='"Hiragino Mincho ProN","Yu Mincho",serif',BASE=new URL('./',import.meta.url);
 let prefs=validatePreferences((await read('settings','preferences'))?.value);
+let lastCardCategory=rememberedCategory(await read('settings','last-card-category'));
 let episode=null,objectURL=null,view='library',filter='',current=-1,wordCurrent=-1,immersive=false,follow=true,clipEnd=null,toastTimer,backend=false,jobTimer,modalSerial=0,revealed=false,modalCanClose=null,backendVersion=0,immListening=false,autoRevealSuppressed=-1;
 const originalFiles=new Map(),uncoveredSentences=new Set();
 let openSerial=0,audioUnbind=()=>{},audioGeneration=0,playbackMime='',playbackSource='',libraryMode='local',podcastShowId='';
@@ -449,7 +451,7 @@ async function toggleSentenceBookmark(index){
    const current=latest.segments?.find(s=>s.start===segment.start&&s.end===segment.end&&s.text===segment.text);
    if(!current)throw Error('这一句已更新，请重新打开逐字稿后收藏。');
    const saved=sentenceBookmark({...latest,bookmarks},current);removed=!!saved;
-   return saved?bookmarks.filter(b=>bookmarkedSentence(latest,b)!==current):[...bookmarks,{id:crypto.randomUUID(),time:current.start,end:current.end,text:current.text,note:'',category:'',due:Date.now(),level:0}];
+   return saved?bookmarks.filter(b=>bookmarkedSentence(latest,b)!==current):[...bookmarks,{id:crypto.randomUUID(),time:current.start,end:current.end,text:current.text,note:'',category:lastCardCategory,due:Date.now(),level:0}];
   });
   if(episode?.id===source.id){episode.bookmarks=updated.bookmarks;refreshSentenceBookmarks();}
   toast(removed?'已取消句子书签':'已收藏到句卡');
@@ -726,7 +728,12 @@ function renderImmersiveSentence(){
  document.querySelectorAll('[data-imm-neighbor]').forEach(b=>b.onclick=()=>browseSentence(Number(b.dataset.immNeighbor)));wordCurrent=-1;updateBrowseUI();
 }
 function categoryField(cards,value='',id='word-category'){
- return `<label for="${id}">分类</label><input id="${id}" list="card-category-options" maxlength="60" value="${esc(value)}" placeholder="例如：日常会话、旅行"><datalist id="card-category-options">${cardCategories(cards).map(name=>`<option value="${esc(name)}"></option>`).join('')}</datalist>`;
+ return categoryPickerField([...cards,{category:lastCardCategory}],value,id);
+}
+function bookmarkCategories(settings){return settings.filter(item=>item.id.startsWith('sentence-bookmarks/')&&Array.isArray(item.value)).flatMap(item=>item.value);}
+async function rememberCardCategory(value){
+ lastCardCategory=value;
+ await write('settings',{id:'last-card-category',value}).catch(error=>console.warn('分类记忆未保存：',error.message));
 }
 function playSentenceClip(range){
  cancelPractice();follow=true;browseIndex=null;current=-1;revealed=false;
@@ -734,13 +741,15 @@ function playSentenceClip(range){
 }
 async function showWord(si,wi){
  const source=episode,s=source.segments[si],serial=modalSerial;cancelPractice();audio.pause();
- const cards=await all('cards');if(episode?.id!==source.id||modalSerial!==serial)return;
+ const [cards,settings]=await Promise.all([all('cards'),all('settings')]);if(episode?.id!==source.id||modalSerial!==serial)return;
+ const categoryCards=[...cards,...bookmarkCategories(settings),...(source.bookmarks||[])];
  const initial=initialWordSelection(s,wi,source.language),drafts=new Map();let range={...initial},w=selectedWord(s,range,source.language),saved;
  const findSaved=word=>cards.find(c=>c.episodeId===source.id&&(c.lemma||c.text)===word.lemma);
  saved=findSaved(w);
  const context=()=>s.words.map(token=>token.text).join('').trim()===s.text.trim()?s.words.map((token,i)=>`${i===range.first?'<mark>':''}${esc(token.text)}${i===range.last?'</mark>':''}`).join(''):esc(s.text);
  const adjustControls=source.language==='ja'?`<details class="word-selection"><summary>调整选词范围</summary><div class="word-range-controls"><button class="secondary" data-word-range="first:-1">← 向前扩选</button><button class="secondary" data-word-range="last:1">向后扩选 →</button><button class="secondary" data-word-range="first:1">收回开头</button><button class="secondary" data-word-range="last:-1">收回结尾</button></div><button class="word-range-reset" id="reset-word-range">恢复最初选词</button></details>`:'';
- openModal(w.text,`<p class="word-reading"></p><div class="word-actions"><button class="primary" id="save-word">${saved?'更新词卡':'＋ 词卡'}</button></div><div class="playlist-rows word-sheet-body">${adjustControls}<section class="word-definition"><label for="word-note">释义 · 我的笔记</label><textarea id="word-note" rows="2" maxlength="5000" placeholder="补充中文释义，随词卡保存">${esc(saved?.note||'')}</textarea></section><section class="word-origin"><div class="word-section-title"><span>在这句里</span><small>${esc(source.title)}</small></div><p class="word-origin-source" lang="${source.language}">${context()}</p>${s.translation?`<p class="word-origin-translation">${esc(s.translation)}</p>${s.translationPending?'<small class="note">译文待更新</small>':''}`:''}<button class="secondary" id="listen-word">▶ 听原句</button></section><section class="word-category">${categoryField(cards,saved?.category||'')}</section>${episode?.id===source.id?'<button class="word-edit" id="edit-word-reading">修改原文与假名</button>':''}</div>`);
+ openModal(w.text,`<p class="word-reading"></p><div class="word-actions"><button class="primary" id="save-word">${saved?'更新词卡':'＋ 词卡'}</button></div><div class="playlist-rows word-sheet-body">${adjustControls}<section class="word-definition"><label for="word-note">释义 · 我的笔记</label><textarea id="word-note" rows="2" maxlength="5000" placeholder="补充中文释义，随词卡保存">${esc(saved?.note||'')}</textarea></section><section class="word-origin"><div class="word-section-title"><span>在这句里</span><small>${esc(source.title)}</small></div><p class="word-origin-source" lang="${source.language}">${context()}</p>${s.translation?`<p class="word-origin-translation">${esc(s.translation)}</p>${s.translationPending?'<small class="note">译文待更新</small>':''}`:''}<button class="secondary" id="listen-word">▶ 听原句</button></section><section class="word-category">${categoryField(categoryCards,saved?saved.category||'':lastCardCategory)}</section>${episode?.id===source.id?'<button class="word-edit" id="edit-word-reading">修改原文与假名</button>':''}</div>`);
+ const categoryPicker=bindCategoryField(modal);
  modal.classList.add('playlist-sheet','word-sheet');$('.dialog-head').insertAdjacentHTML('beforebegin','<button class="sheet-grip" aria-label="向下滑动收起词卡"><span></span></button>');playlistSheet=bindPlaylistSheet(modal,closeModal);
  function refreshSelection(){
   $('.word-sheet .dialog-head h2').textContent=w.text;$('.word-reading').textContent=[w.reading,w.lemma!==w.text?w.lemma:''].filter(Boolean).join(' · ');
@@ -753,7 +762,7 @@ async function showWord(si,wi){
   const previous={note:$('#word-note').value,category:$('#word-category').value};drafts.set(w.lemma,previous);
   range=next;w=selectedWord(s,range,source.language);saved=findSaved(w);
   const draft=drafts.get(w.lemma)||{note:saved?.note??previous.note,category:saved?.category??previous.category};
-  $('#word-note').value=draft.note;$('#word-category').value=draft.category;refreshSelection();
+  $('#word-note').value=draft.note;categoryPicker.setValue(draft.category);refreshSelection();
  }
  documentQuery('[data-word-range]').forEach(button=>button.addEventListener('click',()=>{const [side,delta]=button.dataset.wordRange.split(':');changeSelection(adjustWordSelection(s,range,side,Number(delta)));}));
  on('#reset-word-range','click',()=>changeSelection({...initial}));refreshSelection();
@@ -761,8 +770,9 @@ async function showWord(si,wi){
  on('#listen-word','click',()=>{if(!audioAvailable(source)){closeModal();reconnectAudio(source,{start:s.start,end:s.end});return;}playSentenceClip(s);});
  on('#save-word','click',async()=>{try{
   $('#save-word').disabled=true;
-  await write('cards',{...saved,id:saved?.id||crypto.randomUUID(),episodeId:source.id,language:source.language,text:w.text,lemma:w.lemma,reading:w.reading||'',context:s.text,start:w.start,end:w.end,note:$('#word-note').value.trim(),category:cardCategory($('#word-category').value),due:saved?.due??Date.now(),level:saved?.level??0});
-  closeModal();toast('词卡已保存');
+  const category=categoryPicker.getValue();
+  await write('cards',{...saved,id:saved?.id||crypto.randomUUID(),episodeId:source.id,language:source.language,text:w.text,lemma:w.lemma,reading:w.reading||'',context:s.text,start:w.start,end:w.end,note:$('#word-note').value.trim(),category,due:saved?.due??Date.now(),level:saved?.level??0});
+  await rememberCardCategory(category);closeModal();toast('词卡已保存');
  }catch(e){if($('#save-word'))$('#save-word').disabled=false;report(e);}});
 }
 
@@ -989,7 +999,7 @@ async function renderCards(){
  main.innerHTML=`<section class="intro"><h1>我的${kind}</h1><p>${allCards.length?`${cards.length} 张${kind} · ${due.length} 张待复习`:cardMode==='sentence'?'收藏想记住的句子，随时回来复习。':'在逐字稿里双击一个词，把它留下来。'}</p></section><div class="review-kind-tabs" role="group" aria-label="卡片类型"><button data-card-kind="word" aria-pressed="${cardMode==='word'}">词卡</button><button data-card-kind="sentence" aria-pressed="${cardMode==='sentence'}">句卡</button></div><div class="filters">${[['','全部'],...Object.entries(LANG)].map(([c,n])=>`<button class="chip ${filter===c?'active':''}" data-filter="${c}">${n}</button>`).join('')}</div>
  <div class="card-filters"><div><label for="card-category-filter">${kind}分类</label><select id="card-category-filter"><option value="">全部分类</option><option value="unfiled" ${cardCategoryFilter==='unfiled'?'selected':''}>未分类</option>${categories.map(name=>{const value='c:'+encodeURIComponent(name);return `<option value="${esc(value)}" ${cardCategoryFilter===value?'selected':''}>${esc(name)}</option>`;}).join('')}</select></div><div><label for="card-folder-filter">音频文件夹</label><select id="card-folder-filter"><option value="">全部文件夹</option><option value="unfiled" ${cardFolderFilter==='unfiled'?'selected':''}>未分组音频</option>${folders.map(f=>`<option value="${esc(f.id)}" ${cardFolderFilter===f.id?'selected':''}>${esc(f.name)}</option>`).join('')}</select></div></div>
  <div class="actions">${due.length||cardMode==='sentence'&&cards.length?`<button class="primary" id="start-review">${due.length?'开始复习':'复习全部'}</button>`:''}${cardMode==='word'?`<button class="secondary" id="dictionary-export" ${cards.length?'':'disabled'}>导出到词典</button>`:''}</div>
- <div class="stack section-title">${cards.length?cards.map(c=>`<article class="card ${cardMode==='sentence'?'sentence-card':''}" ${cardMode==='sentence'?`data-sentence-card="${esc(c.id)}"`:''}><div class="card-meta"><small>${LANG[c.language]} · ${esc(c.category||'未分类')}</small><small>${esc(sources.get(c.episodeId)?.title||'原音频已删除')}</small></div>${cardMode==='sentence'?`<div class="sentence-card-source" lang="${c.language}">${sentenceCardHTML(c)}</div><p class="sentence-card-translation" ${c.translation?'':'hidden'}>${esc(c.translation)}</p>${c.note?`<p class="card-context">${esc(c.note)}</p>`:''}`:`<div class="card-word">${esc(c.lemma||c.text)} ${c.reading?`<small>${esc(c.reading)}</small>`:''}</div><p>${esc(c.note||'暂无备注')}</p><p class="card-context">${esc(c.context)}</p>`}<div class="actions"><button class="secondary" data-card-listen="${esc(c.id)}">听原句</button><button class="secondary" data-card-edit="${esc(c.id)}">编辑</button></div></article>`).join(''):`<div class="empty"><div class="empty-icon" aria-hidden="true">▤</div><h2>${allCards.length?'这个分类还没有'+kind:'还没有'+kind}</h2><p>${allCards.length?'换个分类，或在编辑卡片时填写分类名称。':cardMode==='sentence'?'打开逐字稿，点击句子旁的书签收藏。':'打开一段有逐字稿的音频，双击想记住的词。'}</p><button class="primary" id="cards-library">查看音频</button></div>`}</div>`;
+ <div class="stack section-title">${cards.length?cards.map(c=>`<article class="card ${cardMode==='sentence'?'sentence-card':''}" ${cardMode==='sentence'?`data-sentence-card="${esc(c.id)}"`:''}><div class="card-meta"><small>${LANG[c.language]} · ${esc(c.category||'未分类')}</small><small>${esc(sources.get(c.episodeId)?.title||'原音频已删除')}</small></div>${cardMode==='sentence'?`<div class="sentence-card-source" lang="${c.language}">${sentenceCardHTML(c)}</div><p class="sentence-card-translation" ${c.translation?'':'hidden'}>${esc(c.translation)}</p>${c.note?`<p class="card-context">${esc(c.note)}</p>`:''}`:`<div class="card-word">${esc(c.lemma||c.text)} ${c.reading?`<small>${esc(c.reading)}</small>`:''}</div><p>${esc(c.note||'暂无备注')}</p><p class="card-context">${esc(c.context)}</p>`}<div class="actions"><button class="secondary" data-card-listen="${esc(c.id)}">听原句</button><button class="secondary" data-card-edit="${esc(c.id)}">编辑</button></div></article>`).join(''):`<div class="empty"><div class="empty-icon" aria-hidden="true">▤</div><h2>${allCards.length?'这个分类还没有'+kind:'还没有'+kind}</h2><p>${allCards.length?'换个分类，或在编辑卡片时选择分类。':cardMode==='sentence'?'打开逐字稿，点击句子旁的书签收藏。':'打开一段有逐字稿的音频，双击想记住的词。'}</p><button class="primary" id="cards-library">查看音频</button></div>`}</div>`;
  document.querySelectorAll('[data-card-kind]').forEach(b=>b.onclick=async()=>{cardMode=b.dataset.cardKind;cardCategoryFilter='';await write('settings',{id:'review-card-kind',value:cardMode});await renderCards();});
  document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;renderCards().catch(report);});
  on('#card-category-filter','change',event=>{cardCategoryFilter=event.target.value;renderCards().catch(report);});
@@ -1019,14 +1029,15 @@ async function refreshSentenceCardViews(id){
  });
 }
 async function editSentenceCard(card){
- const cards=sentenceCards(await all('episodes'));
+ const [collection,wordCards]=await Promise.all([all('episodes'),all('cards')]),cards=sentenceCards(collection);
  card=cards.find(saved=>saved.id===card.id);if(!card){toast('这张句卡已被移除，请重新打开句卡。');await renderCards();return;}
  let followSource=!card.translationEdited;
- openModal('编辑句卡',`<div class="sentence-card-source" lang="${card.language}">${sentenceCardHTML(card)}</div><label for="edit-sentence-translation">中文译文</label><textarea id="edit-sentence-translation" rows="3" maxlength="10000" placeholder="填写这张句卡的中文译文">${esc(card.translation)}</textarea><div class="actions"><small class="note" id="sentence-translation-status"></small><button class="secondary" id="restore-sentence-translation">恢复逐字稿译文</button></div><label for="edit-note">背诵笔记</label><textarea id="edit-note" rows="3" maxlength="5000">${esc(card.note)}</textarea>${categoryField(cards,card.category||'','edit-category')}<div class="actions sentence-card-editor-actions"><button class="primary" id="update-card">保存</button><button class="secondary" id="delete-card">取消句子书签</button></div>`);
+ openModal('编辑句卡',`<div class="sentence-card-source" lang="${card.language}">${sentenceCardHTML(card)}</div><label for="edit-sentence-translation">中文译文</label><textarea id="edit-sentence-translation" rows="3" maxlength="10000" placeholder="填写这张句卡的中文译文">${esc(card.translation)}</textarea><div class="actions"><small class="note" id="sentence-translation-status"></small><button class="secondary" id="restore-sentence-translation">恢复逐字稿译文</button></div><label for="edit-note">背诵笔记</label><textarea id="edit-note" rows="3" maxlength="5000">${esc(card.note)}</textarea>${categoryField([...cards,...wordCards],card.category||'','edit-category')}<div class="actions sentence-card-editor-actions"><button class="primary" id="update-card">保存</button><button class="secondary" id="delete-card">取消句子书签</button></div>`);
+ const categoryPicker=bindCategoryField(modal,'edit-category');
  const translationStatus=()=>{$('#sentence-translation-status').textContent=followSource?'随逐字稿更新':'手动译文 · 仅用于这张句卡';$('#restore-sentence-translation').disabled=followSource;};translationStatus();
  on('#edit-sentence-translation','input',()=>{followSource=$('#edit-sentence-translation').value.trim()===card.sourceTranslation;translationStatus();});
  on('#restore-sentence-translation','click',()=>{$('#edit-sentence-translation').value=card.sourceTranslation;followSource=true;translationStatus();});
- on('#update-card','click',async()=>{try{await saveSentenceCard(card,{translationOverride:followSource?undefined:$('#edit-sentence-translation').value.trim(),note:$('#edit-note').value.trim(),category:cardCategory($('#edit-category').value)});closeModal();await renderCards();}catch(error){report(error);}});
+ on('#update-card','click',async()=>{try{const category=categoryPicker.getValue();await saveSentenceCard(card,{translationOverride:followSource?undefined:$('#edit-sentence-translation').value.trim(),note:$('#edit-note').value.trim(),category});await rememberCardCategory(category);closeModal();await renderCards();}catch(error){report(error);}});
  on('#delete-card','click',async()=>{try{await saveSentenceCard(card,null);closeModal();await renderCards();toast('已取消句子书签');}catch(error){report(error);}});
 }
 async function reviewSentenceCards(cards,index=0){
@@ -1043,9 +1054,10 @@ async function reviewSentenceCards(cards,index=0){
 }
 async function editCard(card){
  if(card.kind==='sentence')return editSentenceCard(card);
- const cards=await all('cards');
+ const [wordCards,settings]=await Promise.all([all('cards'),all('settings')]),cards=[...wordCards,...bookmarkCategories(settings)];
  openModal('编辑词卡',`<h2>${esc(card.text)}</h2><label for="edit-note">我的释义或备注</label><textarea id="edit-note" rows="3">${esc(card.note)}</textarea>${categoryField(cards,card.category||'','edit-category')}<div class="actions"><button class="primary" id="update-card">保存</button><button class="danger" id="delete-card">删除词卡</button></div>`);
- on('#update-card','click',async()=>{try{await write('cards',{...card,note:$('#edit-note').value.trim(),category:cardCategory($('#edit-category').value)});closeModal();await renderCards();}catch(e){report(e);}});
+ const categoryPicker=bindCategoryField(modal,'edit-category');
+ on('#update-card','click',async()=>{try{const category=categoryPicker.getValue();await write('cards',{...card,note:$('#edit-note').value.trim(),category});await rememberCardCategory(category);closeModal();await renderCards();}catch(e){report(e);}});
  on('#delete-card','click',async()=>{try{await remove('cards',card.id);closeModal();await renderCards();}catch(e){report(e);}});
 }
 function reviewCards(cards,index=0){if(cards[0]?.kind==='sentence')return reviewSentenceCards(cards,index);if(index>=cards.length){closeModal();toast('本次复习完成');renderCards();return;}const c=cards[index];openModal(`复习 ${index+1} / ${cards.length}`,`<div class="card-word">${esc(c.lemma||c.text)}</div><p class="card-context">${esc(c.context)}</p><button class="secondary full" id="reveal-card">显示我的备注</button><div id="card-answer" hidden><p>${esc(c.note||'尚未填写备注')}</p><div class="actions"><button class="secondary" id="review-again">还不熟</button><button class="primary" id="review-known">记住了</button></div></div>`);on('#reveal-card','click',()=>{$('#card-answer').hidden=false;$('#reveal-card').hidden=true;});for(const [selector,known] of [['#review-again',false],['#review-known',true]])on(selector,'click',async()=>{c.level=known?Math.min(5,(c.level||0)+1):0;c.due=Date.now()+(known?[1,1,3,7,14,30][c.level]*86400000:600000);await write('cards',c);reviewCards(cards,index+1);});}

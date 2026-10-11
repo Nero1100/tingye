@@ -208,3 +208,4 @@ body{background:var(--bg)}
 .reading-actions{display:flex;gap:8px;margin-top:10px}
 .reading-actions button{flex:1;min-height:38px;padding:8px 6px;border:1px solid var(--border);border-radius:99px;font-size:.78rem;white-space:nowrap}
 @media(max-width:360px){.reading-content{padding:18px}.reading-option-row{font-size:.88rem;gap:8px}.reading-segments{width:143px}}
+.category-creation{margin-top:12px}.category-creation label{margin-top:0}.category-picker select{cursor:pointer}.category-picker input[type=hidden]{display:none}
