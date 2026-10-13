@@ -1,5 +1,5 @@
-import './podcast-cache.js?v=2026.10.11.1';
-import {streamURL,podcastCacheKey,validPodcastCache,fetchPodcastFeed} from './podcasts.js?v=2026.10.11.1';
+import './podcast-cache.js?v=2026.10.12.1';
+import {streamURL,podcastCacheKey,validPodcastCache,fetchPodcastFeed} from './podcasts.js?v=2026.10.12.1';
 export const DOWNLOAD_LIMIT='podcast-download-limit-v1',DOWNLOAD_PREFIX='podcast-download/',MiB=1048576,MAX_AUDIO=350*MiB;
 export const downloadLimits=[256,512,1024,2048,4096].map(n=>n*MiB);
 export const validatedLimit=value=>downloadLimits.includes(value)?value:1024*MiB;
@@ -58,9 +58,16 @@ export class PodcastOffline{
    if(signal.aborted)throw new DOMException('取消下载','AbortError');if(!url)throw Error('这不是可下载的播客单集。');await this.support();
    cache=await this.cacheStorage.open(TingyePodcastCache.NAME);
    if(this.ready(episode.id)&&await cache.match(key)){this.notify('这一集已经下载，无需重复保存');return this.records.get(episode.id);}
-   const opaque=episode.podcast.showId==='noriko',enclosureBytes=await this.enclosureBytes(episode,signal);let size=enclosureBytes||Math.ceil(Math.max(episode.duration,60)*24000);checkCapacity(this.used(),size,this.limit,await this.estimate());
+   const opaque=['noriko','akane'].includes(episode.podcast.showId),enclosureBytes=await this.enclosureBytes(episode,signal);let size=enclosureBytes||Math.ceil(Math.max(episode.duration,60)*24000);checkCapacity(this.used(),size,this.limit,await this.estimate());
    if(signal.aborted)throw new DOMException('取消下载','AbortError');job.info={...job.info,status:'downloading',bytes:size,opaque};this.changed();
-   const result=await this.fetcher(url,{mode:opaque?'no-cors':'cors',credentials:'omit',cache:'no-store',signal});
+   let result;
+   try{result=await this.fetcher(url,{mode:opaque?'no-cors':'cors',credentials:'omit',cache:'no-store',signal});}
+   catch(error){
+    // Public podcast CDNs can stream audio while declining browser CORS reads.
+    // Only retry as an opaque download when RSS supplied a size for capacity checks.
+    if(opaque||signal.aborted||!enclosureBytes||error.name!=='TypeError')throw error;
+    result=await this.fetcher(url,{mode:'no-cors',credentials:'omit',cache:'no-store',signal});
+   }
    const unreadable=result.type==='opaque';if(!unreadable&&(!result.ok||result.status===206))throw Error('音频下载未完成，请稍后重试。');
    if(!unreadable&&result.headers.get('Content-Type')&&!/^(audio\/|video\/|application\/octet-stream)/i.test(result.headers.get('Content-Type')))throw Error('这个链接没有返回音频，请稍后重试。');
    if(unreadable&&!enclosureBytes)throw Error('这个节目没有提供音频大小，暂时无法离线下载。');

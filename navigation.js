@@ -1,9 +1,10 @@
+import {podcastShow} from './podcasts.js?v=2026.10.12.1';
 // Tabs are peers. Only folder/player screens add depth to the app's history.
 export function appRoute(hash){
  const value=String(hash||'').replace(/^#/,'');
  if(value.startsWith('audio/')&&value.length>6)return {view:'player',id:value.slice(6),hash:value};
  if(value.startsWith('folder/')&&value.length>7)return {view:'library',id:value.slice(7),hash:value};
- if(value.startsWith('podcast/')&&['shun','noriko'].includes(value.slice(8)))return {view:'library',podcasts:true,showId:value.slice(8),hash:value};
+ if(value.startsWith('podcast/')&&podcastShow(value.slice(8)))return {view:'library',podcasts:true,showId:value.slice(8),hash:value};
  if(value==='podcasts')return {view:'library',podcasts:true,hash:value};
  if(value==='favorites')return {view:'library',favorites:true,hash:value};
  const view=['cards','settings'].includes(value)?value:'library';

@@ -20,7 +20,7 @@ export class PodcastCovers{
  html(id,{className='',alt=''}={}){return `<img data-podcast-cover="${esc(id)}" src="${esc(this.src(id))}" class="${esc(className)}" alt="${esc(alt)}" decoding="sync">`;}
  paint(root=document){for(const image of root.querySelectorAll('[data-podcast-cover]')){const src=this.src(image.dataset.podcastCover);if(image.getAttribute('src')!==src)image.src=src;}}
  ensure(id){
-  const show=this.shows.find(s=>s.id===id);if(!show)return Promise.resolve(false);
+  const show=this.shows.find(s=>s.id===id);if(!show?.cover)return Promise.resolve(false);
   if(this.saved.get(id)?.url===show.cover&&this.ready.has(id))return Promise.resolve(true);
   if(this.inflight.has(id))return this.inflight.get(id);
   const work=this.download(show).finally(()=>this.inflight.delete(id));this.inflight.set(id,work);return work;
