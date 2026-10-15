@@ -1,4 +1,7 @@
 export const FAVORITES='favorite-episodes-v1',FAVORITES_SCOPE='favorites';
+export const favoriteScope=language=>['ja','en','fr'].includes(language)?FAVORITES_SCOPE+'/'+language:FAVORITES_SCOPE;
+export const isFavoriteScope=scope=>typeof scope==='string'&&/^favorites(?:\/(?:ja|en|fr))?$/.test(scope);
+export const favoriteScopeLanguage=scope=>isFavoriteScope(scope)?scope.split('/')[1]||'':'';
 export function validateFavorites(value=[]){
  if(!Array.isArray(value)||value.length>5000||new Set(value).size!==value.length||value.some(id=>typeof id!=='string'||!id||id.length>100))throw Error('喜欢的音频资料不正确。');
  return value;

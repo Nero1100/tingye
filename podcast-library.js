@@ -1,23 +1,26 @@
-import {PODCASTS,podcastShow,podcastItems,podcastCacheKey,SUBSCRIPTIONS,podcastSubscriptions,validPodcastCache,fetchPodcastFeed,CUSTOM_SHOWS,setCustomPodcasts} from './podcasts.js?v=2026.10.12.1';
-import {downloadLabel} from './podcast-download-ui.js?v=2026.10.12.1';
-import {heartIcon} from './favorites.js?v=2026.10.12.1';
+import {PODCASTS,podcastShow,podcastItems,podcastCacheKey,SUBSCRIPTIONS,podcastSubscriptions,validPodcastCache,fetchPodcastFeed,CUSTOM_SHOWS,setCustomPodcasts} from './podcasts.js?v=2026.10.15.1';
+import {downloadLabel} from './podcast-download-ui.js?v=2026.10.15.1';
+import {heartIcon} from './favorites.js?v=2026.10.15.1';
+import {PODCAST_LANGUAGE,validPodcastLanguage,showLanguage,languageShows,languageTabs} from './podcast-language.js?v=2026.10.15.1';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const date=value=>value?new Date(value).toLocaleDateString('zh-CN',{year:'numeric',month:'numeric',day:'numeric'}):'';
 const duration=seconds=>seconds?Math.ceil(seconds/60)+' 分钟':'播客';
 const languageNames={ja:'日语',en:'英语',fr:'法语'};
 export const audioTabs=mode=>`<div class="audio-tabs" role="group" aria-label="音频来源">${[['local','我的音频'],['podcasts','播客'],['favorites','喜欢']].map(([id,label])=>`<button data-audio-tab="${id}" class="${mode===id?'selected':''}" aria-pressed="${mode===id}">${label}</button>`).join('')}</div>`;
 export class PodcastLibrary{
- constructor({main,read,write,remove,coverHTML=()=>'<span aria-hidden="true">♫</span>',collection,openShow,back,play,enqueue,isActive,positions,report,toast,add=()=>{},isFavorite=()=>false,favorite,downloadInfo=()=>null,download,cancelDownload,fetchFeed=fetchPodcastFeed,online=()=>navigator.onLine!==false}){
-  Object.assign(this,{main,read,write,remove,coverHTML,collection,openShow,back,play,enqueue,isActive,positions,report,toast,add,isFavorite,favorite,downloadInfo,download,cancelDownload,fetchFeed,online});
-  this.caches=new Map();this.inflight=new Map();this.errors=new Map();this.queries=new Map();this.sorts=new Map();this.limits=new Map();this.showId='';this.renderSerial=0;
+ constructor({main,read,write,remove,coverHTML=()=>'<span aria-hidden="true">♫</span>',collection,openShow,back,play,enqueue,isActive,positions,report,toast,add=()=>{},onRender=()=>{},isFavorite=()=>false,favorite,downloadInfo=()=>null,download,cancelDownload,fetchFeed=fetchPodcastFeed,online=()=>navigator.onLine!==false}){
+  Object.assign(this,{main,read,write,remove,coverHTML,collection,openShow,back,play,enqueue,isActive,positions,report,toast,add,onRender,isFavorite,favorite,downloadInfo,download,cancelDownload,fetchFeed,online});
+  this.caches=new Map();this.inflight=new Map();this.errors=new Map();this.queries=new Map();this.sorts=new Map();this.limits=new Map();this.showId='';this.renderSerial=0;this.language='ja';
  }
  async load(){setCustomPodcasts((await this.read('settings',CUSTOM_SHOWS))?.value||[]);this.subscriptions=podcastSubscriptions((await this.read('settings',SUBSCRIPTIONS))?.value);
+  const language=(await this.read('settings',PODCAST_LANGUAGE))?.value;if(validPodcastLanguage(language))this.language=language;
   for(const show of PODCASTS)if(!this.caches.has(show.id)){const value=(await this.read('settings',podcastCacheKey(show.id)))?.value;if(validPodcastCache(value,show.id))this.caches.set(show.id,value);}
  }
  async render(showId=''){
   const serial=++this.renderSerial;this.showId=podcastShow(showId)?showId:'';await this.load();const records=await this.collection();
   if(serial!==this.renderSerial||!this.isActive(this.showId))return;
   this.records=records;const show=podcastShow(this.showId),cache=this.caches.get(this.showId);
+  if(show&&this.language!==showLanguage(show)){this.language=showLanguage(show);await this.write('settings',{id:PODCAST_LANGUAGE,value:this.language});if(serial!==this.renderSerial||!this.isActive(this.showId))return;}
   if(show){
    this.main.innerHTML=`<div class="folder-nav"><button id="podcast-back" aria-label="返回播客">‹</button><button id="podcast-subscribe" class="podcast-subscribe ${this.subscriptions.includes(show.id)?'subscribed':''}">${this.subscriptions.includes(show.id)?'已订阅':'订阅'}</button></div><header class="podcast-heading">${this.coverHTML(show.id,{alt:show.name+'封面'})}<div><h1>${esc(show.name)}</h1><small>${languageNames[show.language||'ja']} · ${esc(show.author)}</small></div></header><div class="podcast-refresh-row"><span id="podcast-refresh-status" role="status"></span><button id="podcast-refresh">↻ 刷新</button></div><div class="podcast-tools"><input id="podcast-search" type="search" placeholder="搜索单集" aria-label="搜索单集" value="${esc(this.queries.get(show.id)||'')}"><select id="podcast-sort" aria-label="播客排序"><option value="newest">最新在前</option><option value="oldest">最早在前</option></select></div><p class="podcast-list-count" id="podcast-list-count"></p><div class="podcast-episodes" id="podcast-episodes"></div><p class="podcast-storage-note">在线播放 · 不自动保存音频副本</p>`;
    this.main.querySelector('#podcast-sort').value=this.sorts.get(show.id)||'newest';
@@ -28,12 +31,17 @@ export class PodcastLibrary{
    this.main.querySelector('#podcast-sort').onchange=event=>{this.sorts.set(show.id,event.target.value);this.limits.set(show.id,50);this.rows();};
    this.rows();this.status();
   }else{
-   this.main.innerHTML=`${audioTabs('podcasts')}<section class="podcast-intro"><small>随时听，慢慢学。</small><div class="podcast-title-row"><h1>播客</h1><button class="secondary" id="add-podcast">＋ 添加播客</button></div><p>订阅喜欢的声音，新单集随时查看。</p></section><div class="podcast-shows">${[...PODCASTS].sort((a,b)=>Number(this.subscriptions.includes(b.id))-Number(this.subscriptions.includes(a.id))).map(program=>{const saved=this.caches.get(program.id),subscribed=this.subscriptions.includes(program.id);return `<article class="podcast-show"><button class="podcast-show-open" data-podcast-show="${program.id}">${this.coverHTML(program.id)}<span><strong>${esc(program.name)}</strong><small>${subscribed?'已订阅 · ':''}${saved?saved.episodes.length+' 集':languageNames[program.language||'ja']}</small>${saved?`<span class="podcast-latest">${esc(saved.episodes[0]?.title)}</span>`:''}</span><span class="episode-chevron">›</span></button>${subscribed?'':`<button class="secondary podcast-follow" data-podcast-follow="${program.id}">＋ 订阅</button>`}</article>`;}).join('')}</div><p class="podcast-storage-note">默认在线播放，点单集旁的“下载”保存离线音频。离线时可听已下载的播客和本地音频。</p>`;
+   this.main.innerHTML=`${audioTabs('podcasts')}<section class="podcast-intro"><small>随时听，慢慢学。</small><div class="podcast-title-row"><h1>播客</h1><button class="secondary" id="add-podcast">＋ 添加播客</button></div><p>订阅喜欢的声音，新单集随时查看。</p></section><div class="podcast-shows">${languageShows(PODCASTS,this.language).sort((a,b)=>Number(this.subscriptions.includes(b.id))-Number(this.subscriptions.includes(a.id))).map(program=>{const saved=this.caches.get(program.id),subscribed=this.subscriptions.includes(program.id);return `<article class="podcast-show"><button class="podcast-show-open" data-podcast-show="${program.id}">${this.coverHTML(program.id)}<span><strong>${esc(program.name)}</strong><small>${subscribed?'已订阅 · ':''}${saved?saved.episodes.length+' 集':languageNames[program.language||'ja']}</small>${saved?`<span class="podcast-latest">${esc(saved.episodes[0]?.title)}</span>`:''}</span><span class="episode-chevron">›</span></button>${subscribed?'':`<button class="secondary podcast-follow" data-podcast-follow="${program.id}">＋ 订阅</button>`}</article>`;}).join('')}</div><p class="podcast-storage-note">默认在线播放，点单集旁的“下载”保存离线音频。离线时可听已下载的播客和本地音频。</p>`;
+   this.main.querySelector('.podcast-intro').insertAdjacentHTML('afterend',languageTabs(this.language));
+   if(!languageShows(PODCASTS,this.language).length)this.main.querySelector('.podcast-shows').innerHTML=`<div class="empty"><h2>添加第一个${languageNames[this.language]}播客</h2><p>粘贴节目链接或 RSS，添加后会出现在这里。</p><button class="secondary" id="add-language-podcast">＋ 添加播客</button></div>`;
+   this.main.querySelectorAll('[data-podcast-language]').forEach(button=>button.onclick=async()=>{try{this.positions.remember(this.main,this.main.dataset.libraryPositionKey);this.language=button.dataset.podcastLanguage;await this.write('settings',{id:PODCAST_LANGUAGE,value:this.language});if(this.isActive(''))await this.render();}catch(error){this.report(error);}});
    this.main.querySelector('#add-podcast').onclick=this.add;
+   const addEmpty=this.main.querySelector('#add-language-podcast');if(addEmpty)addEmpty.onclick=this.add;
    this.main.querySelectorAll('[data-podcast-show]').forEach(b=>b.onclick=()=>this.openShow(b.dataset.podcastShow));
    this.main.querySelectorAll('[data-podcast-follow]').forEach(b=>b.onclick=()=>{b.disabled=true;this.subscription(b.dataset.podcastFollow,true,{open:true}).catch(this.report);});
   }
-  this.main.dataset.libraryPositionKey='podcasts/'+this.showId;this.positions.restore(this.main,this.main.dataset.libraryPositionKey);
+  this.main.dataset.libraryPositionKey=this.showId?'podcasts/'+this.showId:'podcasts/language/'+this.language;this.positions.restore(this.main,this.main.dataset.libraryPositionKey);
+  this.onRender();
   if(show&&this.subscriptions.includes(show.id)&&(!cache||cache.episodes.some(e=>e.bytes===undefined)||Date.now()-cache.updated>30*60*1000))this.refresh(show.id);
  }
  rows(){
