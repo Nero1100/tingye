@@ -1,50 +1,51 @@
-import {showAddPodcast} from './podcast-add.js?v=2026.10.15.1';
-import {categoryField as categoryPickerField,bindCategoryField,rememberedCategory} from './category-picker.js?v=2026.10.15.1';
-import {openReadingDisplay} from './reading-display.js?v=2026.10.15.1';
+import {showAddPodcast} from './podcast-add.js?v=2026.10.16.1';
+import {categoryField as categoryPickerField,bindCategoryField,rememberedCategory} from './category-picker.js?v=2026.10.16.1';
+import {openReadingDisplay} from './reading-display.js?v=2026.10.16.1';
 import {markTranscriptDraft} from './transcript-revisions.js';
-import {showVideoSubtitles} from './video-subtitles.js?v=2026.10.15.1';
-import {showReferenceAlignment} from './reference-alignment.js?v=2026.10.15.1';
-import {PODCASTS,BUILTIN_PODCASTS,podcastShow,podcastScope,isPodcastScope,streamURL,podcastRecord,SUBSCRIPTIONS,podcastSubscriptions,CUSTOM_SHOWS,setCustomPodcasts,validateCustomPodcasts,mergeCustomPodcasts,podcastCatalog,feedURL,parsePodcastFeed} from './podcasts.js?v=2026.10.15.1';
-import {FAVORITES,FAVORITES_SCOPE,favoriteScope,isFavoriteScope,favoriteScopeLanguage,validateFavorites,favoriteEpisodes,restoreFavorites,heartIcon} from './favorites.js?v=2026.10.15.1';
-import {PodcastCovers} from './podcast-covers.js?v=2026.10.15.1';
-import {PodcastOffline} from './podcast-offline.js?v=2026.10.15.1';
-import {downloadLabel,showOfflineManager} from './podcast-download-ui.js?v=2026.10.15.1';
-import {MediaControls} from './media-controls.js?v=2026.10.15.1';
-import {PodcastLibrary,audioTabs} from './podcast-library.js?v=2026.10.15.1';
-import {FAVORITE_LANGUAGE,validPodcastLanguage,showLanguage,languageEpisodes,languageTabs} from './podcast-language.js?v=2026.10.15.1';
-import {bindBookmarkPress} from './bookmark-press.js?v=2026.10.15.1';
-import {bookmarkKey,bookmarkedSentence,sentenceBookmark,sentenceCards,changeSentenceBookmark} from './sentence-cards.js?v=2026.10.15.1';
-import {plainTranscriptText,plainTranscriptName} from './plain-text.js?v=2026.10.15.1';
-import {TranscriptSync} from './transcript-sync.js?v=2026.10.15.1';
-import {syncPanel,showSyncUI,showSyncBatchUI} from './sync-ui.js?v=2026.10.15.1';
-import {packageTranscript,namedTranscript} from './cloud-transcript.js?v=2026.10.15.1';
-import {showCopyManager} from './audio-copies.js?v=2026.10.15.1';
-import {submitLocalForm} from './local-upload.js?v=2026.10.15.1';
-import {mountJobMonitor,jobProgress,terminalJob} from './job-monitor.js?v=2026.10.15.1';
-import {planTranscriptImports,phoneInterface,transcriptExportName} from './transcript-batch.js?v=2026.10.15.1';
-import {clearModelDownloads,clearBrowserTranslation} from './browser-model-cleanup.js?v=2026.10.15.1';
-import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration,replaceEpisodeTranscripts,deleteAudioCopies,applyCloudTranscript,acknowledgeTranscriptPublication,updateBookmarks,upsertPodcastEpisode,setEpisodeFavorite} from './db.js?v=2026.10.15.1';
-import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.15.1';
+import {showVideoSubtitles} from './video-subtitles.js?v=2026.10.16.1';
+import {showReferenceAlignment} from './reference-alignment.js?v=2026.10.16.1';
+import {PODCASTS,BUILTIN_PODCASTS,podcastShow,podcastScope,isPodcastScope,streamURL,podcastRecord,SUBSCRIPTIONS,podcastSubscriptions,CUSTOM_SHOWS,setCustomPodcasts,validateCustomPodcasts,mergeCustomPodcasts,podcastCatalog,feedURL,parsePodcastFeed} from './podcasts.js?v=2026.10.16.1';
+import {FAVORITES,FAVORITES_SCOPE,favoriteScope,isFavoriteScope,favoriteScopeLanguage,validateFavorites,favoriteEpisodes,restoreFavorites,heartIcon} from './favorites.js?v=2026.10.16.1';
+import {PodcastCovers} from './podcast-covers.js?v=2026.10.16.1';
+import {PodcastOffline} from './podcast-offline.js?v=2026.10.16.1';
+import {downloadLabel,showOfflineManager} from './podcast-download-ui.js?v=2026.10.16.1';
+import {MediaControls} from './media-controls.js?v=2026.10.16.1';
+import {PodcastLibrary,audioTabs} from './podcast-library.js?v=2026.10.16.1';
+import {FAVORITE_LANGUAGE,validPodcastLanguage,showLanguage,languageEpisodes,languageTabs} from './podcast-language.js?v=2026.10.16.1';
+import {bindBookmarkPress} from './bookmark-press.js?v=2026.10.16.1';
+import {bookmarkKey,bookmarkedSentence,sentenceBookmark,sentenceCards,changeSentenceBookmark} from './sentence-cards.js?v=2026.10.16.1';
+import {plainTranscriptText,plainTranscriptName} from './plain-text.js?v=2026.10.16.1';
+import {TranscriptSync} from './transcript-sync.js?v=2026.10.16.1';
+import {syncPanel,showSyncUI,showSyncBatchUI} from './sync-ui.js?v=2026.10.16.1';
+import {packageTranscript,namedTranscript} from './cloud-transcript.js?v=2026.10.16.1';
+import {showCopyManager} from './audio-copies.js?v=2026.10.16.1';
+import {submitLocalForm} from './local-upload.js?v=2026.10.16.1';
+import {mountJobMonitor,jobProgress,terminalJob} from './job-monitor.js?v=2026.10.16.1';
+import {planTranscriptImports,phoneInterface,transcriptExportName} from './transcript-batch.js?v=2026.10.16.1';
+import {clearModelDownloads,clearBrowserTranslation} from './browser-model-cleanup.js?v=2026.10.16.1';
+import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration,replaceEpisodeTranscripts,deleteAudioCopies,applyCloudTranscript,acknowledgeTranscriptPublication,updateBookmarks,upsertPodcastEpisode,setEpisodeFavorite,changeAudioFolder,FOLDER_DELETE_UNDO} from './db.js?v=2026.10.16.1';
+import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.16.1';
 import {lexicalWords,dictionaryText} from './lexicon.js';
-import {initialWordSelection,selectedWord,adjustWordSelection,learningCandidates} from './word-selection.js?v=2026.10.15.1';
-import {Practice,practiceOptions} from './practice.js?v=2026.10.15.1';
+import {initialWordSelection,selectedWord,adjustWordSelection,learningCandidates} from './word-selection.js?v=2026.10.16.1';
+import {Practice,practiceOptions} from './practice.js?v=2026.10.16.1';
 import {palettes,applyTheme} from './theme.js';
 import {hasKanji,rubyParts,setRubyReading,prepareReadings} from './furigana.js';
-import {editedSentence,changedCards,replacementTranscript} from './transcript-edit.js?v=2026.10.15.1';
-import {splitChoices,splitSentence,mergeSentences,resegmentCards} from './segment-edit.js?v=2026.10.15.1';
-import {boundaryWords,suggestSentences} from './sentence-boundaries.js?v=2026.10.15.1';
-import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.15.1';
-import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.15.1';
-import {validatePlaybackLists,reconcilePlaybackList,selectPlaybackEpisodes,reorderPlaybackList,restorePlaybackLists,includePlaybackEpisode} from './playback-list.js?v=2026.10.15.1';
-import {bindReaderGestures} from './reader-gestures.js?v=2026.10.15.1';
+import {editedSentence,changedCards,replacementTranscript} from './transcript-edit.js?v=2026.10.16.1';
+import {splitChoices,splitSentence,mergeSentences,resegmentCards} from './segment-edit.js?v=2026.10.16.1';
+import {boundaryWords,suggestSentences} from './sentence-boundaries.js?v=2026.10.16.1';
+import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.16.1';
+import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.16.1';
+import {validatePlaybackLists,reconcilePlaybackList,selectPlaybackEpisodes,reorderPlaybackList,restorePlaybackLists,includePlaybackEpisode} from './playback-list.js?v=2026.10.16.1';
+import {bindReaderGestures} from './reader-gestures.js?v=2026.10.16.1';
 import {bindDragOrder,replaceSubsetOrder} from './drag-order.js';
 import {cardCategory,cardCategories,selectedCards,cardSentence} from './cards.js';
-import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.15.1';
-import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.15.1';
+import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.16.1';
+import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.16.1';
 import {validateFolders,folderEpisodes,folderMembership,restoreFolders,makeFolderCover} from './folders.js';
-import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.15.1';
-import {ListPosition} from './list-position.js?v=2026.10.15.1';
-import {appRoute,setAppRoute,backAppRoute,bindHomeEdgeGuard,bindRouteRestore} from './navigation.js?v=2026.10.15.1';
+import {bindFolderSwipes} from './folder-swipe.js?v=2026.10.16.1';
+import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.16.1';
+import {ListPosition} from './list-position.js?v=2026.10.16.1';
+import {appRoute,setAppRoute,backAppRoute,bindHomeEdgeGuard,bindRouteRestore} from './navigation.js?v=2026.10.16.1';
 const phone=phoneInterface(navigator.userAgent,navigator.maxTouchPoints);
 const main=document.querySelector('#main'),modal=document.querySelector('#modal');
 let audio=document.querySelector('#audio');
@@ -56,7 +57,7 @@ let episode=null,objectURL=null,view='library',filter='',current=-1,wordCurrent=
 const originalFiles=new Map(),uncoveredSentences=new Set();
 let openSerial=0,audioUnbind=()=>{},audioGeneration=0,playbackMime='',playbackSource='',libraryMode='local',podcastShowId='';
 const libraryPositions=new ListPosition(),shuffleQueue=new ShuffleQueue();
-let readingDisplay=null,playlistSheet=null,libraryRenderSerial=0,mediaControls=null,downloadManagerDispose=null;
+let readingDisplay=null,playlistSheet=null,libraryRenderSerial=0,mediaControls=null,downloadManagerDispose=null,folderSwipeDispose=null;
 let favoriteIds=validateFavorites((await read('settings',FAVORITES))?.value||[]),favoriteQuery='';
 const savedFavoriteLanguage=(await read('settings',FAVORITE_LANGUAGE))?.value;
 let favoriteLanguage=validPodcastLanguage(savedFavoriteLanguage)?savedFavoriteLanguage:'';
@@ -269,16 +270,20 @@ async function renderFavorites(serial){
  main.dataset.libraryPositionKey='favorites/'+(favoriteLanguage||'all');libraryPositions.restore(main,main.dataset.libraryPositionKey);
 }
 async function renderLibrary(){
+ folderSwipeDispose?.();folderSwipeDispose=null;
  const serial=++libraryRenderSerial;
  if(libraryMode==='favorites'){rememberLibrary();delete main.dataset.libraryPositionKey;view='library';setNav();$('.player-dock')?.remove();await renderFavorites(serial);return;}
  if(libraryMode==='podcasts'){rememberLibrary();delete main.dataset.libraryPositionKey;view='library';setNav();$('.player-dock')?.remove();await podcastLibrary.render(podcastShowId);bindAudioTabs();return;}
- rememberLibrary();delete main.dataset.libraryPositionKey;view='library';const collection=orderedEpisodes((await episodeCollection()).filter(e=>e.storageMode!=='stream'),prefs.playlistSort),folder=folders.find(f=>f.id===libraryFolder);
+ rememberLibrary();delete main.dataset.libraryPositionKey;view='library';const folderUndo=(await read('settings',FOLDER_DELETE_UNDO))?.value;folders=validateFolders((await read('settings','audio-folders'))?.value||[]);const collection=orderedEpisodes((await episodeCollection()).filter(e=>e.storageMode!=='stream'),prefs.playlistSort),folder=folders.find(f=>f.id===libraryFolder);
  if(serial!==libraryRenderSerial||view!=='library'||libraryMode!=='local')return;
  setNav();$('.player-dock')?.remove();
  if(libraryFolder&&libraryFolder!=='unfiled'&&!folder)libraryFolder='';
  const grouped=folderEpisodes(collection,libraryFolder),items=grouped.filter(e=>!filter||e.language===filter);
  const heading=folder?`<div class="folder-nav"><button id="folder-back" aria-label="返回所有音频">‹</button><button id="edit-folder" aria-label="编辑文件夹">···</button></div><header class="folder-heading"><div class="folder-cover">${folderCover(folder)}</div><div><h1>${esc(folder.name)}</h1><small>本机文件夹</small></div></header><div class="folder-count"><strong>${grouped.length}</strong><span>段音频</span></div>`:`<section class="library-intro"><small>随时听，慢慢学。</small><h1>我的声音</h1><p>${collection.length} 段音频 · 本机保存</p></section>`;
- main.innerHTML=`${folder?'':audioTabs('local')}${heading}<div class="library-actions"><button class="primary" id="add-audio">${folder?'添加音频':'导入'}</button><button class="secondary" id="refresh-folder">更新文件夹</button><button class="icon-button" id="library-order" aria-label="排列播放列表">⇅</button></div>${!folder?`<section class="folder-section"><div class="folder-section-title"><h2>我的文件夹</h2><button id="new-folder">＋ 新建</button></div><div class="folder-list">${folders.map(f=>`<button class="folder-tile" data-folder="${esc(f.id)}"><span class="folder-cover">${folderCover(f)}</span><span>${esc(f.name)}<small>${collection.filter(e=>e.collectionId===f.id).length} 段音频</small></span><span class="episode-chevron">›</span></button>`).join('')}</div></section>`:''}<div class="library-tools"><div class="filters">${[['','全部'],...Object.entries(LANG)].map(([c,n])=>`<button class="chip ${filter===c?'active':''}" data-filter="${c}">${n}</button>`).join('')}</div><select id="library-sort" class="compact-select" aria-label="音频排序">${[['manual','我的顺序'],['name','文件名顺序'],['newest','最新添加']].map(([v,n])=>`<option value="${v}" ${prefs.playlistSort===v?'selected':''}>${n}</option>`).join('')}</select></div><div class="library-list">${items.length?items.map(e=>`<div class="library-track" data-sort-row="${e.id}"><button class="episode" data-episode="${e.id}"><span class="episode-mark" aria-hidden="true">${{en:'EN',fr:'FR',ja:'日'}[e.language]}</span><span class="episode-info"><span class="episode-title">${esc(e.title)}</span><span class="episode-meta">${esc(folderName(e))} · ${e.duration?time(e.duration):'音频'} · ${e.segments?.length?'有稿':'待转写'}</span><span class="progress-line"><span style="width:${Math.min(100,(e.progress||0)/Math.max(e.duration||1,1)*100)}%"></span></span></span><span class="episode-chevron" aria-hidden="true">›</span></button><button class="drag-handle" data-drag-id="${e.id}" aria-label="拖动排序 ${esc(e.title)}" aria-pressed="false">≡</button></div>`).join(''):`<div class="empty"><h2>${folder?'这个文件夹还没有音频':'留下第一段声音'}</h2><p>${folder?'编辑文件夹，选入已有音频；也可添加新文件。':'从手机“文件”中导入音频或文件夹。'}</p>${folder?'<button class="secondary" id="folder-add-existing">选择已有音频</button>':''}</div>`}</div>`;
+ main.innerHTML=`${folder?'':audioTabs('local')}${heading}<div class="library-actions"><button class="primary" id="add-audio">${folder?'添加音频':'导入'}</button><button class="secondary" id="refresh-folder">更新文件夹</button><button class="icon-button" id="library-order" aria-label="排列播放列表">⇅</button></div>${!folder?`<section class="folder-section"><div class="folder-section-title"><h2>我的文件夹</h2><button id="new-folder">＋ 新建</button></div><div class="folder-list">${folders.map(f=>`<div class="folder-swipe-row" data-folder-row="${esc(f.id)}"><button type="button" class="folder-swipe-delete" data-folder-delete="${esc(f.id)}" aria-label="删除文件夹 ${esc(f.name)}" hidden>删除</button><div class="folder-swipe-front"><button class="folder-tile" data-folder="${esc(f.id)}"><span class="folder-cover">${folderCover(f)}</span><span>${esc(f.name)}<small>${collection.filter(e=>e.collectionId===f.id).length} 段音频</small></span><span class="episode-chevron">›</span></button><button type="button" class="folder-swipe-toggle" data-folder-swipe-toggle aria-label="文件夹操作 ${esc(f.name)}" aria-expanded="false">···</button></div></div>`).join('')}</div>${folderUndo?`<div class="folder-delete-notice" role="status"><span>已删除“${esc(folderUndo.folder.name)}”，音频保留</span><button id="undo-folder-delete" data-undo-folder="${esc(folderUndo.folder.id)}" data-undo-token="${esc(folderUndo.token)}">撤销</button></div>`:''}</section>`:''}<div class="library-tools"><div class="filters">${[['','全部'],...Object.entries(LANG)].map(([c,n])=>`<button class="chip ${filter===c?'active':''}" data-filter="${c}">${n}</button>`).join('')}</div><select id="library-sort" class="compact-select" aria-label="音频排序">${[['manual','我的顺序'],['name','文件名顺序'],['newest','最新添加']].map(([v,n])=>`<option value="${v}" ${prefs.playlistSort===v?'selected':''}>${n}</option>`).join('')}</select></div><div class="library-list">${items.length?items.map(e=>`<div class="library-track" data-sort-row="${e.id}"><button class="episode" data-episode="${e.id}"><span class="episode-mark" aria-hidden="true">${{en:'EN',fr:'FR',ja:'日'}[e.language]}</span><span class="episode-info"><span class="episode-title">${esc(e.title)}</span><span class="episode-meta">${esc(folderName(e))} · ${e.duration?time(e.duration):'音频'} · ${e.segments?.length?'有稿':'待转写'}</span><span class="progress-line"><span style="width:${Math.min(100,(e.progress||0)/Math.max(e.duration||1,1)*100)}%"></span></span></span><span class="episode-chevron" aria-hidden="true">›</span></button><button class="drag-handle" data-drag-id="${e.id}" aria-label="拖动排序 ${esc(e.title)}" aria-pressed="false">≡</button></div>`).join(''):`<div class="empty"><h2>${folder?'这个文件夹还没有音频':'留下第一段声音'}</h2><p>${folder?'编辑文件夹，选入已有音频；也可添加新文件。':'从手机“文件”中导入音频或文件夹。'}</p>${folder?'<button class="secondary" id="folder-add-existing">选择已有音频</button>':''}</div>`}</div>`;
+ folderSwipeDispose=bindFolderSwipes(main.querySelector('.folder-list'));
+ main.querySelectorAll('[data-folder-delete]').forEach(button=>button.onclick=()=>deleteFolder(button.dataset.folderDelete));
+ on('#undo-folder-delete','click',event=>deleteFolder(event.currentTarget.dataset.undoFolder,{restore:true,undoToken:event.currentTarget.dataset.undoToken}));
  bindAudioTabs();on('#new-folder','click',()=>editFolder());on('#edit-folder','click',()=>editFolder(libraryFolder));on('#folder-add-existing','click',()=>editFolder(libraryFolder));on('#folder-back','click',()=>returnToParent());
  document.querySelectorAll('[data-folder]').forEach(b=>b.onclick=()=>{rememberLibrary();libraryFolder=b.dataset.folder;filter='';setAppRoute('folder/'+libraryFolder);renderLibrary();});
  on('#add-audio','click',()=>importAudio(false));on('#refresh-folder','click',()=>importAudio(true));on('#library-order','click',async()=>{await choosePlaylistFolder(libraryFolder);showPlaylist(true);});on('#import-script','click',()=>importScript());on('#edit-document-file','click',editDocumentFile);on('#batch-import-script','click',()=>batchImportScripts().catch(report));
@@ -287,10 +292,26 @@ async function renderLibrary(){
  document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;renderLibrary();});document.querySelectorAll('[data-episode]').forEach(b=>b.onclick=async()=>{await choosePlaylistFolder(libraryFolder);openEpisode(b.dataset.episode).catch(report);});
  main.dataset.libraryPositionKey=JSON.stringify([libraryFolder,filter]);libraryPositions.restore(main,main.dataset.libraryPositionKey);
 }
+async function deleteFolder(id,{restore=false,undoToken=null}={}){
+ const button=restore?$('#undo-folder-delete'):main.querySelector(`[data-folder-delete="${CSS.escape(id)}"]`)||$('#delete-folder');if(button)button.disabled=true;
+ try{
+  const result=await changeAudioFolder(id,{restore,undoToken,expectedFolder:restore?null:folders.find(f=>f.id===id)});
+  folders=result.folders;playbackLists=result.playbackLists;playlistFolder=result.playlistScope;shuffleQueue.reset();
+  if(result.changedIds.includes(episode?.id))episode={...episode,collectionId:restore?id:''};
+  if(cardFolderFilter===id&&!restore)cardFolderFilter='';
+  if(modal.open)closeModal();
+  if(view==='library'&&libraryMode==='local'){
+   if(libraryFolder===id&&!restore){libraryFolder='';setAppRoute('library',true);}
+   await renderLibrary();miniPlayer();
+  }
+  toast(restore?'文件夹已恢复':'文件夹已删除，音频和学习记录保留');
+ }catch(error){report(error);if(button?.isConnected)button.disabled=false;}
+}
 async function editFolder(id){
  const existing=folders.find(f=>f.id===id),collection=orderedEpisodes((await episodeCollection()).filter(e=>e.storageMode!=='stream')),draft={...(existing||{id:crypto.randomUUID(),name:'',cover:'',created:Date.now()})};
- openModal(existing?'编辑文件夹':'创建文件夹',`<div class="folder-preview folder-cover" id="folder-preview">${folderCover(draft)}</div><label for="folder-name">文件夹名称</label><input id="folder-name" maxlength="80" placeholder="例如：日语练习" value="${esc(draft.name)}"><label for="folder-image">封面图片</label><input id="folder-image" type="file" accept="image/*"><button id="clear-folder-cover" class="cover-clear">使用默认封面</button><label>放入已有音频</label><div class="folder-members">${collection.length?collection.map(e=>`<label class="checkbox-line"><input type="checkbox" data-folder-member="${e.id}" ${e.collectionId===draft.id?'checked':''}><span>${esc(e.title)}${e.collectionId&&e.collectionId!==draft.id?`<small>当前在 ${esc(folderName(e))}</small>`:''}</span></label>`).join(''):'<p class="note">创建后可以添加音频。</p>'}</div><button class="primary full section-title" id="save-folder">保存文件夹</button>`);
+ openModal(existing?'编辑文件夹':'创建文件夹',`<div class="folder-preview folder-cover" id="folder-preview">${folderCover(draft)}</div><label for="folder-name">文件夹名称</label><input id="folder-name" maxlength="80" placeholder="例如：日语练习" value="${esc(draft.name)}"><label for="folder-image">封面图片</label><input id="folder-image" type="file" accept="image/*"><button id="clear-folder-cover" class="cover-clear">使用默认封面</button><label>放入已有音频</label><div class="folder-members">${collection.length?collection.map(e=>`<label class="checkbox-line"><input type="checkbox" data-folder-member="${e.id}" ${e.collectionId===draft.id?'checked':''}><span>${esc(e.title)}${e.collectionId&&e.collectionId!==draft.id?`<small>当前在 ${esc(folderName(e))}</small>`:''}</span></label>`).join(''):'<p class="note">创建后可以添加音频。</p>'}</div><button class="primary full section-title" id="save-folder">保存文件夹</button>${existing?'<button class="danger full folder-delete-entry" id="delete-folder">删除文件夹</button><p class="note">只删除文件夹，音频和学习记录会保留；删除后可撤销。</p>':''}`);
  const serial=modalSerial;
+ on('#delete-folder','click',()=>deleteFolder(id));
  on('#clear-folder-cover','click',()=>{draft.cover='';$('#folder-image').value='';$('#folder-preview').innerHTML=folderCover(draft);});
  on('#folder-image','change',async()=>{const file=$('#folder-image').files[0];if(!file)return;$('#save-folder').disabled=true;$('#clear-folder-cover').disabled=true;try{const cover=await makeFolderCover(file);if(modalSerial===serial){draft.cover=cover;$('#folder-preview').innerHTML=folderCover(draft);}}catch(e){if(modalSerial===serial)report(e);}finally{if(modalSerial===serial){$('#save-folder').disabled=false;$('#clear-folder-cover').disabled=false;}}});
  on('#save-folder','click',async()=>{

@@ -1,6 +1,8 @@
 import {applyTranscriptPatch,transcriptFingerprint,transcriptName} from './transcript-batch.js';
 import {draftBlocksUpdate,acknowledgeTranscriptDraft} from './transcript-revisions.js';
-import {FAVORITES,changeFavorite} from './favorites.js?v=2026.10.15.1';
+import {FAVORITES,changeFavorite} from './favorites.js?v=2026.10.16.1';
+import {validateFolders} from './folders.js';
+export const FOLDER_DELETE_UNDO='folder-delete-undo-v1';
 export const db = await new Promise((resolve,reject)=>{
   const request=indexedDB.open('tingye',2);
   request.onupgradeneeded=()=>{for(const name of ['episodes','cards','settings','progress'])if(!request.result.objectStoreNames.contains(name))request.result.createObjectStore(name,{keyPath:'id'});};
@@ -49,6 +51,39 @@ export function setEpisodeFavorite(id,liked){return new Promise((resolve,reject)
 });}
 export function remove(store,id){return new Promise((resolve,reject)=>{const t=db.transaction(store==='episodes'?['episodes','progress','settings']:store,'readwrite');t.objectStore(store).delete(id);if(store==='episodes'){t.objectStore('progress').delete(id);t.objectStore('settings').delete(durationKey(id));t.objectStore('settings').delete(bookmarksKey(id));}t.oncomplete=resolve;t.onerror=()=>reject(t.error);});}
 export function saveBatch(episodes,cards,settings=[]){return new Promise((resolve,reject)=>{const t=db.transaction(['episodes','cards','settings'],'readwrite');for(const e of episodes)t.objectStore('episodes').put(e);for(const c of cards)t.objectStore('cards').put(c);for(const s of settings)t.objectStore('settings').put(s);t.oncomplete=resolve;t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error);});}
+// Folder removal never deletes an episode or touches its progress, cards or bookmarks.
+// Read, detach and save undo in one transaction so another tab cannot lose changes.
+export function changeAudioFolder(id,{restore=false,expectedFolder=null,undoToken=null}={}){return new Promise((resolve,reject)=>{
+ const t=db.transaction(['episodes','settings'],'readwrite'),settings=t.objectStore('settings'),episodes=t.objectStore('episodes');
+ const values={},keys=['audio-folders','playback-lists','playlist-scope',FOLDER_DELETE_UNDO];let waiting=keys.length,failure,result;
+ const fail=error=>{failure=error;try{t.abort();}catch{}};
+ t.oncomplete=()=>resolve(result);t.onerror=()=>reject(failure||t.error);t.onabort=()=>reject(failure||t.error||Error('文件夹更新未完成，请重试。'));
+ for(const key of keys){const request=settings.get(key);request.onsuccess=()=>{values[key]=request.result?.value;if(--waiting===0)try{prepare();}catch(error){fail(error);}};}
+ function prepare(){
+  const folders=validateFolders(values['audio-folders']||[]),lists=values['playback-lists']||[],scope=values['playlist-scope']||'',undo=values[FOLDER_DELETE_UNDO];
+  let folder,updated,nextLists,nextScope,members,snapshot;
+  if(restore){
+   if(!undo||undo.folder?.id!==id||undo.token!==undoToken)throw Error('撤销记录已更新，请重新打开音频页。');
+   folder=undo.folder;if(folders.some(f=>f.id===id))throw Error('这个文件夹已经存在，无需重复恢复。');
+   updated=[...folders];updated.splice(Math.min(undo.index,updated.length),0,folder);validateFolders(updated);
+   nextLists=undo.playbackList&&!lists.some(list=>list.scope===id)?[...lists,undo.playbackList]:lists;
+   nextScope=undo.wasActive&&!scope?id:scope;members=new Set(undo.members);snapshot=null;
+  }else{
+   folder=folders.find(f=>f.id===id);if(!folder)throw Error('这个文件夹已被删除。');
+   if(expectedFolder&&JSON.stringify(folder)!==JSON.stringify(expectedFolder))throw Error('文件夹已在其他窗口修改，请重新打开后删除。');
+   updated=folders.filter(f=>f.id!==id);nextLists=lists.filter(list=>list.scope!==id);nextScope=scope===id?'':scope;
+   snapshot={token:crypto.randomUUID(),folder,index:folders.findIndex(f=>f.id===id),members:[],playbackList:lists.find(list=>list.scope===id)||null,wasActive:scope===id};
+  }
+  result={folders:updated,playbackLists:nextLists,playlistScope:nextScope,folder,changedIds:[],undo:snapshot};
+  const request=episodes.openCursor();request.onsuccess=()=>{try{
+   const cursor=request.result;
+   if(!cursor){settings.put({id:'audio-folders',value:updated});settings.put({id:'playback-lists',value:nextLists});settings.put({id:'playlist-scope',value:nextScope});settings.put({id:FOLDER_DELETE_UNDO,value:snapshot});return;}
+   const e=cursor.value,change=restore?members.has(e.id)&&!e.collectionId:e.collectionId===id;
+   if(change){cursor.update({...e,collectionId:restore?id:''});result.changedIds.push(e.id);if(snapshot)snapshot.members.push(e.id);}
+   cursor.continue();
+  }catch(error){fail(error);}};
+ }
+});}
 // Read each current record in the same transaction; a conflict rolls back the whole batch.
 export function replaceEpisodeTranscripts(patches){return new Promise((resolve,reject)=>{
  const t=db.transaction('episodes','readwrite'),store=t.objectStore('episodes');let failure;
