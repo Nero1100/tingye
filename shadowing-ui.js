@@ -1,4 +1,4 @@
-import {ShadowSession,shadowPreferences,SHADOW_PREFS} from './shadowing.js?v=2026.10.16.2';
+import {ShadowSession,shadowPreferences,SHADOW_PREFS} from './shadowing.js?v=2026.10.16.3';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const phases={ready:'准备跟读',preparing:'正在准备麦克风',original:'先听原句',waiting:'轮到你跟读',recording:'正在录下你的跟读',review:'本轮完成', 'compare-original':'对照 · 原音','compare-voice':'对照 · 我的录音'};
 const busyPhases=['preparing','original','waiting','recording','compare-original','compare-voice'];
@@ -8,7 +8,7 @@ export function openShadowing(ctx){
  <div class="shadow-settings" id="shadow-settings" hidden><label>练习方式<select id="shadow-mode" aria-label="练习方式"><option value="listen">普通跟读</option><option value="record">录音对照</option></select></label><label>原音倍速<select id="shadow-rate" aria-label="原音倍速">${[.75,.85,1,1.15,1.25].map(n=>`<option value="${n}">${n}×</option>`).join('')}</select></label><label>跟读时间<select id="shadow-factor" aria-label="跟读时间">${[1,1.5,2].map(n=>`<option value="${n}">原句时长 × ${n}</option>`).join('')}</select></label><label>每句重复<select id="shadow-repeats" aria-label="每句重复"><option value="1">1 次</option><option value="2">2 次</option><option value="3">3 次</option><option value="0">无限</option></select></label><label class="checkbox-line"><input type="checkbox" id="shadow-next-auto">完成后自动下一句</label><label class="checkbox-line"><input type="checkbox" id="shadow-mask">跟读时遮盖原文与译文</label><p class="note">设置自动保存。录音需允许麦克风；未保留的录音在换句或退出后清除。同一句只保留最新一遍。</p></div>
  <div class="shadow-status"><span id="shadow-phase" role="status" aria-live="polite"></span><span id="shadow-round"></span></div>
  <main class="shadow-body"><small id="shadow-title"></small><time id="shadow-time"></time><div id="shadow-source" class="source"></div><button class="shadow-cover" id="shadow-cover" aria-label="显示跟读原文" hidden><i></i><i></i><i></i><span>点一下显示原文</span></button><p id="shadow-translation" class="translation"></p><p id="shadow-countdown" class="shadow-countdown" aria-hidden="true"></p><p id="shadow-message" class="note" role="status"></p></main>
- <footer class="shadow-bottom"><div class="shadow-display"><button id="shadow-translation-toggle" aria-pressed="true">译文</button><button id="shadow-reading-toggle" aria-pressed="true">读音</button><button id="shadow-cover-toggle" aria-pressed="false">遮盖</button></div><div class="shadow-review"><button id="shadow-original">▶ 原音</button><button id="shadow-voice">▶ 我的录音</button><button id="shadow-compare">⇄ 交替对照</button></div><div class="shadow-transport"><button id="shadow-previous" aria-label="上一句跟读">上一句</button><button class="primary" id="shadow-start">开始跟读</button><button id="shadow-next" aria-label="下一句跟读">下一句</button></div><button id="shadow-save" class="secondary" hidden>保留本遍录音</button><p class="shadow-local-note" id="shadow-local-note">听原句，然后留出时间复述。</p></footer>`;
+ <footer class="shadow-bottom"><div class="shadow-display"><button id="shadow-translation-toggle" aria-pressed="true">译文</button><button id="shadow-reading-toggle" aria-pressed="true">读音</button><button id="shadow-cover-toggle" aria-pressed="false">遮盖</button><button id="shadow-only-translation" aria-pressed="false">只显示译文</button></div><div class="shadow-review"><button id="shadow-original">▶ 原音</button><button id="shadow-voice">▶ 我的录音</button><button id="shadow-compare">⇄ 交替对照</button></div><div class="shadow-transport"><button id="shadow-previous" aria-label="上一句跟读">上一句</button><button class="primary" id="shadow-start">开始跟读</button><button id="shadow-next" aria-label="下一句跟读">下一句</button></div><button id="shadow-save" class="secondary" hidden>保留本遍录音</button><p class="shadow-local-note" id="shadow-local-note">听原句，然后留出时间复述。</p></footer>`;
  const voice=document.createElement('audio');voice.preload='metadata';voice.setAttribute('playsinline','');panel.append(voice);document.body.append(panel);
  const q=selector=>panel.querySelector(selector),events=new AbortController(),on=(selector,name,fn)=>q(selector).addEventListener(name,fn,{signal:events.signal});
  let translations=ctx.translation!==false,readings=ctx.reading!==false,revealed=false,saveBusy=false,disposed=false,lastPhase='',lastIndex=-1,controller;
@@ -23,12 +23,15 @@ export function openShadowing(ctx){
   q('#shadow-phase').textContent=phases[phase]||'逐句跟读';q('#shadow-round').textContent=controller.round?`已跟读 ${controller.round} 遍`:'';
   if(q('#shadow-source').dataset.index!==String(controller.index)){q('#shadow-source').innerHTML=ctx.renderSentence(s);q('#shadow-source').dataset.index=String(controller.index);}
   q('#shadow-source').lang=ctx.source.language;q('#shadow-source').classList.toggle('shadow-no-reading',!readings);
-  const masked=controller.prefs.mask&&!revealed;
-  q('#shadow-source').hidden=masked;q('#shadow-cover').hidden=!masked;q('#shadow-translation').textContent=s.translation||'';q('#shadow-translation').hidden=!translations||masked||!s.translation;
+  const onlyTranslation=controller.prefs.onlyTranslation,masked=controller.prefs.mask&&!revealed;
+  panel.classList.toggle('shadow-only-translation',onlyTranslation);
+  q('#shadow-source').hidden=onlyTranslation||masked;q('#shadow-cover').hidden=onlyTranslation||!masked;q('#shadow-translation').textContent=s.translation||'';q('#shadow-translation').hidden=(!onlyTranslation&&(!translations||masked))||!s.translation;
   q('#shadow-countdown').textContent=['waiting','recording'].includes(phase)?Math.ceil(controller.left)+' 秒':'';
-  q('#shadow-message').textContent=controller.message;
+  q('#shadow-message').textContent=controller.message||(onlyTranslation&&!s.translation?'这句还没有译文，可先补充译文。':'');
   q('#shadow-translation-toggle').setAttribute('aria-pressed',String(translations));q('#shadow-reading-toggle').setAttribute('aria-pressed',String(readings));q('#shadow-cover-toggle').setAttribute('aria-pressed',String(controller.prefs.mask));
   q('#shadow-reading-toggle').hidden=ctx.source.language!=='ja';
+  q('#shadow-only-translation').setAttribute('aria-pressed',String(onlyTranslation));
+  for(const id of ['#shadow-translation-toggle','#shadow-reading-toggle','#shadow-cover-toggle'])q(id).disabled=onlyTranslation;
   q('#shadow-start').textContent=['waiting','recording'].includes(phase)?'完成跟读':busy?'停止本轮':phase==='review'?'再练一次':'开始跟读';
   for(const id of ['#shadow-original','#shadow-voice','#shadow-compare'])q(id).disabled=busy;
   q('#shadow-voice').disabled=busy||!recording;q('#shadow-compare').disabled=busy||!recording;
@@ -44,7 +47,7 @@ export function openShadowing(ctx){
   completed:session=>{const key='shadow-progress/'+ctx.source.id,index=session.index,start=session.current().start;ctx.markComplete?.({key,index,start});}});
  for(const [id,key] of [['#shadow-mode','mode'],['#shadow-rate','rate'],['#shadow-factor','factor'],['#shadow-repeats','repeats']])q(id).value=String(controller.prefs[key]);
  q('#shadow-next-auto').checked=controller.prefs.autoNext;q('#shadow-mask').checked=controller.prefs.mask;
- function configure(){revealed=false;controller.configure(shadowPreferences({mode:q('#shadow-mode').value,rate:q('#shadow-rate').value,factor:q('#shadow-factor').value,repeats:q('#shadow-repeats').value,autoNext:q('#shadow-next-auto').checked,mask:q('#shadow-mask').checked}));persist();render();}
+ function configure(){revealed=false;controller.configure(shadowPreferences({...controller.prefs,mode:q('#shadow-mode').value,rate:q('#shadow-rate').value,factor:q('#shadow-factor').value,repeats:q('#shadow-repeats').value,autoNext:q('#shadow-next-auto').checked,mask:q('#shadow-mask').checked}));persist();render();}
  for(const id of ['#shadow-mode','#shadow-rate','#shadow-factor','#shadow-repeats','#shadow-next-auto','#shadow-mask'])on(id,'change',configure);
  on('#shadow-options','click',()=>{const show=q('#shadow-settings').hidden;q('#shadow-settings').hidden=!show;q('#shadow-options').setAttribute('aria-expanded',String(show));});
  on('#shadow-close','click',closed);panel.addEventListener('cancel',event=>{event.preventDefault();closed();},{signal:events.signal});
@@ -53,6 +56,7 @@ export function openShadowing(ctx){
  on('#shadow-previous','click',()=>controller.move(controller.index-1));on('#shadow-next','click',()=>controller.move(controller.index+1));
  on('#shadow-translation-toggle','click',()=>{translations=!translations;render();});on('#shadow-reading-toggle','click',()=>{readings=!readings;render();});
  on('#shadow-cover','click',()=>{revealed=true;render();});on('#shadow-source','click',()=>{if(controller.prefs.mask){revealed=false;render();}});
+ on('#shadow-only-translation','click',()=>{controller.prefs.onlyTranslation=!controller.prefs.onlyTranslation;persist();render();});
  on('#shadow-cover-toggle','click',()=>{q('#shadow-mask').checked=!controller.prefs.mask;configure();});
  on('#shadow-save','click',async()=>{saveBusy=true;render();const recording=controller.recording;try{await ctx.recordings.save(ctx.source,recording);if(controller.recording===recording)recording.saved=true;ctx.toast('跟读录音已保留在本机');}catch(error){ctx.report(error);}finally{saveBusy=false;render();}});
  document.addEventListener('visibilitychange',()=>{if(document.hidden&&busyPhases.includes(controller.phase)){controller.cancel();controller.message='练习已暂停，返回后可重新开始。';render();}},{signal:events.signal});
