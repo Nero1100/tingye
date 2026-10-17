@@ -2,12 +2,51 @@
 from pathlib import Path
 from urllib.request import Request, urlopen
 from urllib.parse import urlsplit
+from urllib.error import URLError
+import json
 import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = 'https://api.substack.com/feed/podcast/1605429.rss'
 ITUNES = 'http://www.itunes.com/dtds/podcast-1.0.dtd'
 ET.register_namespace('itunes', ITUNES)
+
+def apple_feed():
+    # The publisher's public Apple directory supplies the same enclosure and RSS GUID.
+    address = 'https://itunes.apple.com/lookup?id=1696009195&entity=podcastEpisode&limit=200'
+    with urlopen(address, timeout=40) as response:
+        raw = response.read(8 * 1024 * 1024 + 1)
+    if len(raw) > 8 * 1024 * 1024:
+        raise ValueError('Podcast directory too large')
+    results = json.loads(raw)['results']
+    show = next((item for item in results if item.get('kind') == 'podcast' and item.get('collectionId') == 1696009195), None)
+    if not show or show.get('feedUrl') != SOURCE or show.get('collectionName') != 'Quebec French Podcast':
+        raise ValueError('Apple podcast identity does not match the publisher')
+    root = ET.Element('rss', version='2.0')
+    channel = ET.SubElement(root, 'channel')
+    for name, value in {'title': show['collectionName'], 'language': 'fr', 'link': 'https://www.frenchwithfrederic.com/podcast', '{'+ITUNES+'}author': show['artistName']}.items():
+        ET.SubElement(channel, name).text = value
+    ET.SubElement(channel, '{'+ITUNES+'}image', href=show.get('artworkUrl600', ''))
+    from email.utils import format_datetime
+    from datetime import datetime
+    guids = set()
+    for item in results:
+        if item.get('kind') != 'podcast-episode' or item.get('collectionId') != 1696009195 or item.get('feedUrl') != SOURCE or not item.get('episodeGuid') or not item.get('episodeUrl'):
+            continue
+        output = ET.SubElement(channel, 'item')
+        guids.add(item['episodeGuid'])
+        for name, value in {'title': item['trackName'], 'guid': item['episodeGuid'], 'description': item.get('description', ''),
+            'pubDate': format_datetime(datetime.fromisoformat(item['releaseDate'].replace('Z', '+00:00'))),
+            '{'+ITUNES+'}duration': str(item.get('trackTimeMillis', 0) / 1000)}.items():
+            ET.SubElement(output, name).text = value
+        ET.SubElement(output, 'enclosure', url=item['episodeUrl'], type='audio/mpeg', length='0')
+    # Retain older public episodes when Apple's latest-200 window advances.
+    previous = ROOT / 'feeds/quebec-french.xml'
+    if previous.exists():
+        for item in ET.fromstring(previous.read_bytes()).findall('./channel/item'):
+            if item.findtext('guid') not in guids:
+                channel.append(item)
+    return ET.tostring(root, encoding='utf-8', xml_declaration=True)
 
 def build(payload):
     if len(payload) > 8 * 1024 * 1024 or b'<!DOCTYPE' in payload.upper():
@@ -41,8 +80,12 @@ def build(payload):
     return ET.tostring(root, encoding='utf-8', xml_declaration=True), count
 
 def main():
-    with urlopen(Request(SOURCE, headers={'User-Agent': 'Tingye-Public-Podcast-Directory/1.0'}), timeout=40) as response:
-        payload = response.read(8 * 1024 * 1024 + 1)
+    try:
+        with urlopen(Request(SOURCE, headers={'User-Agent': 'Tingye-Public-Podcast-Directory/1.0'}), timeout=40) as response:
+            payload = response.read(8 * 1024 * 1024 + 1)
+    except URLError:
+        print('Publisher RSS unavailable; refreshing from its public Apple Podcasts directory')
+        payload = apple_feed()
     output, count = build(payload)
     destination = ROOT / 'feeds/quebec-french.xml'
     destination.parent.mkdir(exist_ok=True)
@@ -54,3 +97,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
