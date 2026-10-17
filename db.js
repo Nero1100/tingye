@@ -1,6 +1,6 @@
 import {applyTranscriptPatch,transcriptFingerprint,transcriptName} from './transcript-batch.js';
 import {draftBlocksUpdate,acknowledgeTranscriptDraft} from './transcript-revisions.js';
-import {FAVORITES,changeFavorite} from './favorites.js?v=2026.10.17.5';
+import {FAVORITES,changeFavorite} from './favorites.js?v=2026.10.17.6';
 import {validateFolders} from './folders.js';
 export const FOLDER_DELETE_UNDO='folder-delete-undo-v1';
 export const db = await new Promise((resolve,reject)=>{

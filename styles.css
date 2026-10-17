@@ -284,3 +284,9 @@ body{background:var(--bg)}
 .unified-practice .practice-save-top{flex:none;margin:0;gap:0}.unified-practice .practice-save-top #shadow-save,.unified-practice .practice-save-top #full-save{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:40px;margin:0;padding:5px 10px;border-radius:99px;background:var(--soft);color:var(--accent);white-space:nowrap}.unified-practice .practice-save-top svg{width:15px;height:15px}
 .unified-practice .practice-save-top #shadow-save.is-saved,.unified-practice .practice-save-top #full-save.is-saved{opacity:1;background:none;color:var(--muted)}
 @media(pointer:coarse){.unified-practice .practice-save-top #shadow-save,.unified-practice .practice-save-top #full-save{min-height:44px}}
+
+/* Readable input text prevents iPhone focus zoom without disabling pinch zoom. */
+input[type="search"]{font-size:max(16px,1rem)!important}
+@media(max-width:900px),(any-pointer:coarse){
+ input:where(:not([type]),[type="text"],[type="search"],[type="email"],[type="password"],[type="url"],[type="tel"],[type="number"]),textarea,select,[contenteditable="true"]{font-size:max(16px,1rem)!important}
+}
