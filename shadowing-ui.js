@@ -1,16 +1,16 @@
-import {ShadowSession,shadowPreferences,SHADOW_PREFS} from './shadowing.js?v=2026.10.17.2';
-import {practiceIcon,practiceAction,setPracticeAction,practiceDisplay,kanaState,bindKanaHint} from './practice-ui.js?v=2026.10.17.2';
+import {ShadowSession,shadowPreferences,SHADOW_PREFS} from './shadowing.js?v=2026.10.17.3';
+import {practiceIcon,practiceAction,setPracticeAction,practiceDisplay,kanaState,bindKanaHint,practiceSave,setPracticeSave,focusPracticeTitle} from './practice-ui.js?v=2026.10.17.3';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const phases={ready:'准备跟读',preparing:'正在准备麦克风',original:'先听原句',waiting:'轮到你跟读',recording:'正在录下你的跟读',review:'本轮完成','compare-original':'对照 · 原音','compare-voice':'对照 · 我的录音'};
 const busyPhases=['preparing','original','waiting','recording','compare-original','compare-voice'];
 export function openShadowing(ctx){
  const panel=document.createElement('dialog');panel.className='shadowing-mode unified-practice';panel.setAttribute('aria-label','逐句跟读');
- panel.innerHTML=`<header class="shadow-top"><strong>逐句跟读</strong><div><button id="shadow-full-reading">全文朗读</button><button id="shadow-options" aria-label="跟读设置" aria-expanded="false">${practiceIcon('settings')}</button><button id="shadow-close" aria-label="退出跟读">${practiceIcon('close')}</button></div></header>
+ panel.innerHTML=`<header class="shadow-top"><h2 class="practice-heading" tabindex="-1">逐句跟读</h2><div><button id="shadow-full-reading">全文朗读</button><button id="shadow-options" aria-label="跟读设置" aria-expanded="false">${practiceIcon('settings')}</button><button id="shadow-close" aria-label="退出跟读">${practiceIcon('close')}</button></div></header>
  <div class="practice-modes" role="group" aria-label="练习方式"><button data-shadow-mode="listen">普通跟读</button><button data-shadow-mode="record">录音对照</button></div>
  <div class="shadow-settings" id="shadow-settings" hidden><label>原音倍速<select id="shadow-rate" aria-label="原音倍速">${[.75,.85,1,1.15,1.25].map(n=>`<option value="${n}">${n}×</option>`).join('')}</select></label><label>跟读时间<select id="shadow-factor" aria-label="跟读时间">${[1,1.5,2].map(n=>`<option value="${n}">原句时长 × ${n}</option>`).join('')}</select></label><label>每句重复<select id="shadow-repeats" aria-label="每句重复"><option value="1">1 次</option><option value="2">2 次</option><option value="3">3 次</option><option value="0">无限</option></select></label><label class="checkbox-line"><input type="checkbox" id="shadow-next-auto">完成后自动下一句</label><label class="checkbox-line"><input type="checkbox" id="shadow-mask">跟读时遮盖原文与译文</label><p class="note">设置自动保存。录音需允许麦克风；未保留的录音在换句或退出后清除。同一句只保留最新一遍。</p></div>
- <div class="shadow-status"><span id="shadow-phase" role="status" aria-live="polite"></span><div class="practice-position"><span id="shadow-round"></span><span id="shadow-counter"></span></div></div>
+ <div class="shadow-status"><div class="practice-status-main"><span id="shadow-phase" role="status" aria-live="polite"></span>${practiceSave('shadow')}</div><div class="practice-position"><span id="shadow-round"></span><span id="shadow-counter"></span></div></div>
  <main class="shadow-body"><div class="practice-sentence-meta"><div><small id="shadow-title"></small><time id="shadow-time"></time></div><button id="shadow-cover-toggle" class="practice-mask" aria-pressed="false">${practiceIcon('cover')}<span>遮盖</span></button></div><div id="shadow-source" class="source"></div><button class="shadow-cover" id="shadow-cover" aria-label="显示跟读原文与译文" hidden><i></i><i></i><i></i></button><p id="shadow-translation" class="translation"></p><p id="shadow-countdown" class="shadow-countdown" aria-hidden="true" hidden></p><p id="shadow-message" class="note" role="status" hidden></p></main>
- <footer class="shadow-bottom">${practiceDisplay('data-shadow-display','shadow-reading-toggle')}<div class="shadow-review practice-review"><button id="shadow-original">${practiceIcon('play')}原音</button><button id="shadow-voice">${practiceIcon('headphones')}我的录音</button><button id="shadow-compare">${practiceIcon('compare')}交替对照</button></div><div class="practice-transport">${practiceAction('shadow-previous','上一句','previous')}${practiceAction('shadow-start','开始跟读','play',true)}${practiceAction('shadow-next','下一句','next')}</div><div id="shadow-save-row" class="practice-save-row" hidden><span id="shadow-save-status"></span><button id="shadow-save">保留本遍</button></div></footer>`;
+ <footer class="shadow-bottom">${practiceDisplay('data-shadow-display','shadow-reading-toggle')}<div class="shadow-review practice-review"><button id="shadow-original">${practiceIcon('play')}原音</button><button id="shadow-voice">${practiceIcon('headphones')}我的录音</button><button id="shadow-compare">${practiceIcon('compare')}交替对照</button></div><div class="practice-transport">${practiceAction('shadow-previous','上一句','previous')}${practiceAction('shadow-start','开始跟读','play',true)}${practiceAction('shadow-next','下一句','next')}</div></footer>`;
  const voice=document.createElement('audio');voice.preload='metadata';voice.setAttribute('playsinline','');panel.append(voice);document.body.append(panel);
  const q=selector=>panel.querySelector(selector),events=new AbortController(),on=(selector,name,fn)=>q(selector).addEventListener(name,fn,{signal:events.signal});
  let display,readings=typeof ctx.prefs?.reading==='boolean'?ctx.prefs.reading:ctx.reading!==false,revealed=false,saveBusy=false,disposed=false,lastPhase='',lastIndex=-1,controller,writes=Promise.resolve();
@@ -38,7 +38,7 @@ export function openShadowing(ctx){
   for(const id of ['#shadow-original','#shadow-voice','#shadow-compare'])q(id).disabled=busy;
   q('#shadow-voice').disabled=busy||!recording;q('#shadow-compare').disabled=busy||!recording;
   q('#shadow-previous').disabled=controller.index<=0;q('#shadow-next').disabled=controller.index>=controller.sentences.length-1;
-  q('#shadow-save-row').hidden=!recording||busy;q('#shadow-save-status').textContent=recording?.saved?'本遍已保留':'本遍未保留';q('#shadow-save').hidden=!!recording?.saved;q('#shadow-save').disabled=saveBusy;q('#shadow-save').textContent=saveBusy?'正在保存…':'保留本遍';
+  setPracticeSave(panel,'shadow',recording,busy,saveBusy);
   lastPhase=phase;lastIndex=controller.index;
  }
  const closed=()=>{if(disposed)return;disposed=true;controller.close();events.abort();panel.close();panel.remove();ctx.closed();};
@@ -64,7 +64,7 @@ export function openShadowing(ctx){
  on('#shadow-save','click',async()=>{saveBusy=true;render();const recording=controller.recording;try{await ctx.recordings.save(ctx.source,recording);if(controller.recording===recording)recording.saved=true;ctx.toast('跟读录音已保留在本机');}catch(error){ctx.report(error);}finally{saveBusy=false;render();}});
  document.addEventListener('visibilitychange',()=>{if(document.hidden&&busyPhases.includes(controller.phase)){controller.cancel();controller.message='练习已暂停，返回后可重新开始。';render();}},{signal:events.signal});
  window.addEventListener('pagehide',()=>controller.cancel(),{signal:events.signal});
- panel.showModal();render();q('#shadow-start').focus({preventScroll:true});return {controller,close:closed};
+ panel.showModal();render();focusPracticeTitle(panel);return {controller,close:closed};
 }
 
 export async function showShadowRecordings(ctx){

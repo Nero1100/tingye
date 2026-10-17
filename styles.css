@@ -278,3 +278,9 @@ body{background:var(--bg)}
 @media(max-width:360px){.unified-practice[open]{padding-left:16px;padding-right:16px}.unified-practice .practice-segments{gap:0}.unified-practice .practice-segments button{font-size:.69rem;padding:4px 3px}.unified-practice .practice-review{gap:5px}.unified-practice .shadow-body .source{font-size:1.3rem}}
 @media(pointer:coarse){.unified-practice .practice-segments button,.unified-practice .practice-review button,.unified-practice .practice-mask{min-height:44px}}
 @media(max-height:620px){.unified-practice .practice-modes{margin-top:6px}.unified-practice .shadow-status{margin-top:10px}.unified-practice .practice-display-row{margin-bottom:6px}.unified-practice .practice-review{margin-bottom:6px}.unified-practice .practice-primary .practice-action-icon{width:50px;height:50px}.unified-practice .shadow-body{padding-top:12px;padding-bottom:12px}}
+
+.unified-practice .practice-heading{margin:0;font-size:1.05rem;font-weight:600;white-space:nowrap}.unified-practice .practice-heading:focus{outline:none}
+.unified-practice .practice-status-main{display:flex;align-items:center;gap:10px;min-width:0}.unified-practice .practice-status-main>[role=status]{flex:none}
+.unified-practice .practice-save-top{flex:none;margin:0;gap:0}.unified-practice .practice-save-top #shadow-save,.unified-practice .practice-save-top #full-save{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:40px;margin:0;padding:5px 10px;border-radius:99px;background:var(--soft);color:var(--accent);white-space:nowrap}.unified-practice .practice-save-top svg{width:15px;height:15px}
+.unified-practice .practice-save-top #shadow-save.is-saved,.unified-practice .practice-save-top #full-save.is-saved{opacity:1;background:none;color:var(--muted)}
+@media(pointer:coarse){.unified-practice .practice-save-top #shadow-save,.unified-practice .practice-save-top #full-save{min-height:44px}}

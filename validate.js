@@ -1,7 +1,7 @@
-import {validatePlaybackLists} from './playback-list.js?v=2026.10.17.2';
+import {validatePlaybackLists} from './playback-list.js?v=2026.10.17.3';
 import {validateFolders} from './folders.js';
-import {validateFavorites,isFavoriteScope} from './favorites.js?v=2026.10.17.2';
-import {streamURL,isPodcastScope,podcastSubscriptions,podcastCatalog} from './podcasts.js?v=2026.10.17.2';
+import {validateFavorites,isFavoriteScope} from './favorites.js?v=2026.10.17.3';
+import {streamURL,isPodcastScope,podcastSubscriptions,podcastCatalog} from './podcasts.js?v=2026.10.17.3';
 const languages = ['en', 'fr', 'ja'];
 const validTime = n => Number.isFinite(n) && n >= 0 && n <= 86400;
 const text = (s, max) => typeof s === 'string' && s.length <= max;

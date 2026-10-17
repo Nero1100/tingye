@@ -1,5 +1,5 @@
-import {ShadowSession} from './shadowing.js?v=2026.10.17.2';
-import {practiceIcon,practiceAction,setPracticeAction,practiceDisplay,kanaState,bindKanaHint} from './practice-ui.js?v=2026.10.17.2';
+import {ShadowSession} from './shadowing.js?v=2026.10.17.3';
+import {practiceIcon,practiceAction,setPracticeAction,practiceDisplay,kanaState,bindKanaHint,practiceSave,setPracticeSave,focusPracticeTitle} from './practice-ui.js?v=2026.10.17.3';
 
 export const FULL_READING_PREFS='full-reading-preferences-v1',FULL_RECORD_SECONDS=3600;
 export function fullReadingPreferences(value={}){
@@ -36,7 +36,7 @@ export class FullReadingSession extends ShadowSession{
   if(['recording','preparing'].includes(this.phase))return;
   this.cancel();this.discard();this.message='';const token=this.generation;
   try{await this.record(token,{seconds:FULL_RECORD_SECONDS,byteLimit:40*1048576,kind:'full',sentence:{...this.range(),text:'全文朗读 · '+this.title}});
-   if(token!==this.generation)return;this.phase='review';this.message='录音已完成，可以回听或保留本遍。';this.emit();
+   if(token!==this.generation)return;this.phase='review';this.message='';this.emit();
   }catch(error){if(token!==this.generation)return;this.error(error);this.phase='ready';this.emit();}
  }
  close(){this.audio.removeEventListener('timeupdate',this.track);super.close();}
@@ -48,12 +48,12 @@ export function openFullReading(ctx){
  let prefs=fullReadingPreferences(ctx.fullPrefs),disposed=false,controller,saving=false,follow=true,lastIndex=-1,lastCapture=null,displayDirty=true,scrollTimer,positionWrites=Promise.resolve(),prefWrites=Promise.resolve();
  const revealed=new Set(),positionKey='full-reading-position/'+ctx.source.id,panel=document.createElement('dialog');
  panel.className='shadowing-mode full-reading-mode unified-practice';panel.setAttribute('aria-label','全文朗读');
- panel.innerHTML=`<header class="shadow-top"><strong>全文朗读</strong><div><button id="full-sentence-mode">逐句跟读</button><button id="full-settings-toggle" aria-label="全文朗读设置" aria-expanded="false">${practiceIcon('settings')}</button><button id="full-close" aria-label="退出全文朗读">${practiceIcon('close')}</button></div></header>
+ panel.innerHTML=`<header class="shadow-top"><h2 class="practice-heading" tabindex="-1">全文朗读</h2><div><button id="full-sentence-mode">逐句跟读</button><button id="full-settings-toggle" aria-label="全文朗读设置" aria-expanded="false">${practiceIcon('settings')}</button><button id="full-close" aria-label="退出全文朗读">${practiceIcon('close')}</button></div></header>
  <div class="full-mode-select practice-modes" role="group" aria-label="全文练习方式"><button data-full-mode="listen">跟着原音读</button><button data-full-mode="self">自己朗读</button></div>
  <div id="full-settings" class="shadow-settings" hidden><label>原音倍速<select id="full-rate" aria-label="全文原音倍速">${[.75,.85,1,1.15,1.25].map(n=>`<option value="${n}">${n}×</option>`).join('')}</select></label><div class="full-size"><span>字号</span><button id="full-smaller" aria-label="减小全文字号">A−</button><button id="full-larger" aria-label="增大全文字号">A＋</button></div><label class="checkbox-line" id="full-reading-label"><input id="full-reading-toggle" type="checkbox">显示假名</label><p class="note">设置与阅读位置自动保留。录音仅在本机处理，切到后台会结束录音；未保留录音退出后清除，同一篇保留最新一遍。单次最多 60 分钟或 40 MB。</p></div>
- <div class="full-title">${escape(ctx.source.title)}</div><div class="shadow-status"><span id="full-phase" role="status" aria-live="polite"></span><span id="full-counter"></span></div>
+ <div class="full-title">${escape(ctx.source.title)}</div><div class="shadow-status"><div class="practice-status-main"><span id="full-phase" role="status" aria-live="polite"></span>${practiceSave('full')}</div><span id="full-counter"></span></div>
  <section id="full-text" class="full-reading-text" aria-label="全文逐字稿">${ctx.sentences.map((s,i)=>`<article class="full-sentence" data-full-sentence="${i}"><div class="full-sentence-head"><time>${ctx.time(s.start)}</time><button data-full-sample="${i}" aria-label="听第 ${i+1} 句示范">▶ 示范</button></div><div class="source" lang="${escape(ctx.source.language)}">${ctx.renderSentence(s)}</div><p class="translation ${s.translation?'':'missing-translation'}">${escape(s.translation||'这句还没有译文')}</p><button data-full-reveal="${i}" aria-expanded="false">展开原文</button></article>`).join('')}</section>
- <footer class="full-footer"><button id="full-follow" hidden>回到播放位置 ↓</button>${practiceDisplay('data-full-display','full-reading-button')}<p class="full-message note" id="full-message" role="status"></p><div class="full-main-controls practice-transport">${practiceAction('full-original-play','原音','play')}${practiceAction('full-primary','开始听读','play',true)}${practiceAction('full-recording-play','我的录音','headphones')}</div><div id="full-save-row" class="practice-save-row" hidden><span id="full-save-status"></span><button id="full-save">保留本遍</button></div></footer>`;
+ <footer class="full-footer"><button id="full-follow" hidden>回到播放位置 ↓</button>${practiceDisplay('data-full-display','full-reading-button')}<p class="full-message note" id="full-message" role="status"></p><div class="full-main-controls practice-transport">${practiceAction('full-original-play','原音','play')}${practiceAction('full-primary','开始听读','play',true)}${practiceAction('full-recording-play','我的录音','headphones')}</div></footer>`;
  const voice=document.createElement('audio');voice.preload='metadata';voice.setAttribute('playsinline','');panel.append(voice);document.body.append(panel);
  const q=s=>panel.querySelector(s),rows=[...panel.querySelectorAll('.full-sentence')],events=new AbortController(),on=(target,event,fn)=>target.addEventListener(event,fn,{signal:events.signal});
  const text=q('#full-text');
@@ -84,7 +84,7 @@ export function openFullReading(ctx){
   setPracticeAction(q('#full-primary'),primaryLabel,phase==='recording'||phase==='preparing'?'stop':busy?'pause':prefs.mode==='self'?'mic':'play');
   kanaState(q('#full-reading-button'),prefs.reading);q('#full-reading-toggle').checked=prefs.reading;
   q('#full-recording-play').disabled=capture||!controller.recording;q('#full-original-play').disabled=capture;
-  q('#full-save-row').hidden=!controller.recording||capture||busy;q('#full-save-status').textContent=controller.recording?.saved?'本遍已保留':'本遍未保留';q('#full-save').hidden=!!controller.recording?.saved;q('#full-save').disabled=saving;q('#full-save').textContent=saving?'正在保存…':'保留本遍';
+  setPracticeSave(panel,'full',controller.recording,capture||busy,saving);
   q('#full-message').textContent=controller.message;
   q('#full-follow').hidden=follow||!busy;q('#full-smaller').disabled=prefs.size<=1;q('#full-larger').disabled=prefs.size>=3;
   if(lastIndex!==controller.index&&follow&&['original','compare-original'].includes(phase))scrollCurrent();lastIndex=controller.index;
@@ -125,5 +125,5 @@ export function openFullReading(ctx){
  panel.showModal();render();
  if(ctx.position&&Number.isFinite(ctx.position.scrollTop)&&ctx.position.count===rows.length)text.scrollTop=ctx.position.scrollTop;
  else scrollCurrent();
- q('#full-primary').focus({preventScroll:true});return {controller,close};
+ focusPracticeTitle(panel);return {controller,close};
 }
