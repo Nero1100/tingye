@@ -1,54 +1,55 @@
-import {showAddPodcast} from './podcast-add.js?v=2026.10.16.3';
-import {categoryField as categoryPickerField,bindCategoryField,rememberedCategory} from './category-picker.js?v=2026.10.16.3';
-import {openReadingDisplay} from './reading-display.js?v=2026.10.16.3';
+import {showAddPodcast} from './podcast-add.js?v=2026.10.17.1';
+import {categoryField as categoryPickerField,bindCategoryField,rememberedCategory} from './category-picker.js?v=2026.10.17.1';
+import {openReadingDisplay} from './reading-display.js?v=2026.10.17.1';
 import {markTranscriptDraft} from './transcript-revisions.js';
-import {showVideoSubtitles} from './video-subtitles.js?v=2026.10.16.3';
-import {showReferenceAlignment} from './reference-alignment.js?v=2026.10.16.3';
-import {PODCASTS,BUILTIN_PODCASTS,podcastShow,podcastScope,isPodcastScope,streamURL,podcastRecord,SUBSCRIPTIONS,podcastSubscriptions,CUSTOM_SHOWS,setCustomPodcasts,validateCustomPodcasts,mergeCustomPodcasts,podcastCatalog,feedURL,parsePodcastFeed} from './podcasts.js?v=2026.10.16.3';
-import {FAVORITES,FAVORITES_SCOPE,favoriteScope,isFavoriteScope,favoriteScopeLanguage,validateFavorites,favoriteEpisodes,restoreFavorites,heartIcon} from './favorites.js?v=2026.10.16.3';
-import {PodcastCovers} from './podcast-covers.js?v=2026.10.16.3';
-import {PodcastOffline} from './podcast-offline.js?v=2026.10.16.3';
-import {downloadLabel,showOfflineManager} from './podcast-download-ui.js?v=2026.10.16.3';
-import {MediaControls} from './media-controls.js?v=2026.10.16.3';
-import {PodcastLibrary,audioTabs} from './podcast-library.js?v=2026.10.16.3';
-import {FAVORITE_LANGUAGE,validPodcastLanguage,showLanguage,languageEpisodes,languageTabs} from './podcast-language.js?v=2026.10.16.3';
-import {bindBookmarkPress} from './bookmark-press.js?v=2026.10.16.3';
-import {bookmarkKey,bookmarkedSentence,sentenceBookmark,sentenceCards,changeSentenceBookmark} from './sentence-cards.js?v=2026.10.16.3';
-import {plainTranscriptText,plainTranscriptName} from './plain-text.js?v=2026.10.16.3';
-import {TranscriptSync} from './transcript-sync.js?v=2026.10.16.3';
-import {syncPanel,showSyncUI,showSyncBatchUI} from './sync-ui.js?v=2026.10.16.3';
-import {packageTranscript,namedTranscript} from './cloud-transcript.js?v=2026.10.16.3';
-import {showCopyManager} from './audio-copies.js?v=2026.10.16.3';
-import {submitLocalForm} from './local-upload.js?v=2026.10.16.3';
-import {mountJobMonitor,jobProgress,terminalJob} from './job-monitor.js?v=2026.10.16.3';
-import {planTranscriptImports,phoneInterface,transcriptExportName} from './transcript-batch.js?v=2026.10.16.3';
-import {clearModelDownloads,clearBrowserTranslation} from './browser-model-cleanup.js?v=2026.10.16.3';
-import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration,replaceEpisodeTranscripts,deleteAudioCopies,applyCloudTranscript,acknowledgeTranscriptPublication,updateBookmarks,upsertPodcastEpisode,setEpisodeFavorite,changeAudioFolder,FOLDER_DELETE_UNDO} from './db.js?v=2026.10.16.3';
-import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.16.3';
+import {showVideoSubtitles} from './video-subtitles.js?v=2026.10.17.1';
+import {showReferenceAlignment} from './reference-alignment.js?v=2026.10.17.1';
+import {PODCASTS,BUILTIN_PODCASTS,podcastShow,podcastScope,isPodcastScope,streamURL,podcastRecord,SUBSCRIPTIONS,podcastSubscriptions,CUSTOM_SHOWS,setCustomPodcasts,validateCustomPodcasts,mergeCustomPodcasts,podcastCatalog,feedURL,parsePodcastFeed} from './podcasts.js?v=2026.10.17.1';
+import {FAVORITES,FAVORITES_SCOPE,favoriteScope,isFavoriteScope,favoriteScopeLanguage,validateFavorites,favoriteEpisodes,restoreFavorites,heartIcon} from './favorites.js?v=2026.10.17.1';
+import {PodcastCovers} from './podcast-covers.js?v=2026.10.17.1';
+import {PodcastOffline} from './podcast-offline.js?v=2026.10.17.1';
+import {downloadLabel,showOfflineManager} from './podcast-download-ui.js?v=2026.10.17.1';
+import {MediaControls} from './media-controls.js?v=2026.10.17.1';
+import {PodcastLibrary,audioTabs} from './podcast-library.js?v=2026.10.17.1';
+import {FAVORITE_LANGUAGE,validPodcastLanguage,showLanguage,languageEpisodes,languageTabs} from './podcast-language.js?v=2026.10.17.1';
+import {bindBookmarkPress} from './bookmark-press.js?v=2026.10.17.1';
+import {bookmarkKey,bookmarkedSentence,sentenceBookmark,sentenceCards,changeSentenceBookmark} from './sentence-cards.js?v=2026.10.17.1';
+import {plainTranscriptText,plainTranscriptName} from './plain-text.js?v=2026.10.17.1';
+import {TranscriptSync} from './transcript-sync.js?v=2026.10.17.1';
+import {syncPanel,showSyncUI,showSyncBatchUI} from './sync-ui.js?v=2026.10.17.1';
+import {packageTranscript,namedTranscript} from './cloud-transcript.js?v=2026.10.17.1';
+import {showCopyManager} from './audio-copies.js?v=2026.10.17.1';
+import {submitLocalForm} from './local-upload.js?v=2026.10.17.1';
+import {mountJobMonitor,jobProgress,terminalJob} from './job-monitor.js?v=2026.10.17.1';
+import {planTranscriptImports,phoneInterface,transcriptExportName} from './transcript-batch.js?v=2026.10.17.1';
+import {clearModelDownloads,clearBrowserTranslation} from './browser-model-cleanup.js?v=2026.10.17.1';
+import {all,read,write,remove,saveBatch,setEpisodeOrder,saveDuration,replaceEpisodeTranscripts,deleteAudioCopies,applyCloudTranscript,acknowledgeTranscriptPublication,updateBookmarks,upsertPodcastEpisode,setEpisodeFavorite,changeAudioFolder,FOLDER_DELETE_UNDO} from './db.js?v=2026.10.17.1';
+import {validateTranscript,validatePreferences,validateBackup} from './validate.js?v=2026.10.17.1';
 import {lexicalWords,dictionaryText} from './lexicon.js';
-import {initialWordSelection,selectedWord,adjustWordSelection,learningCandidates} from './word-selection.js?v=2026.10.16.3';
-import {Practice,practiceOptions} from './practice.js?v=2026.10.16.3';
+import {initialWordSelection,selectedWord,adjustWordSelection,learningCandidates} from './word-selection.js?v=2026.10.17.1';
+import {Practice,practiceOptions} from './practice.js?v=2026.10.17.1';
 import {palettes,applyTheme} from './theme.js';
 import {hasKanji,rubyParts,setRubyReading,prepareReadings} from './furigana.js';
-import {editedSentence,changedCards,replacementTranscript} from './transcript-edit.js?v=2026.10.16.3';
-import {splitChoices,splitSentence,mergeSentences,resegmentCards} from './segment-edit.js?v=2026.10.16.3';
-import {boundaryWords,suggestSentences} from './sentence-boundaries.js?v=2026.10.16.3';
-import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.16.3';
-import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.16.3';
-import {validatePlaybackLists,reconcilePlaybackList,selectPlaybackEpisodes,reorderPlaybackList,restorePlaybackLists,includePlaybackEpisode} from './playback-list.js?v=2026.10.16.3';
-import {bindReaderGestures} from './reader-gestures.js?v=2026.10.16.3';
+import {editedSentence,changedCards,replacementTranscript} from './transcript-edit.js?v=2026.10.17.1';
+import {splitChoices,splitSentence,mergeSentences,resegmentCards} from './segment-edit.js?v=2026.10.17.1';
+import {boundaryWords,suggestSentences} from './sentence-boundaries.js?v=2026.10.17.1';
+import {orderedEpisodes,playbackTarget,ShuffleQueue,sortAudioFiles,bindPress,appendedOrder,findAudioMatch} from './playlist.js?v=2026.10.17.1';
+import {bindPlaylistSheet} from './playlist-sheet.js?v=2026.10.17.1';
+import {validatePlaybackLists,reconcilePlaybackList,selectPlaybackEpisodes,reorderPlaybackList,restorePlaybackLists,includePlaybackEpisode} from './playback-list.js?v=2026.10.17.1';
+import {bindReaderGestures} from './reader-gestures.js?v=2026.10.17.1';
 import {bindDragOrder,replaceSubsetOrder} from './drag-order.js';
 import {cardCategory,cardCategories,selectedCards,cardSentence} from './cards.js';
-import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.16.3';
-import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.16.3';
+import {saveAudioCopy,audioContentHash,canReuseAudioCopy} from './audio-storage.js?v=2026.10.17.1';
+import {audioMime,resumePosition,playbackError,wavInfo} from './audio-media.js?v=2026.10.17.1';
 import {validateFolders,folderEpisodes,folderMembership,restoreFolders,makeFolderCover} from './folders.js';
-import {bindFolderSwipes} from './folder-swipe.js?v=2026.10.16.3';
-import {openShadowing,showShadowRecordings} from './shadowing-ui.js?v=2026.10.16.3';
-import {ShadowRecordings} from './shadow-recordings.js?v=2026.10.16.3';
-import {SHADOW_PREFS} from './shadowing.js?v=2026.10.16.3';
-import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.16.3';
-import {ListPosition} from './list-position.js?v=2026.10.16.3';
-import {appRoute,setAppRoute,backAppRoute,bindHomeEdgeGuard,bindRouteRestore} from './navigation.js?v=2026.10.16.3';
+import {bindFolderSwipes} from './folder-swipe.js?v=2026.10.17.1';
+import {openShadowing,showShadowRecordings} from './shadowing-ui.js?v=2026.10.17.1';
+import {ShadowRecordings} from './shadow-recordings.js?v=2026.10.17.1';
+import {openFullReading,FULL_READING_PREFS} from './full-reading.js?v=2026.10.17.1';
+import {SHADOW_PREFS} from './shadowing.js?v=2026.10.17.1';
+import {releaseAudio,configureAudio,bindAudioEvents,restoreAudioPosition} from './audio-lifecycle.js?v=2026.10.17.1';
+import {ListPosition} from './list-position.js?v=2026.10.17.1';
+import {appRoute,setAppRoute,backAppRoute,bindHomeEdgeGuard,bindRouteRestore} from './navigation.js?v=2026.10.17.1';
 const phone=phoneInterface(navigator.userAgent,navigator.maxTouchPoints);
 const main=document.querySelector('#main'),modal=document.querySelector('#modal');
 let audio=document.querySelector('#audio');
@@ -1058,7 +1059,7 @@ async function renderCards(){
  document.querySelectorAll('[data-card-shadow]').forEach(b=>b.onclick=()=>startShadowing({card:cards.find(c=>c.id===b.dataset.cardShadow)}).catch(report));
  document.querySelectorAll('[data-card-edit]').forEach(b=>b.onclick=()=>editCard(cards.find(c=>c.id===b.dataset.cardEdit)).catch(report));
 }
-async function startShadowing({card}={}){
+async function startShadowing({card,full=false}={}){
  if(shadowOpening||shadowingUI)return;shadowOpening=true;
  try{
   const id=card?.episodeId||episode?.id,source=id&&await read('episodes',id);if(!source?.segments?.length)throw Error('请先导入逐字稿，再开始逐句跟读。');
@@ -1068,15 +1069,17 @@ async function startShadowing({card}={}){
   if(!audioAvailable(source)){await reconnectAudio(source,{start:initial,stayInCards:!!card});toast('连接原音频后，点跟读即可开始');return;}
   closeReadingDisplay();closeSpeedMenu();resetClip();audio.pause();
   const wasImmersive=immersive;if(wasImmersive)toggleImmersive();if(modal.open)closeModal();
-  await loadEpisodeAudio(id,initial);
+  if(!await loadEpisodeAudio(id,initial))return;
   if(audio.readyState<1)await new Promise((resolve,reject)=>{
    const timer=setTimeout(()=>done(Error('音频加载较慢，请稍后重试。')),15000),loaded=()=>done(),failed=()=>done(Error('音频加载未完成，请检查原文件或网络。'));
    function done(error){clearTimeout(timer);audio.removeEventListener('loadedmetadata',loaded);audio.removeEventListener('error',failed);error?reject(error):resolve();}
    audio.addEventListener('loadedmetadata',loaded,{once:true});audio.addEventListener('error',failed,{once:true});
   });
+  if(episode?.id!==id||!episode.segments?.length)return;
   const prepared=episode,segments=prepared.segments,index=card?0:Math.max(0,segments.findIndex(s=>s.start>=initial-.01)),sentences=card?[{...segments.find(s=>s.start===sentence.start&&s.end===sentence.end),translation:card.translation}]:segments;
   const settings=(await read('settings',SHADOW_PREFS))?.value;
-  shadowingUI=openShadowing({audio,source:prepared,sentences,index,prefs:settings,translation:prefs.translation,reading:prefs.reading,renderSentence:sentenceCardHTML,time,read,write,recordings:shadowRecordings,report,toast,
+  const fullPrefs=(await read('settings',FULL_READING_PREFS))?.value||{display:settings?.onlyTranslation?'translation':prefs.translation?'both':'source',reading:prefs.reading},position=(await read('settings','full-reading-position/'+id))?.value;
+  shadowingUI=(full?openFullReading:openShadowing)({audio,source:prepared,sentences,index,prefs:settings,fullPrefs,position,switchMode:card?null:mode=>startShadowing({full:mode==='full'}).catch(report),translation:prefs.translation,reading:prefs.reading,renderSentence:sentenceCardHTML,time,read,write,recordings:shadowRecordings,report,toast,
    markComplete:({key,index,start})=>{shadowProgressWrites=shadowProgressWrites.then(async()=>{const old=(await read('settings',key))?.value||{};await write('settings',{id:key,value:{count:(old.count||0)+1,lastIndex:index,lastStart:start,lastAt:Date.now()}});}).catch(error=>console.warn(error.message));},
    closed:()=>{shadowingUI=null;cancelPractice();clipEnd=null;if(wasImmersive&&view==='player')toggleImmersive();else if(view==='player')renderPlayer();else miniPlayer();updatePlayback();}
   });

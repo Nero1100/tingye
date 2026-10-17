@@ -1,10 +1,10 @@
-import {ShadowSession,shadowPreferences,SHADOW_PREFS} from './shadowing.js?v=2026.10.16.3';
+import {ShadowSession,shadowPreferences,SHADOW_PREFS} from './shadowing.js?v=2026.10.17.1';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const phases={ready:'准备跟读',preparing:'正在准备麦克风',original:'先听原句',waiting:'轮到你跟读',recording:'正在录下你的跟读',review:'本轮完成', 'compare-original':'对照 · 原音','compare-voice':'对照 · 我的录音'};
 const busyPhases=['preparing','original','waiting','recording','compare-original','compare-voice'];
 export function openShadowing(ctx){
  const panel=document.createElement('dialog');panel.className='shadowing-mode';panel.setAttribute('aria-label','逐句跟读');
- panel.innerHTML=`<header class="shadow-top"><span id="shadow-counter"></span><div><button id="shadow-options" aria-label="跟读设置" aria-expanded="false">设置</button><button id="shadow-close" aria-label="退出跟读">×</button></div></header>
+ panel.innerHTML=`<header class="shadow-top"><span id="shadow-counter"></span><div><button id="shadow-full-reading">全文朗读</button><button id="shadow-options" aria-label="跟读设置" aria-expanded="false">设置</button><button id="shadow-close" aria-label="退出跟读">×</button></div></header>
  <div class="shadow-settings" id="shadow-settings" hidden><label>练习方式<select id="shadow-mode" aria-label="练习方式"><option value="listen">普通跟读</option><option value="record">录音对照</option></select></label><label>原音倍速<select id="shadow-rate" aria-label="原音倍速">${[.75,.85,1,1.15,1.25].map(n=>`<option value="${n}">${n}×</option>`).join('')}</select></label><label>跟读时间<select id="shadow-factor" aria-label="跟读时间">${[1,1.5,2].map(n=>`<option value="${n}">原句时长 × ${n}</option>`).join('')}</select></label><label>每句重复<select id="shadow-repeats" aria-label="每句重复"><option value="1">1 次</option><option value="2">2 次</option><option value="3">3 次</option><option value="0">无限</option></select></label><label class="checkbox-line"><input type="checkbox" id="shadow-next-auto">完成后自动下一句</label><label class="checkbox-line"><input type="checkbox" id="shadow-mask">跟读时遮盖原文与译文</label><p class="note">设置自动保存。录音需允许麦克风；未保留的录音在换句或退出后清除。同一句只保留最新一遍。</p></div>
  <div class="shadow-status"><span id="shadow-phase" role="status" aria-live="polite"></span><span id="shadow-round"></span></div>
  <main class="shadow-body"><small id="shadow-title"></small><time id="shadow-time"></time><div id="shadow-source" class="source"></div><button class="shadow-cover" id="shadow-cover" aria-label="显示跟读原文" hidden><i></i><i></i><i></i><span>点一下显示原文</span></button><p id="shadow-translation" class="translation"></p><p id="shadow-countdown" class="shadow-countdown" aria-hidden="true"></p><p id="shadow-message" class="note" role="status"></p></main>
@@ -50,6 +50,7 @@ export function openShadowing(ctx){
  function configure(){revealed=false;controller.configure(shadowPreferences({...controller.prefs,mode:q('#shadow-mode').value,rate:q('#shadow-rate').value,factor:q('#shadow-factor').value,repeats:q('#shadow-repeats').value,autoNext:q('#shadow-next-auto').checked,mask:q('#shadow-mask').checked}));persist();render();}
  for(const id of ['#shadow-mode','#shadow-rate','#shadow-factor','#shadow-repeats','#shadow-next-auto','#shadow-mask'])on(id,'change',configure);
  on('#shadow-options','click',()=>{const show=q('#shadow-settings').hidden;q('#shadow-settings').hidden=!show;q('#shadow-options').setAttribute('aria-expanded',String(show));});
+ q('#shadow-full-reading').hidden=!ctx.switchMode;on('#shadow-full-reading','click',()=>{closed();ctx.switchMode?.('full');});
  on('#shadow-close','click',closed);panel.addEventListener('cancel',event=>{event.preventDefault();closed();},{signal:events.signal});
  on('#shadow-start','click',()=>{if(controller.finishTurn)controller.finishTurn();else if(busyPhases.includes(controller.phase))controller.cancel();else controller.start();});
  on('#shadow-original','click',()=>controller.preview('original'));on('#shadow-voice','click',()=>controller.preview('voice'));on('#shadow-compare','click',()=>controller.preview('compare'));
@@ -68,7 +69,7 @@ export function openShadowing(ctx){
 export async function showShadowRecordings(ctx){
  await ctx.recordings.saving;
  let rows=await ctx.recordings.list(),disposed=false,url=null;const voice=document.createElement('audio');voice.controls=true;voice.preload='metadata';voice.hidden=true;
- ctx.open('跟读录音',`<div class="shadow-recordings"><p id="shadow-storage-summary"></p><p class="note">仅包含你点过“保留本遍”的录音，保存在当前设备，不参与共享书库同步。同一句保留最新一遍。</p><div id="shadow-recording-player"></div><div id="shadow-recording-list"></div><details id="shadow-clear-panel"><summary>清空已保留录音</summary><p class="note">只清理跟读录音，原音频和学习资料保留。</p><button class="danger full" id="shadow-clear-all">确认清空跟读录音</button></details></div>`);
+ ctx.open('跟读录音',`<div class="shadow-recordings"><p id="shadow-storage-summary"></p><p class="note">仅包含你点过“保留本遍”的录音，保存在当前设备，不参与共享书库同步。单句与全文录音分别保存，各自保留最新一遍。</p><div id="shadow-recording-player"></div><div id="shadow-recording-list"></div><details id="shadow-clear-panel"><summary>清空已保留录音</summary><p class="note">只清理跟读录音，原音频和学习资料保留。</p><button class="danger full" id="shadow-clear-all">确认清空跟读录音</button></details></div>`);
  const root=ctx.modal.querySelector('.shadow-recordings'),q=selector=>root.querySelector(selector);q('#shadow-recording-player').append(voice);
  const cleanup=()=>{voice.pause();voice.hidden=true;voice.removeAttribute('src');voice.load();if(url)URL.revokeObjectURL(url);url=null;};
  function render(){

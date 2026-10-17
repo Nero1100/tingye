@@ -41,8 +41,8 @@ export class ShadowSession{
   if(token!==this.generation||!this.active){stopTracks(stream);this.sessionType('playback');throw new ShadowCancelled();}
   return stream;
  }
- async clip(token){
-  const sentence=this.current();if(!sentence||!Number.isFinite(sentence.start)||!Number.isFinite(sentence.end)||sentence.end<=sentence.start)throw Error('这一句的时间轴不完整，请先校对逐字稿。');
+ async clip(token,sentence=this.current()){
+  if(!sentence||!Number.isFinite(sentence.start)||!Number.isFinite(sentence.end)||sentence.end<=sentence.start)throw Error('这一句的时间轴不完整，请先校对逐字稿。');
   this.audio.pause();this.audio.playbackRate=this.prefs.rate;
   return new Promise((resolve,reject)=>{
    let timer,done=false;
@@ -63,7 +63,7 @@ export class ShadowSession{
    this.clock=setInterval(()=>{if(token!==this.generation)return cancel();this.left=Math.max(0,(until-Date.now())/1000);if(!this.left)finish();else this.emit();},150);
   });
  }
- async record(token){
+ async record(token,options={}){
   this.phase='preparing';this.emit();const stream=await this.obtainMic(token);this.stream=stream;
   if(token!==this.generation){stopTracks(stream);throw new ShadowCancelled();}
   return new Promise((resolve,reject)=>{
@@ -74,15 +74,15 @@ export class ShadowSession{
     if(error||token!==this.generation)return reject(error||new ShadowCancelled());
     const blob=new Blob(chunks,{type:recorder.mimeType||chunks[0]?.type||'audio/mp4'});
     if(!blob.size)return reject(Error('没有录到声音，请检查麦克风权限后重试。'));
-    this.discard();this.recording={blob,duration:Math.max(.1,(Date.now()-started)/1000),sentence:{...this.current()},saved:false};resolve();
+    this.discard();this.recording={blob,duration:Math.max(.1,(Date.now()-started)/1000),sentence:{...(options.sentence||this.current())},kind:options.kind||'sentence',saved:false};resolve();
    };
    const cancel=()=>{try{if(recorder?.state==='recording')recorder.stop();}catch{}finish(new ShadowCancelled());};
    const stop=()=>{if(done||stopping)return;stopping=true;stopTracks(stream);try{if(recorder.state==='recording')recorder.stop();else finish();}catch(error){finish(error);}safety=setTimeout(()=>finish(Error('录音结束未完成，请重新尝试。')),4000);};
    try{
     const mime=recordingMime(this.Recorder);recorder=new this.Recorder(stream,mime?{mimeType:mime}:undefined);this.recorder=recorder;this.cancelPending=cancel;
-    recorder.ondataavailable=event=>{if(event.data?.size){chunks.push(event.data);bytes+=event.data.size;if(bytes>20*1048576)stop();}};
+    recorder.ondataavailable=event=>{if(event.data?.size){chunks.push(event.data);bytes+=event.data.size;if(bytes>(options.byteLimit||20*1048576))stop();}};
     recorder.onerror=event=>finish(event.error||Error('录音未完成，请重试。'));
-    recorder.onstop=()=>finish();recorder.start(1000);started=Date.now();this.phase='recording';this.left=followSeconds(this.current(),this.prefs);this.emit();
+    recorder.onstop=()=>finish();recorder.start(1000);started=Date.now();this.phase='recording';this.left=options.seconds||followSeconds(this.current(),this.prefs);this.emit();
     this.finishTurn=stop;const until=Date.now()+this.left*1000;
     this.clock=setInterval(()=>{this.left=Math.max(0,(until-Date.now())/1000);if(!this.left)stop();else this.emit();},150);
    }catch(error){finish(error);}
