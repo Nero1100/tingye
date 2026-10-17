@@ -3,7 +3,8 @@ export function shadowPreferences(value={}){
  value=value&&typeof value==='object'?value:{};
  return {mode:value.mode==='record'?'record':'listen',factor:[1,1.5,2].includes(Number(value.factor))?Number(value.factor):1.5,
  repeats:[0,1,2,3].includes(Number(value.repeats))?Number(value.repeats):1,autoNext:value.autoNext===true,
- rate:[.75,.85,1,1.15,1.25].includes(Number(value.rate))?Number(value.rate):1,mask:value.mask===true,onlyTranslation:value.onlyTranslation===true};
+ rate:[.75,.85,1,1.15,1.25].includes(Number(value.rate))?Number(value.rate):1,mask:value.mask===true,onlyTranslation:value.onlyTranslation===true,
+ display:['both','source','translation'].includes(value.display)?value.display:null,reading:typeof value.reading==='boolean'?value.reading:null};
 }
 export const followSeconds=(sentence,prefs)=>Math.min(120,Math.max(2,(sentence.end-sentence.start)/prefs.rate*prefs.factor+1));
 export const recordingMime=Recorder=>['audio/mp4','audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus'].find(type=>Recorder?.isTypeSupported?.(type))||'';

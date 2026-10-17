@@ -1,69 +1,70 @@
-import {ShadowSession,shadowPreferences,SHADOW_PREFS} from './shadowing.js?v=2026.10.17.1';
+import {ShadowSession,shadowPreferences,SHADOW_PREFS} from './shadowing.js?v=2026.10.17.2';
+import {practiceIcon,practiceAction,setPracticeAction,practiceDisplay,kanaState,bindKanaHint} from './practice-ui.js?v=2026.10.17.2';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const phases={ready:'准备跟读',preparing:'正在准备麦克风',original:'先听原句',waiting:'轮到你跟读',recording:'正在录下你的跟读',review:'本轮完成', 'compare-original':'对照 · 原音','compare-voice':'对照 · 我的录音'};
+const phases={ready:'准备跟读',preparing:'正在准备麦克风',original:'先听原句',waiting:'轮到你跟读',recording:'正在录下你的跟读',review:'本轮完成','compare-original':'对照 · 原音','compare-voice':'对照 · 我的录音'};
 const busyPhases=['preparing','original','waiting','recording','compare-original','compare-voice'];
 export function openShadowing(ctx){
- const panel=document.createElement('dialog');panel.className='shadowing-mode';panel.setAttribute('aria-label','逐句跟读');
- panel.innerHTML=`<header class="shadow-top"><span id="shadow-counter"></span><div><button id="shadow-full-reading">全文朗读</button><button id="shadow-options" aria-label="跟读设置" aria-expanded="false">设置</button><button id="shadow-close" aria-label="退出跟读">×</button></div></header>
- <div class="shadow-settings" id="shadow-settings" hidden><label>练习方式<select id="shadow-mode" aria-label="练习方式"><option value="listen">普通跟读</option><option value="record">录音对照</option></select></label><label>原音倍速<select id="shadow-rate" aria-label="原音倍速">${[.75,.85,1,1.15,1.25].map(n=>`<option value="${n}">${n}×</option>`).join('')}</select></label><label>跟读时间<select id="shadow-factor" aria-label="跟读时间">${[1,1.5,2].map(n=>`<option value="${n}">原句时长 × ${n}</option>`).join('')}</select></label><label>每句重复<select id="shadow-repeats" aria-label="每句重复"><option value="1">1 次</option><option value="2">2 次</option><option value="3">3 次</option><option value="0">无限</option></select></label><label class="checkbox-line"><input type="checkbox" id="shadow-next-auto">完成后自动下一句</label><label class="checkbox-line"><input type="checkbox" id="shadow-mask">跟读时遮盖原文与译文</label><p class="note">设置自动保存。录音需允许麦克风；未保留的录音在换句或退出后清除。同一句只保留最新一遍。</p></div>
- <div class="shadow-status"><span id="shadow-phase" role="status" aria-live="polite"></span><span id="shadow-round"></span></div>
- <main class="shadow-body"><small id="shadow-title"></small><time id="shadow-time"></time><div id="shadow-source" class="source"></div><button class="shadow-cover" id="shadow-cover" aria-label="显示跟读原文" hidden><i></i><i></i><i></i><span>点一下显示原文</span></button><p id="shadow-translation" class="translation"></p><p id="shadow-countdown" class="shadow-countdown" aria-hidden="true"></p><p id="shadow-message" class="note" role="status"></p></main>
- <footer class="shadow-bottom"><div class="shadow-display"><button id="shadow-translation-toggle" aria-pressed="true">译文</button><button id="shadow-reading-toggle" aria-pressed="true">读音</button><button id="shadow-cover-toggle" aria-pressed="false">遮盖</button><button id="shadow-only-translation" aria-pressed="false">只显示译文</button></div><div class="shadow-review"><button id="shadow-original">▶ 原音</button><button id="shadow-voice">▶ 我的录音</button><button id="shadow-compare">⇄ 交替对照</button></div><div class="shadow-transport"><button id="shadow-previous" aria-label="上一句跟读">上一句</button><button class="primary" id="shadow-start">开始跟读</button><button id="shadow-next" aria-label="下一句跟读">下一句</button></div><button id="shadow-save" class="secondary" hidden>保留本遍录音</button><p class="shadow-local-note" id="shadow-local-note">听原句，然后留出时间复述。</p></footer>`;
+ const panel=document.createElement('dialog');panel.className='shadowing-mode unified-practice';panel.setAttribute('aria-label','逐句跟读');
+ panel.innerHTML=`<header class="shadow-top"><strong>逐句跟读</strong><div><button id="shadow-full-reading">全文朗读</button><button id="shadow-options" aria-label="跟读设置" aria-expanded="false">${practiceIcon('settings')}</button><button id="shadow-close" aria-label="退出跟读">${practiceIcon('close')}</button></div></header>
+ <div class="practice-modes" role="group" aria-label="练习方式"><button data-shadow-mode="listen">普通跟读</button><button data-shadow-mode="record">录音对照</button></div>
+ <div class="shadow-settings" id="shadow-settings" hidden><label>原音倍速<select id="shadow-rate" aria-label="原音倍速">${[.75,.85,1,1.15,1.25].map(n=>`<option value="${n}">${n}×</option>`).join('')}</select></label><label>跟读时间<select id="shadow-factor" aria-label="跟读时间">${[1,1.5,2].map(n=>`<option value="${n}">原句时长 × ${n}</option>`).join('')}</select></label><label>每句重复<select id="shadow-repeats" aria-label="每句重复"><option value="1">1 次</option><option value="2">2 次</option><option value="3">3 次</option><option value="0">无限</option></select></label><label class="checkbox-line"><input type="checkbox" id="shadow-next-auto">完成后自动下一句</label><label class="checkbox-line"><input type="checkbox" id="shadow-mask">跟读时遮盖原文与译文</label><p class="note">设置自动保存。录音需允许麦克风；未保留的录音在换句或退出后清除。同一句只保留最新一遍。</p></div>
+ <div class="shadow-status"><span id="shadow-phase" role="status" aria-live="polite"></span><div class="practice-position"><span id="shadow-round"></span><span id="shadow-counter"></span></div></div>
+ <main class="shadow-body"><div class="practice-sentence-meta"><div><small id="shadow-title"></small><time id="shadow-time"></time></div><button id="shadow-cover-toggle" class="practice-mask" aria-pressed="false">${practiceIcon('cover')}<span>遮盖</span></button></div><div id="shadow-source" class="source"></div><button class="shadow-cover" id="shadow-cover" aria-label="显示跟读原文与译文" hidden><i></i><i></i><i></i></button><p id="shadow-translation" class="translation"></p><p id="shadow-countdown" class="shadow-countdown" aria-hidden="true" hidden></p><p id="shadow-message" class="note" role="status" hidden></p></main>
+ <footer class="shadow-bottom">${practiceDisplay('data-shadow-display','shadow-reading-toggle')}<div class="shadow-review practice-review"><button id="shadow-original">${practiceIcon('play')}原音</button><button id="shadow-voice">${practiceIcon('headphones')}我的录音</button><button id="shadow-compare">${practiceIcon('compare')}交替对照</button></div><div class="practice-transport">${practiceAction('shadow-previous','上一句','previous')}${practiceAction('shadow-start','开始跟读','play',true)}${practiceAction('shadow-next','下一句','next')}</div><div id="shadow-save-row" class="practice-save-row" hidden><span id="shadow-save-status"></span><button id="shadow-save">保留本遍</button></div></footer>`;
  const voice=document.createElement('audio');voice.preload='metadata';voice.setAttribute('playsinline','');panel.append(voice);document.body.append(panel);
  const q=selector=>panel.querySelector(selector),events=new AbortController(),on=(selector,name,fn)=>q(selector).addEventListener(name,fn,{signal:events.signal});
- let translations=ctx.translation!==false,readings=ctx.reading!==false,revealed=false,saveBusy=false,disposed=false,lastPhase='',lastIndex=-1,controller;
- const persist=()=>ctx.write('settings',{id:SHADOW_PREFS,value:controller.prefs}).catch(ctx.report);
+ let display,readings=typeof ctx.prefs?.reading==='boolean'?ctx.prefs.reading:ctx.reading!==false,revealed=false,saveBusy=false,disposed=false,lastPhase='',lastIndex=-1,controller,writes=Promise.resolve();
+ const persist=()=>{const value={...controller.prefs};writes=writes.then(()=>ctx.write('settings',{id:SHADOW_PREFS,value})).catch(ctx.report);};
  function render(){
   if(disposed||!controller)return;const s=controller.current(),phase=controller.phase,busy=busyPhases.includes(phase),recording=controller.recording;
   if(lastIndex!==controller.index||phase==='original'&&lastPhase!=='original')revealed=false;
   if((phase==='review'||phase.startsWith('compare-'))&&lastPhase!==phase)revealed=true;
-  panel.dataset.phase=phase;
+  panel.dataset.phase=phase;panel.dataset.display=display;
   q('#shadow-counter').textContent=`${controller.index+1} / ${controller.sentences.length}`;
   q('#shadow-title').textContent=ctx.source.title;q('#shadow-time').textContent=ctx.time(s.start);
   q('#shadow-phase').textContent=phases[phase]||'逐句跟读';q('#shadow-round').textContent=controller.round?`已跟读 ${controller.round} 遍`:'';
   if(q('#shadow-source').dataset.index!==String(controller.index)){q('#shadow-source').innerHTML=ctx.renderSentence(s);q('#shadow-source').dataset.index=String(controller.index);}
   q('#shadow-source').lang=ctx.source.language;q('#shadow-source').classList.toggle('shadow-no-reading',!readings);
-  const onlyTranslation=controller.prefs.onlyTranslation,masked=controller.prefs.mask&&!revealed;
+  const onlyTranslation=display==='translation',masked=controller.prefs.mask&&!revealed&&!onlyTranslation;
   panel.classList.toggle('shadow-only-translation',onlyTranslation);
-  q('#shadow-source').hidden=onlyTranslation||masked;q('#shadow-cover').hidden=onlyTranslation||!masked;q('#shadow-translation').textContent=s.translation||'';q('#shadow-translation').hidden=(!onlyTranslation&&(!translations||masked))||!s.translation;
-  q('#shadow-countdown').textContent=['waiting','recording'].includes(phase)?Math.ceil(controller.left)+' 秒':'';
-  q('#shadow-message').textContent=controller.message||(onlyTranslation&&!s.translation?'这句还没有译文，可先补充译文。':'');
-  q('#shadow-translation-toggle').setAttribute('aria-pressed',String(translations));q('#shadow-reading-toggle').setAttribute('aria-pressed',String(readings));q('#shadow-cover-toggle').setAttribute('aria-pressed',String(controller.prefs.mask));
-  q('#shadow-reading-toggle').hidden=ctx.source.language!=='ja';
-  q('#shadow-only-translation').setAttribute('aria-pressed',String(onlyTranslation));
-  for(const id of ['#shadow-translation-toggle','#shadow-reading-toggle','#shadow-cover-toggle'])q(id).disabled=onlyTranslation;
-  q('#shadow-start').textContent=['waiting','recording'].includes(phase)?'完成跟读':busy?'停止本轮':phase==='review'?'再练一次':'开始跟读';
+  q('#shadow-source').hidden=onlyTranslation||masked;q('#shadow-cover').hidden=!masked;q('#shadow-translation').textContent=s.translation||'';q('#shadow-translation').hidden=display==='source'||masked||!s.translation;
+  const counting=['waiting','recording'].includes(phase);q('#shadow-countdown').hidden=!counting;q('#shadow-countdown').textContent=counting?Math.ceil(controller.left)+' 秒':'';
+  q('#shadow-message').textContent=controller.message||(onlyTranslation&&!s.translation?'这句还没有译文，可先补充译文。':'');q('#shadow-message').hidden=!q('#shadow-message').textContent;
+  for(const button of panel.querySelectorAll('[data-shadow-display]'))button.setAttribute('aria-pressed',String(button.dataset.shadowDisplay===display));
+  for(const button of panel.querySelectorAll('[data-shadow-mode]')){button.setAttribute('aria-pressed',String(button.dataset.shadowMode===controller.prefs.mode));button.disabled=busy;}
+  kanaState(q('#shadow-reading-toggle'),readings);q('#shadow-reading-toggle').hidden=ctx.source.language!=='ja';
+  q('#shadow-cover-toggle').setAttribute('aria-pressed',String(controller.prefs.mask));q('#shadow-cover-toggle').disabled=onlyTranslation;q('#shadow-mask').checked=controller.prefs.mask;
+  setPracticeAction(q('#shadow-start'),['waiting','recording'].includes(phase)?'完成跟读':busy?'停止本轮':phase==='review'?'再练一次':'开始跟读',busy?'stop':'play');
   for(const id of ['#shadow-original','#shadow-voice','#shadow-compare'])q(id).disabled=busy;
   q('#shadow-voice').disabled=busy||!recording;q('#shadow-compare').disabled=busy||!recording;
   q('#shadow-previous').disabled=controller.index<=0;q('#shadow-next').disabled=controller.index>=controller.sentences.length-1;
-  q('#shadow-save').hidden=!recording;q('#shadow-save').disabled=saveBusy||busy||recording?.saved;q('#shadow-save').textContent=recording?.saved?'本遍已保留':saveBusy?'正在保存…':'保留本遍录音';
-  q('#shadow-local-note').textContent=controller.prefs.mode==='record'?'录音只在本机处理；换句或退出会清除未保留录音。':'听原句，然后留出时间复述。';
+  q('#shadow-save-row').hidden=!recording||busy;q('#shadow-save-status').textContent=recording?.saved?'本遍已保留':'本遍未保留';q('#shadow-save').hidden=!!recording?.saved;q('#shadow-save').disabled=saveBusy;q('#shadow-save').textContent=saveBusy?'正在保存…':'保留本遍';
   lastPhase=phase;lastIndex=controller.index;
  }
- const closed=()=>{
-  if(disposed)return;disposed=true;controller.close();events.abort();panel.close();panel.remove();ctx.closed();
- };
+ const closed=()=>{if(disposed)return;disposed=true;controller.close();events.abort();panel.close();panel.remove();ctx.closed();};
  controller=new ShadowSession({audio:ctx.audio,voice,sentences:ctx.sentences,index:ctx.index,prefs:ctx.prefs,changed:render,...ctx.capture,
   completed:session=>{const key='shadow-progress/'+ctx.source.id,index=session.index,start=session.current().start;ctx.markComplete?.({key,index,start});}});
- for(const [id,key] of [['#shadow-mode','mode'],['#shadow-rate','rate'],['#shadow-factor','factor'],['#shadow-repeats','repeats']])q(id).value=String(controller.prefs[key]);
+ display=controller.prefs.display||(controller.prefs.onlyTranslation?'translation':ctx.translation===false?'source':'both');
+ for(const [id,key] of [['#shadow-rate','rate'],['#shadow-factor','factor'],['#shadow-repeats','repeats']])q(id).value=String(controller.prefs[key]);
  q('#shadow-next-auto').checked=controller.prefs.autoNext;q('#shadow-mask').checked=controller.prefs.mask;
- function configure(){revealed=false;controller.configure(shadowPreferences({...controller.prefs,mode:q('#shadow-mode').value,rate:q('#shadow-rate').value,factor:q('#shadow-factor').value,repeats:q('#shadow-repeats').value,autoNext:q('#shadow-next-auto').checked,mask:q('#shadow-mask').checked}));persist();render();}
- for(const id of ['#shadow-mode','#shadow-rate','#shadow-factor','#shadow-repeats','#shadow-next-auto','#shadow-mask'])on(id,'change',configure);
+ function configure(patch={}){revealed=false;controller.configure(shadowPreferences({...controller.prefs,rate:q('#shadow-rate').value,factor:q('#shadow-factor').value,repeats:q('#shadow-repeats').value,autoNext:q('#shadow-next-auto').checked,mask:q('#shadow-mask').checked,...patch}));persist();render();}
+ for(const id of ['#shadow-rate','#shadow-factor','#shadow-repeats','#shadow-next-auto','#shadow-mask'])on(id,'change',()=>configure());
+ for(const button of panel.querySelectorAll('[data-shadow-mode]'))button.addEventListener('click',()=>configure({mode:button.dataset.shadowMode}),{signal:events.signal});
+ for(const button of panel.querySelectorAll('[data-shadow-display]'))button.addEventListener('click',()=>{display=button.dataset.shadowDisplay;controller.prefs.display=display;controller.prefs.onlyTranslation=display==='translation';persist();render();},{signal:events.signal});
  on('#shadow-options','click',()=>{const show=q('#shadow-settings').hidden;q('#shadow-settings').hidden=!show;q('#shadow-options').setAttribute('aria-expanded',String(show));});
  q('#shadow-full-reading').hidden=!ctx.switchMode;on('#shadow-full-reading','click',()=>{closed();ctx.switchMode?.('full');});
  on('#shadow-close','click',closed);panel.addEventListener('cancel',event=>{event.preventDefault();closed();},{signal:events.signal});
  on('#shadow-start','click',()=>{if(controller.finishTurn)controller.finishTurn();else if(busyPhases.includes(controller.phase))controller.cancel();else controller.start();});
  on('#shadow-original','click',()=>controller.preview('original'));on('#shadow-voice','click',()=>controller.preview('voice'));on('#shadow-compare','click',()=>controller.preview('compare'));
  on('#shadow-previous','click',()=>controller.move(controller.index-1));on('#shadow-next','click',()=>controller.move(controller.index+1));
- on('#shadow-translation-toggle','click',()=>{translations=!translations;render();});on('#shadow-reading-toggle','click',()=>{readings=!readings;render();});
+ bindKanaHint(q('#shadow-reading-toggle'),ctx.toast,events.signal);
+ on('#shadow-reading-toggle','click',()=>{readings=!readings;controller.prefs.reading=readings;persist();render();});
  on('#shadow-cover','click',()=>{revealed=true;render();});on('#shadow-source','click',()=>{if(controller.prefs.mask){revealed=false;render();}});
- on('#shadow-only-translation','click',()=>{controller.prefs.onlyTranslation=!controller.prefs.onlyTranslation;persist();render();});
- on('#shadow-cover-toggle','click',()=>{q('#shadow-mask').checked=!controller.prefs.mask;configure();});
+ on('#shadow-cover-toggle','click',()=>configure({mask:!controller.prefs.mask}));
  on('#shadow-save','click',async()=>{saveBusy=true;render();const recording=controller.recording;try{await ctx.recordings.save(ctx.source,recording);if(controller.recording===recording)recording.saved=true;ctx.toast('跟读录音已保留在本机');}catch(error){ctx.report(error);}finally{saveBusy=false;render();}});
  document.addEventListener('visibilitychange',()=>{if(document.hidden&&busyPhases.includes(controller.phase)){controller.cancel();controller.message='练习已暂停，返回后可重新开始。';render();}},{signal:events.signal});
  window.addEventListener('pagehide',()=>controller.cancel(),{signal:events.signal});
- panel.showModal();render();q('#shadow-start').focus();
- return {controller,close:closed};
+ panel.showModal();render();q('#shadow-start').focus({preventScroll:true});return {controller,close:closed};
 }
 
 export async function showShadowRecordings(ctx){
