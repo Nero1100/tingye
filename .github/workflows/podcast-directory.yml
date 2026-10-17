@@ -1,0 +1,43 @@
+name: Refresh public podcast directory
+on:
+  schedule:
+    - cron: '23 */6 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - scripts/refresh-podcast-feeds.py
+      - .github/workflows/podcast-directory.yml
+permissions:
+  contents: write
+  pages: write
+concurrency:
+  group: public-podcast-directory
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch public episode metadata
+        run: python scripts/refresh-podcast-feeds.py
+      - name: Publish changed directory
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet -- feeds/quebec-french.xml; then
+            echo "Directory is already current"
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- feeds/quebec-french.xml
+          git commit -m 'Refresh public Quebec French episode directory'
+          git push origin HEAD:main
+          gh api --method POST "repos/$GITHUB_REPOSITORY/pages/builds" --silent
