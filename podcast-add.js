@@ -1,4 +1,4 @@
-import {PODCASTS,feedURL,mediaURL,fetchPodcastText,parsePodcastFeed} from './podcasts.js?v=2026.10.17.6';
+import {PODCASTS,feedURL,mediaURL,fetchPodcastText,parsePodcastFeed} from './podcasts.js?v=2026.10.17.7';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const languageNames={ja:'日语',en:'英语',fr:'法语'};
 const channelText=(channel,name)=>([...channel.children].find(el=>el.localName===name)?.textContent||'').trim();

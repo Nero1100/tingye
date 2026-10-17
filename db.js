@@ -1,7 +1,8 @@
 import {applyTranscriptPatch,transcriptFingerprint,transcriptName} from './transcript-batch.js';
 import {draftBlocksUpdate,acknowledgeTranscriptDraft} from './transcript-revisions.js';
-import {FAVORITES,changeFavorite} from './favorites.js?v=2026.10.17.6';
+import {FAVORITES,changeFavorite} from './favorites.js?v=2026.10.17.7';
 import {validateFolders} from './folders.js';
+import {LISTENING_GROUPS,validateListeningGroups,pruneListeningGroups,reconcileListeningPlaylists} from './listening-groups.js?v=2026.10.17.7';
 export const FOLDER_DELETE_UNDO='folder-delete-undo-v1';
 export const db = await new Promise((resolve,reject)=>{
   const request=indexedDB.open('tingye',2);
@@ -48,6 +49,18 @@ export function setEpisodeFavorite(id,liked){return new Promise((resolve,reject)
   const saved=settings.get(FAVORITES);saved.onsuccess=()=>{try{next=changeFavorite(saved.result?.value||[],id,liked);settings.put({id:FAVORITES,value:next});}catch(error){failure=error;t.abort();}};
  }catch(error){failure=error;t.abort();}};
  t.oncomplete=()=>resolve(next);t.onerror=()=>reject(failure||t.error);t.onabort=()=>reject(failure||t.error);
+});}
+// Read membership and queue metadata atomically; never replace a playing audio Blob.
+export function updateListeningGroups(change,{reorderedGroup=''}={}){return new Promise((resolve,reject)=>{
+ const t=db.transaction(['episodes','settings'],'readwrite'),settings=t.objectStore('settings');
+ const values={},requests=[[LISTENING_GROUPS,settings.get(LISTENING_GROUPS)],['playback-lists',settings.get('playback-lists')],[FAVORITES,settings.get(FAVORITES)],['ids',t.objectStore('episodes').getAllKeys()]];let waiting=requests.length,result,failure;
+ for(const [key,request] of requests)request.onsuccess=()=>{values[key]=key==='ids'?request.result:request.result?.value;if(--waiting)return;try{
+  const available=new Set(values.ids),favorites=values[FAVORITES]||[],groups=validateListeningGroups(change(pruneListeningGroups(values[LISTENING_GROUPS]||undefined,values.ids),available,favorites));
+  if(Object.values(groups).flat().some(id=>!available.has(id)))throw Error('有单集已被移除，请重新打开分类。');
+  const playbackLists=reconcileListeningPlaylists(values['playback-lists']||[],groups,reorderedGroup);
+  settings.put({id:LISTENING_GROUPS,value:groups});settings.put({id:'playback-lists',value:playbackLists});result={groups,playbackLists,favorites};
+ }catch(error){failure=error;t.abort();}};
+ t.oncomplete=()=>resolve(result);t.onerror=()=>reject(failure||t.error);t.onabort=()=>reject(failure||t.error||Error('分类更新未完成，请重试。'));
 });}
 export function remove(store,id){return new Promise((resolve,reject)=>{const t=db.transaction(store==='episodes'?['episodes','progress','settings']:store,'readwrite');t.objectStore(store).delete(id);if(store==='episodes'){t.objectStore('progress').delete(id);t.objectStore('settings').delete(durationKey(id));t.objectStore('settings').delete(bookmarksKey(id));}t.oncomplete=resolve;t.onerror=()=>reject(t.error);});}
 export function saveBatch(episodes,cards,settings=[]){return new Promise((resolve,reject)=>{const t=db.transaction(['episodes','cards','settings'],'readwrite');for(const e of episodes)t.objectStore('episodes').put(e);for(const c of cards)t.objectStore('cards').put(c);for(const s of settings)t.objectStore('settings').put(s);t.oncomplete=resolve;t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error);});}

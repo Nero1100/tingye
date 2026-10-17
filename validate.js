@@ -1,7 +1,8 @@
-import {validatePlaybackLists} from './playback-list.js?v=2026.10.17.6';
+import {validateListeningGroups,isListeningScope} from './listening-groups.js?v=2026.10.17.7';
+import {validatePlaybackLists} from './playback-list.js?v=2026.10.17.7';
 import {validateFolders} from './folders.js';
-import {validateFavorites,isFavoriteScope} from './favorites.js?v=2026.10.17.6';
-import {streamURL,isPodcastScope,podcastSubscriptions,podcastCatalog} from './podcasts.js?v=2026.10.17.6';
+import {validateFavorites,isFavoriteScope} from './favorites.js?v=2026.10.17.7';
+import {streamURL,isPodcastScope,podcastSubscriptions,podcastCatalog} from './podcasts.js?v=2026.10.17.7';
 const languages = ['en', 'fr', 'ja'];
 const validTime = n => Number.isFinite(n) && n >= 0 && n <= 86400;
 const text = (s, max) => typeof s === 'string' && s.length <= max;
@@ -84,8 +85,9 @@ export function validateBackup(meta, payloadBytes) {
     ids.set(e.id,e); offset += e.bytes;
     validateTranscript({format:'tingye-transcript-v1',version:1,language:e.language,duration:e.duration,segments:e.segments});
   }
+  if(Object.values(validateListeningGroups(meta.listeningGroups||undefined)).flat().some(id=>!ids.has(id)))throw Error('备份中的精听与泛听分类不完整。');
   if(validateFavorites(meta.favorites||[]).some(id=>!ids.has(id)))throw Error('备份中的喜欢列表不完整。');
-  for(const state of validatePlaybackLists(meta.playbackLists||[]))if(state.scope&&!isFavoriteScope(state.scope)&&!folderIds.has(state.scope)&&!isPodcastScope(state.scope,shows)||[...state.ids,...state.excluded].some(id=>!ids.has(id)))throw Error('备份中的播放列表不完整。');
+  for(const state of validatePlaybackLists(meta.playbackLists||[]))if(state.scope&&!isFavoriteScope(state.scope)&&!isListeningScope(state.scope)&&!folderIds.has(state.scope)&&!isPodcastScope(state.scope,shows)||[...state.ids,...state.excluded].some(id=>!ids.has(id)))throw Error('备份中的播放列表不完整。');
   for (const c of meta.cards) {
     const e = ids.get(c.episodeId);
     if (!e || !languages.includes(c.language) || !text(c.text,512) || !text(c.reading,512) ||
