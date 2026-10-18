@@ -1,8 +1,8 @@
 import {applyTranscriptPatch,transcriptFingerprint,transcriptName} from './transcript-batch.js';
 import {draftBlocksUpdate,acknowledgeTranscriptDraft} from './transcript-revisions.js';
-import {FAVORITES,changeFavorite} from './favorites.js?v=2026.10.17.7';
+import {FAVORITES,changeFavorite} from './favorites.js?v=2026.10.18.1';
 import {validateFolders} from './folders.js';
-import {LISTENING_GROUPS,validateListeningGroups,pruneListeningGroups,reconcileListeningPlaylists} from './listening-groups.js?v=2026.10.17.7';
+import {LISTENING_GROUPS,validateListeningGroups,pruneListeningGroups,reconcileListeningPlaylists} from './listening-groups.js?v=2026.10.18.1';
 export const FOLDER_DELETE_UNDO='folder-delete-undo-v1';
 export const db = await new Promise((resolve,reject)=>{
   const request=indexedDB.open('tingye',2);

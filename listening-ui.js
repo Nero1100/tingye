@@ -1,4 +1,4 @@
-import {listeningNames,validListeningGroup} from './listening-groups.js?v=2026.10.17.7';
+import {listeningNames,validListeningGroup} from './listening-groups.js?v=2026.10.18.1';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function listeningTabs(group,counts){return `<div class="listening-tabs" role="group" aria-label="收听分类">${[['','全部'],...Object.entries(listeningNames)].map(([id,label])=>`<button type="button" data-listening-group="${id}" class="${group===id?'selected':''}" aria-pressed="${group===id}">${label}<small>${counts[id]||0}</small></button>`).join('')}</div>`;}
 export function listeningTags(groups,id){return Object.entries(listeningNames).filter(([group])=>groups[group].includes(id)).map(([group,name])=>`<span class="listening-tag ${group}">${name}</span>`).join('');}

@@ -1,4 +1,5 @@
-import {PODCASTS,feedURL,mediaURL,fetchPodcastText,parsePodcastFeed} from './podcasts.js?v=2026.10.17.7';
+import {PODCASTS,feedURL,mediaURL,fetchPodcastText,parsePodcastFeed} from './podcasts.js?v=2026.10.18.1';
+import {preferredPodcastArtwork} from './podcast-artwork.js?v=2026.10.18.1';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const languageNames={ja:'日语',en:'英语',fr:'法语'};
 const channelText=(channel,name)=>([...channel.children].find(el=>el.localName===name)?.textContent||'').trim();
@@ -20,7 +21,7 @@ export async function inspectPodcastLink(value,{fetcher=fetch,signal,shows=PODCA
  if(doc.querySelector('parsererror')||!channel)throw Error('这个地址不是 RSS。请使用 Apple Podcasts 节目分享链接或 RSS 订阅源。');
  const name=(channelText(channel,'title')||apple?.collectionName||'').slice(0,200);
  if(!name)throw Error('RSS 中没有节目名称，暂时无法添加。');
- const image=[...channel.children].filter(el=>el.localName==='image'),cover=mediaURL(image.find(el=>el.hasAttribute('href'))?.getAttribute('href')||image.find(el=>el.querySelector('url'))?.querySelector('url')?.textContent?.trim()||apple?.artworkUrl600||'');
+ const image=[...channel.children].filter(el=>el.localName==='image'),rssCover=image.find(el=>el.hasAttribute('href'))?.getAttribute('href')||image.find(el=>el.querySelector('url'))?.querySelector('url')?.textContent?.trim()||'',cover=preferredPodcastArtwork(address,apple?.artworkUrl600,rssCover);
  const code=channelText(channel,'language').toLowerCase().split(/[-_]/)[0],language=Object.hasOwn(languageNames,code)?code:'ja';
  const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(address));
  const existing=shows.find(show=>feedURL(show.feed)===address);
