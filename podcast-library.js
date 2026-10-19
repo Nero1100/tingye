@@ -1,7 +1,7 @@
-import {PODCASTS,podcastShow,podcastItems,podcastCacheKey,SUBSCRIPTIONS,podcastSubscriptions,validPodcastCache,fetchPodcastFeed,CUSTOM_SHOWS,setCustomPodcasts} from './podcasts.js?v=2026.10.19.1';
-import {downloadLabel} from './podcast-download-ui.js?v=2026.10.19.1';
-import {heartIcon} from './favorites.js?v=2026.10.19.1';
-import {PODCAST_LANGUAGE,validPodcastLanguage,showLanguage,languageShows,languageTabs} from './podcast-language.js?v=2026.10.19.1';
+import {PODCASTS,podcastShow,podcastItems,podcastCacheKey,SUBSCRIPTIONS,podcastSubscriptions,validPodcastCache,fetchPodcastFeed,CUSTOM_SHOWS,setCustomPodcasts} from './podcasts.js?v=2026.10.19.2';
+import {downloadLabel} from './podcast-download-ui.js?v=2026.10.19.2';
+import {heartIcon} from './favorites.js?v=2026.10.19.2';
+import {PODCAST_LANGUAGE,validPodcastLanguage,showLanguage,languageShows,languageTabs} from './podcast-language.js?v=2026.10.19.2';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const date=value=>value?new Date(value).toLocaleDateString('zh-CN',{year:'numeric',month:'numeric',day:'numeric'}):'';
 const duration=seconds=>seconds?Math.ceil(seconds/60)+' 分钟':'播客';
