@@ -1,5 +1,5 @@
-import {PODCASTS,feedURL,mediaURL,fetchPodcastText,parsePodcastFeed} from './podcasts.js?v=2026.10.18.1';
-import {preferredPodcastArtwork} from './podcast-artwork.js?v=2026.10.18.1';
+import {PODCASTS,feedURL,mediaURL,fetchPodcastText,parsePodcastFeed} from './podcasts.js?v=2026.10.19.1';
+import {preferredPodcastArtwork} from './podcast-artwork.js?v=2026.10.19.1';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const languageNames={ja:'日语',en:'英语',fr:'法语'};
 const channelText=(channel,name)=>([...channel.children].find(el=>el.localName===name)?.textContent||'').trim();

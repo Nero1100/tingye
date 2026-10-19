@@ -1,4 +1,4 @@
-import {podcastShow} from './podcasts.js?v=2026.10.18.1';
+import {podcastShow} from './podcasts.js?v=2026.10.19.1';
 
 export const PODCAST_LANGUAGE='podcast-language-v1',FAVORITE_LANGUAGE='favorite-language-v1';
 export const podcastLanguages=Object.freeze({ja:'日语',en:'英语',fr:'法语'});

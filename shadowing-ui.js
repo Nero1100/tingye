@@ -1,5 +1,5 @@
-import {ShadowSession,shadowPreferences,SHADOW_PREFS} from './shadowing.js?v=2026.10.18.1';
-import {practiceIcon,practiceAction,setPracticeAction,practiceDisplay,kanaState,bindKanaHint,practiceSave,setPracticeSave,focusPracticeTitle} from './practice-ui.js?v=2026.10.18.1';
+import {ShadowSession,shadowPreferences,SHADOW_PREFS} from './shadowing.js?v=2026.10.19.1';
+import {practiceIcon,practiceAction,setPracticeAction,practiceDisplay,kanaState,bindKanaHint,practiceSave,setPracticeSave,focusPracticeTitle} from './practice-ui.js?v=2026.10.19.1';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const phases={ready:'准备跟读',preparing:'正在准备麦克风',original:'先听原句',waiting:'轮到你跟读',recording:'正在录下你的跟读',review:'本轮完成','compare-original':'对照 · 原音','compare-voice':'对照 · 我的录音'};
 const busyPhases=['preparing','original','waiting','recording','compare-original','compare-voice'];

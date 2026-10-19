@@ -1,8 +1,9 @@
-import {validateListeningGroups,isListeningScope} from './listening-groups.js?v=2026.10.18.1';
-import {validatePlaybackLists} from './playback-list.js?v=2026.10.18.1';
+import {validateJLPTLibrary} from './jlpt.js?v=2026.10.19.1';
+import {validateListeningGroups,isListeningScope} from './listening-groups.js?v=2026.10.19.1';
+import {validatePlaybackLists} from './playback-list.js?v=2026.10.19.1';
 import {validateFolders} from './folders.js';
-import {validateFavorites,isFavoriteScope} from './favorites.js?v=2026.10.18.1';
-import {streamURL,isPodcastScope,podcastSubscriptions,podcastCatalog} from './podcasts.js?v=2026.10.18.1';
+import {validateFavorites,isFavoriteScope} from './favorites.js?v=2026.10.19.1';
+import {streamURL,isPodcastScope,podcastSubscriptions,podcastCatalog} from './podcasts.js?v=2026.10.19.1';
 const languages = ['en', 'fr', 'ja'];
 const validTime = n => Number.isFinite(n) && n >= 0 && n <= 86400;
 const text = (s, max) => typeof s === 'string' && s.length <= max;
@@ -60,6 +61,7 @@ export function validateBackup(meta, payloadBytes) {
     throw Error('备份格式不正确。');
   const shows=podcastCatalog(meta.podcastShows||[]),folders=validateFolders(meta.folders||[]),folderIds=new Set(folders.map(f=>f.id));
   if(meta.podcastSubscriptions!==undefined&&(!Array.isArray(meta.podcastSubscriptions)||JSON.stringify(meta.podcastSubscriptions)!==JSON.stringify(podcastSubscriptions(meta.podcastSubscriptions,shows))))throw Error('备份中的播客订阅不正确。');
+  if(meta.jlpt!==undefined){validateJLPTLibrary(meta.jlpt);for(const unit of meta.jlpt)if(!meta.episodes.some(e=>e.id===unit.episodeId&&e.language==='ja'))throw Error('JLPT 备份找不到对应日语音频。');}
   let offset = 0;
   const ids = new Map();
   for (const e of meta.episodes) {

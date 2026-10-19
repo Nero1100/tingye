@@ -1,8 +1,9 @@
+import {JLPT_LIBRARY,validateJLPTLibrary} from './jlpt.js?v=2026.10.19.1';
 import {applyTranscriptPatch,transcriptFingerprint,transcriptName} from './transcript-batch.js';
 import {draftBlocksUpdate,acknowledgeTranscriptDraft} from './transcript-revisions.js';
-import {FAVORITES,changeFavorite} from './favorites.js?v=2026.10.18.1';
+import {FAVORITES,changeFavorite} from './favorites.js?v=2026.10.19.1';
 import {validateFolders} from './folders.js';
-import {LISTENING_GROUPS,validateListeningGroups,pruneListeningGroups,reconcileListeningPlaylists} from './listening-groups.js?v=2026.10.18.1';
+import {LISTENING_GROUPS,validateListeningGroups,pruneListeningGroups,reconcileListeningPlaylists} from './listening-groups.js?v=2026.10.19.1';
 export const FOLDER_DELETE_UNDO='folder-delete-undo-v1';
 export const db = await new Promise((resolve,reject)=>{
   const request=indexedDB.open('tingye',2);
@@ -160,4 +161,11 @@ export function deleteAudioCopies(items,{removeRecords=false}={}){return new Pro
  }
  t.oncomplete=()=>resolve({ids:[...selected.keys()],bytes,count:selected.size,removeRecords});
  t.onerror=()=>reject(failure||t.error);t.onabort=()=>reject(failure||t.error||Error('删除未完成，原副本保留。'));
+});}
+
+// Read-modify-write only the small JLPT settings record, never the audio Blob.
+export function updateJLPTLibrary(change){return new Promise((resolve,reject)=>{
+ const transaction=db.transaction('settings','readwrite'),store=transaction.objectStore('settings');let value,failure;
+ store.get(JLPT_LIBRARY).onsuccess=event=>{try{value=validateJLPTLibrary(change(validateJLPTLibrary(event.target.result?.value||[])));store.put({id:JLPT_LIBRARY,value});}catch(error){failure=error;transaction.abort();}};
+ transaction.oncomplete=()=>resolve(value);transaction.onerror=()=>reject(failure||transaction.error);transaction.onabort=()=>reject(failure||transaction.error||Error('JLPT 保存未完成'));
 });}
