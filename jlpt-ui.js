@@ -1,6 +1,6 @@
-import {JLPT_LIBRARY,JLPT_TYPES,JLPTSession,createJLPTUnit,validateJLPTLibrary,parseJLPTTime,difficultSentence,changeDifficult,putJLPTUnit} from './jlpt.js?v=2026.10.19.2';
-import {practiceIcon,practiceAction,setPracticeAction} from './practice-ui.js?v=2026.10.19.2';
-import {bindReaderGestures} from './reader-gestures.js?v=2026.10.19.2';
+import {JLPT_LIBRARY,JLPT_TYPES,JLPTSession,createJLPTUnit,validateJLPTLibrary,parseJLPTTime,difficultSentence,changeDifficult,putJLPTUnit} from './jlpt.js?v=2026.10.19.3';
+import {practiceIcon,practiceAction,setPracticeAction} from './practice-ui.js?v=2026.10.19.3';
+import {bindReaderGestures} from './reader-gestures.js?v=2026.10.19.3';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const options=(values,current)=>values.map(v=>`<option value="${esc(v)}" ${v===current?'selected':''}>${esc(v)}</option>`).join('');
 const clock=n=>{const v=Math.round(Math.max(0,Number(n)||0)*100)/100;return Math.floor(v/60)+':'+String(Math.round((v%60)*100)/100).padStart(2,'0');};

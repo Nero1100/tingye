@@ -1,4 +1,4 @@
-import {podcastArtworkCandidates} from './podcast-artwork.js?v=2026.10.19.2';
+import {podcastArtworkCandidates} from './podcast-artwork.js?v=2026.10.19.3';
 // Small, decoded covers live in IndexedDB; audio downloads use their own cache.
 const LIMIT=2*1024*1024;
 const TYPES=new Set(['image/jpeg','image/png','image/webp','image/gif']);

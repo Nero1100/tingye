@@ -1,9 +1,9 @@
-import {JLPT_LIBRARY,validateJLPTLibrary} from './jlpt.js?v=2026.10.19.2';
+import {JLPT_LIBRARY,validateJLPTLibrary} from './jlpt.js?v=2026.10.19.3';
 import {applyTranscriptPatch,transcriptFingerprint,transcriptName} from './transcript-batch.js';
 import {draftBlocksUpdate,acknowledgeTranscriptDraft} from './transcript-revisions.js';
-import {FAVORITES,changeFavorite} from './favorites.js?v=2026.10.19.2';
+import {FAVORITES,changeFavorite} from './favorites.js?v=2026.10.19.3';
 import {validateFolders} from './folders.js';
-import {LISTENING_GROUPS,validateListeningGroups,pruneListeningGroups,reconcileListeningPlaylists} from './listening-groups.js?v=2026.10.19.2';
+import {LISTENING_GROUPS,validateListeningGroups,pruneListeningGroups,reconcileListeningPlaylists} from './listening-groups.js?v=2026.10.19.3';
 export const FOLDER_DELETE_UNDO='folder-delete-undo-v1';
 export const db = await new Promise((resolve,reject)=>{
   const request=indexedDB.open('tingye',2);

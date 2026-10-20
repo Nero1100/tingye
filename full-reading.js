@@ -1,5 +1,5 @@
-import {ShadowSession} from './shadowing.js?v=2026.10.19.2';
-import {practiceIcon,practiceAction,setPracticeAction,practiceDisplay,kanaState,bindKanaHint,practiceSave,setPracticeSave,focusPracticeTitle} from './practice-ui.js?v=2026.10.19.2';
+import {ShadowSession} from './shadowing.js?v=2026.10.19.3';
+import {practiceIcon,practiceAction,setPracticeAction,practiceDisplay,kanaState,bindKanaHint,practiceSave,setPracticeSave,focusPracticeTitle} from './practice-ui.js?v=2026.10.19.3';
 
 export const FULL_READING_PREFS='full-reading-preferences-v1',FULL_RECORD_SECONDS=3600;
 export function fullReadingPreferences(value={}){

@@ -1,4 +1,4 @@
-import {feedURL,mediaURL} from './podcasts.js?v=2026.10.19.2';
+import {feedURL,mediaURL} from './podcasts.js?v=2026.10.19.3';
 // Verified against each publisher's Apple directory and exact RSS identity.
 const covers=Object.freeze({
  'https://anchor.fm/s/c56bd1c/podcast/rss':'https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/c4/3f/97/c43f97cb-d2bd-505c-4624-150bde920f1b/mza_5154009728585939195.jpg/600x600bb.jpg',
