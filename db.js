@@ -1,9 +1,9 @@
-import {JLPT_LIBRARY,validateJLPTLibrary} from './jlpt.js?v=2026.10.19.3';
+import {JLPT_LIBRARY,validateJLPTLibrary} from './jlpt.js?v=2026.10.19.4';
 import {applyTranscriptPatch,transcriptFingerprint,transcriptName} from './transcript-batch.js';
 import {draftBlocksUpdate,acknowledgeTranscriptDraft} from './transcript-revisions.js';
-import {FAVORITES,changeFavorite} from './favorites.js?v=2026.10.19.3';
+import {FAVORITES,changeFavorite} from './favorites.js?v=2026.10.19.4';
 import {validateFolders} from './folders.js';
-import {LISTENING_GROUPS,validateListeningGroups,pruneListeningGroups,reconcileListeningPlaylists} from './listening-groups.js?v=2026.10.19.3';
+import {LISTENING_GROUPS,validateListeningGroups,pruneListeningGroups,reconcileListeningPlaylists} from './listening-groups.js?v=2026.10.19.4';
 export const FOLDER_DELETE_UNDO='folder-delete-undo-v1';
 export const db = await new Promise((resolve,reject)=>{
   const request=indexedDB.open('tingye',2);
@@ -86,7 +86,7 @@ export function changeAudioFolder(id,{restore=false,expectedFolder=null,undoToke
    folder=folders.find(f=>f.id===id);if(!folder)throw Error('这个文件夹已被删除。');
    if(expectedFolder&&JSON.stringify(folder)!==JSON.stringify(expectedFolder))throw Error('文件夹已在其他窗口修改，请重新打开后删除。');
    updated=folders.filter(f=>f.id!==id);nextLists=lists.filter(list=>list.scope!==id);nextScope=scope===id?'':scope;
-   snapshot={token:crypto.randomUUID(),folder,index:folders.findIndex(f=>f.id===id),members:[],playbackList:lists.find(list=>list.scope===id)||null,wasActive:scope===id};
+   snapshot={token:crypto.randomUUID(),deletedAt:Date.now(),folder,index:folders.findIndex(f=>f.id===id),members:[],playbackList:lists.find(list=>list.scope===id)||null,wasActive:scope===id};
   }
   result={folders:updated,playbackLists:nextLists,playlistScope:nextScope,folder,changedIds:[],undo:snapshot};
   const request=episodes.openCursor();request.onsuccess=()=>{try{
@@ -168,4 +168,11 @@ export function updateJLPTLibrary(change){return new Promise((resolve,reject)=>{
  const transaction=db.transaction('settings','readwrite'),store=transaction.objectStore('settings');let value,failure;
  store.get(JLPT_LIBRARY).onsuccess=event=>{try{value=validateJLPTLibrary(change(validateJLPTLibrary(event.target.result?.value||[])));store.put({id:JLPT_LIBRARY,value});}catch(error){failure=error;transaction.abort();}};
  transaction.oncomplete=()=>resolve(value);transaction.onerror=()=>reject(failure||transaction.error);transaction.onabort=()=>reject(failure||transaction.error||Error('JLPT 保存未完成'));
+});}
+
+// Dismiss the text, retaining the undo snapshot and leaving newer records untouched.
+export function dismissFolderDeleteNotice(token){if(typeof token!=='string'||!token)return Promise.resolve(false);return new Promise((resolve,reject)=>{
+ const transaction=db.transaction('settings','readwrite'),store=transaction.objectStore('settings');let changed=false;
+ store.get(FOLDER_DELETE_UNDO).onsuccess=event=>{const value=event.target.result?.value;if(value?.token===token){store.put({id:FOLDER_DELETE_UNDO,value:{...value,noticeDismissed:true}});changed=true;}};
+ transaction.oncomplete=()=>resolve(changed);transaction.onerror=()=>reject(transaction.error);transaction.onabort=()=>reject(transaction.error||Error('提示关闭未完成'));
 });}

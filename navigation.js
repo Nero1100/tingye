@@ -1,4 +1,4 @@
-import {podcastShow} from './podcasts.js?v=2026.10.19.3';
+import {podcastShow} from './podcasts.js?v=2026.10.19.4';
 // Tabs are peers. Only folder/player screens add depth to the app's history.
 export function appRoute(hash){
  const value=String(hash||'').replace(/^#/,'');
